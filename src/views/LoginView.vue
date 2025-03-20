@@ -1,57 +1,57 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-r from-primary-100 to-primary-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
-      <div>
-        <h2 class="mt-4 text-center text-3xl font-extrabold text-gray-900">
+  <div class="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-100 px-4">
+    <div class="w-full max-w-md bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl p-8 md:p-12 transform hover:scale-[1.01] transition-all duration-300 animate-fade-in">
+      <div class="text-center mb-12">
+        <h2 class="text-4xl md:text-5xl font-light text-gray-900 mb-4 animate-slide-down">
           Кицюня з зайчиком
         </h2>
-        <p class="mt-2 text-center text-sm text-gray-600">
-          Увійдіть у ваш акаунт
+        <p class="text-lg md:text-xl text-gray-500 animate-slide-down delay-100">
+          Увійдіть у ваш акаунт 💕
         </p>
       </div>
-      <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
-        <div class="rounded-md -space-y-px">
-          <div class="mb-4">
-            <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Логін</label>
+
+      <form class="space-y-8" @submit.prevent="handleLogin">
+        <div class="space-y-6">
+          <div class="animate-slide-up delay-200">
+            <label for="username" class="block text-sm font-light text-gray-700 mb-2">Логін</label>
             <input
               id="username"
               v-model="username"
               name="username"
               type="text"
               required
-              class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+              class="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl text-gray-900 text-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300"
               placeholder="Введіть ваш логін"
             />
           </div>
-          <div>
-            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Пароль</label>
+
+          <div class="animate-slide-up delay-300">
+            <label for="password" class="block text-sm font-light text-gray-700 mb-2">Пароль</label>
             <input
               id="password"
               v-model="password"
               name="password"
               type="password"
               required
-              class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+              class="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl text-gray-900 text-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300"
               placeholder="Введіть ваш пароль"
             />
           </div>
         </div>
 
-        <div>
+        <div class="animate-slide-up delay-400">
           <button
             type="submit"
-            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200"
+            class="w-full flex items-center justify-center px-8 py-4 bg-primary-600 text-white text-lg font-light rounded-xl hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-300 group"
           >
-            <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-              <span class="material-icons text-primary-300 group-hover:text-primary-400">
-                login
-              </span>
+            <span class="material-icons mr-2 group-hover:rotate-12 transition-transform duration-300">
+              login
             </span>
             Увійти
           </button>
         </div>
 
-        <div v-if="error" class="text-center mt-4">
+        <div v-if="error" class="text-center animate-fade-in">
           <p class="text-red-500 text-sm">{{ error }}</p>
         </div>
       </form>
@@ -81,4 +81,22 @@ const handleLogin = async () => {
     error.value = 'Неправильний логін або пароль'
   }
 }
-</script> 
+</script>
+
+<style scoped>
+.delay-100 {
+  animation-delay: 100ms;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-300 {
+  animation-delay: 300ms;
+}
+
+.delay-400 {
+  animation-delay: 400ms;
+}
+</style> 

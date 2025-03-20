@@ -48,10 +48,35 @@
         </router-link>
       </div>
     </div>
+
+    <!-- Додаткові функції для десктопної версії -->
+    <div v-if="isDesktop" class="space-y-8 px-4 md:px-8">
+      <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">
+        Додаткові можливості
+      </h2>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+        <div
+          v-for="feature in desktopFeatures"
+          :key="feature.text"
+          class="group bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 flex flex-col items-center justify-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up"
+        >
+          <span class="material-icons text-4xl text-primary-500 mb-4 group-hover:scale-110 transition-transform duration-300">
+            {{ feature.icon }}
+          </span>
+          <span class="font-light text-gray-600 text-lg md:text-xl text-center group-hover:text-primary-600 transition-colors duration-300">
+            {{ feature.text }}
+          </span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
+import { useDevice } from '../composables/useDevice'
+
+const { isMobile, isDesktop } = useDevice()
+
 const actions = [
   { to: '/points', icon: 'add_circle', text: 'Додати бали' },
   { to: '/mood', icon: 'mood', text: 'Настрій' },
@@ -59,6 +84,14 @@ const actions = [
   { to: '/tasks', icon: 'assignment', text: 'Завдання' },
   { to: '/chat', icon: 'chat', text: 'Повідомлення' },
   { to: '/stats', icon: 'bar_chart', text: 'Статистика' }
+]
+
+// Додаткові функції для десктопної версії
+const desktopFeatures = [
+  { icon: 'calendar_today', text: 'Календар подій' },
+  { icon: 'photo_library', text: 'Галерея фото' },
+  { icon: 'playlist_add_check', text: 'Розширені завдання' },
+  { icon: 'analytics', text: 'Детальна аналітика' }
 ]
 </script>
 
