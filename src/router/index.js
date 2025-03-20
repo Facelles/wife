@@ -1,44 +1,78 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
+import HomeView from '../views/HomeView.vue'
+import PointsView from '../views/PointsView.vue'
+import MoodView from '../views/MoodView.vue'
+import SleepView from '../views/SleepView.vue'
+import TasksView from '../views/TasksView.vue'
+import ChatView from '../views/ChatView.vue'
+import StatsView from '../views/StatsView.vue'
+import LoginView from '../views/LoginView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
+      path: '/login',
+      name: 'login',
+      component: LoginView,
+      meta: { requiresAuth: false }
+    },
+    {
       path: '/',
       name: 'home',
-      component: () => import('../views/HomeView.vue')
+      component: HomeView,
+      meta: { requiresAuth: true }
     },
     {
       path: '/points',
       name: 'points',
-      component: () => import('../views/PointsView.vue')
+      component: PointsView,
+      meta: { requiresAuth: true }
     },
     {
       path: '/mood',
       name: 'mood',
-      component: () => import('../views/MoodView.vue')
+      component: MoodView,
+      meta: { requiresAuth: true }
     },
     {
       path: '/sleep',
       name: 'sleep',
-      component: () => import('../views/SleepView.vue')
+      component: SleepView,
+      meta: { requiresAuth: true }
     },
     {
       path: '/tasks',
       name: 'tasks',
-      component: () => import('../views/TasksView.vue')
+      component: TasksView,
+      meta: { requiresAuth: true }
     },
     {
       path: '/chat',
       name: 'chat',
-      component: () => import('../views/ChatView.vue')
+      component: ChatView,
+      meta: { requiresAuth: true }
     },
     {
       path: '/stats',
       name: 'stats',
-      component: () => import('../views/StatsView.vue')
+      component: StatsView,
+      meta: { requiresAuth: true }
     }
   ]
+})
+
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    next('/login')
+  } else if (to.path === '/login' && authStore.isAuthenticated) {
+    next('/')
+  } else {
+    next()
+  }
 })
 
 export default router 
