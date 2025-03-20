@@ -22,40 +22,38 @@ const handleLogout = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">
-    <nav v-if="authStore.isAuthenticated" class="bg-white/80 backdrop-blur-sm shadow-sm fixed w-full top-0 z-50">
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-          <div class="flex items-center">
-            <div class="flex-shrink-0">
-              <h1 class="text-xl font-bold text-primary-600">Кицюня з зайчиком</h1>
-            </div>
-            <!-- Desktop Navigation -->
-            <div class="hidden md:ml-6 md:flex md:space-x-4">
-              <router-link
-                v-for="item in navigation"
-                :key="item.name"
-                :to="item.href"
-                :class="[
-                  $route.path === item.href
-                    ? 'bg-primary-100 text-primary-700'
-                    : 'text-gray-600 hover:bg-primary-50 hover:text-primary-600',
-                  'px-3 py-2 rounded-md text-sm font-medium flex items-center transition-colors duration-200'
-                ]"
-              >
-                <span class="material-icons mr-2 text-lg">{{ item.icon }}</span>
-                {{ item.name }}
-              </router-link>
-            </div>
+  <div class="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-100">
+    <!-- Desktop Navigation -->
+    <nav v-if="authStore.isAuthenticated" class="fixed w-full top-0 z-50 animate-fade-in bg-white/70 backdrop-blur-sm shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 md:px-8">
+        <div class="flex justify-between h-16 md:h-20 items-center">
+          <router-link to="/" class="text-xl md:text-2xl font-light text-primary-600 hover:text-primary-700 transition-colors duration-300">
+            Кицюня з зайчиком
+          </router-link>
+          
+          <div class="hidden md:flex space-x-2">
+            <router-link
+              v-for="item in navigation"
+              :key="item.name"
+              :to="item.href"
+              class="group px-4 py-2 rounded-full text-sm md:text-base font-light transition-all duration-300 hover:bg-white/50 hover:backdrop-blur-sm flex items-center space-x-2"
+              :class="[$route.path === item.href ? 'text-primary-600 bg-primary-50' : 'text-gray-500']"
+            >
+              <span class="material-icons text-lg md:text-xl group-hover:scale-110 transition-transform duration-300">
+                {{ item.icon }}
+              </span>
+              <span>{{ item.name }}</span>
+            </router-link>
           </div>
+
           <div class="flex items-center space-x-4">
-            <span class="text-gray-700 hidden sm:inline">{{ authStore.currentUser?.name }}</span>
+            <span class="text-gray-500 hidden sm:inline font-light text-lg">{{ authStore.currentUser?.name }}</span>
             <button
               @click="handleLogout"
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200"
+              class="group px-4 py-2 rounded-full text-sm md:text-base font-light text-gray-500 hover:text-primary-600 hover:bg-white/50 hover:backdrop-blur-sm transition-all duration-300 flex items-center space-x-2"
             >
-              <span class="material-icons mr-1">logout</span>
-              Вийти
+              <span>Вийти</span>
+              <span class="material-icons group-hover:rotate-180 transition-transform duration-500">logout</span>
             </button>
           </div>
         </div>
@@ -63,32 +61,36 @@ const handleLogout = () => {
     </nav>
 
     <!-- Mobile Navigation -->
-    <div v-if="authStore.isAuthenticated" class="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-sm shadow-lg z-50">
-      <div class="flex justify-around items-center h-16 max-w-5xl mx-auto">
+    <div v-if="authStore.isAuthenticated" class="md:hidden fixed bottom-4 left-4 right-4 bg-white/70 backdrop-blur-md rounded-2xl shadow-lg z-50 animate-slide-up">
+      <div class="flex justify-around items-center h-16">
         <router-link
           v-for="item in navigation"
           :key="item.name"
           :to="item.href"
-          :class="[
-            $route.path === item.href
-              ? 'text-primary-600'
-              : 'text-gray-500 hover:text-primary-500',
-            'flex flex-col items-center text-xs py-1 px-3 rounded-lg transition-colors duration-200'
-          ]"
+          class="group flex flex-col items-center py-2 px-3 rounded-xl transition-all duration-300"
+          :class="[$route.path === item.href ? 'text-primary-600' : 'text-gray-400']"
         >
-          <span class="material-icons text-xl mb-1">{{ item.icon }}</span>
-          <span>{{ item.name }}</span>
+          <span class="material-icons text-xl group-hover:scale-110 transition-transform duration-300">
+            {{ item.icon }}
+          </span>
         </router-link>
       </div>
     </div>
 
     <!-- Main Content -->
-    <main class="pt-16 pb-16 md:pb-0 min-h-screen">
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div class="bg-white/80 backdrop-blur-sm shadow-sm rounded-xl p-6">
-          <router-view></router-view>
-        </div>
-      </div>
+    <main class="pt-20 md:pt-24 pb-24 md:pb-8">
+      <router-view v-slot="{ Component }">
+        <transition
+          enter-active-class="transition-all duration-300 ease-out"
+          enter-from-class="opacity-0 transform translate-y-4"
+          enter-to-class="opacity-100 transform translate-y-0"
+          leave-active-class="transition-all duration-300 ease-in"
+          leave-from-class="opacity-100 transform translate-y-0"
+          leave-to-class="opacity-0 transform translate-y-4"
+        >
+          <component :is="Component" />
+        </transition>
+      </router-view>
     </main>
   </div>
 </template>
@@ -116,6 +118,35 @@ html {
   button, a {
     min-height: 44px;
     min-width: 44px;
+  }
+}
+
+/* Animations */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
