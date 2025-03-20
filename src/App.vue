@@ -2,10 +2,12 @@
 import { useAuthStore } from './stores/auth'
 import { useRouter } from 'vue-router'
 import { useDevice } from './composables/useDevice'
+import { computed } from 'vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
 const { isMobile, isDesktop } = useDevice()
+const isAuthenticated = computed(() => authStore.isAuthenticated)
 
 const navigation = [
   { name: 'Головна', href: '/', icon: 'home' },
@@ -24,80 +26,60 @@ const handleLogout = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-100">
-    <!-- Desktop Navigation -->
-    <nav v-if="authStore.isAuthenticated && !isMobile" 
-         class="fixed w-full top-0 z-50 animate-fade-in bg-white/70 backdrop-blur-sm shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 md:px-8">
-        <div class="flex justify-between h-16 md:h-20 items-center">
-          <router-link to="/" class="text-xl md:text-2xl font-light text-primary-600 hover:text-primary-700 transition-colors duration-300">
+  <div class="min-h-screen bg-gray-50">
+    <!-- Навігаційне меню - показуємо тільки якщо користувач авторизований -->
+    <nav v-if="isAuthenticated" class="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
+      <div class="max-w-[1200px] mx-auto px-4">
+        <div class="flex justify-between items-center h-16">
+          <router-link to="/" class="text-2xl text-primary-600 font-light">
             Кицюня з зайчиком
           </router-link>
           
-          <div class="hidden md:flex space-x-2">
-            <router-link
-              v-for="item in navigation"
-              :key="item.name"
-              :to="item.href"
-              class="group px-4 py-2 rounded-full text-sm md:text-base font-light transition-all duration-300 hover:bg-white/50 hover:backdrop-blur-sm flex items-center space-x-2"
-              :class="[$route.path === item.href ? 'text-primary-600 bg-primary-50' : 'text-gray-500']"
-            >
-              <span class="material-icons text-lg md:text-xl group-hover:scale-110 transition-transform duration-300">
-                {{ item.icon }}
-              </span>
-              <span>{{ item.name }}</span>
+          <div class="flex items-center space-x-8">
+            <router-link to="/" class="nav-link">
+              <i class="material-icons">home</i>
+              Головна
             </router-link>
-          </div>
-
-          <div class="flex items-center space-x-4">
-            <span class="text-gray-500 hidden sm:inline font-light text-lg">{{ authStore.currentUser?.name }}</span>
-            <button
-              @click="handleLogout"
-              class="group px-4 py-2 rounded-full text-sm md:text-base font-light text-gray-500 hover:text-primary-600 hover:bg-white/50 hover:backdrop-blur-sm transition-all duration-300 flex items-center space-x-2"
-            >
-              <span>Вийти</span>
-              <span class="material-icons group-hover:rotate-180 transition-transform duration-500">logout</span>
-            </button>
+            <router-link to="/points" class="nav-link">
+              <i class="material-icons">favorite</i>
+              Бали
+            </router-link>
+            <router-link to="/settings" class="nav-link">
+              <i class="material-icons">settings</i>
+              Настрій
+            </router-link>
+            <router-link to="/sleep" class="nav-link">
+              <i class="material-icons">bedtime</i>
+              Сон
+            </router-link>
+            <router-link to="/tasks" class="nav-link">
+              <i class="material-icons">task</i>
+              Завдання
+            </router-link>
+            <router-link to="/chat" class="nav-link">
+              <i class="material-icons">chat</i>
+              Чат
+            </router-link>
+            <router-link to="/stats" class="nav-link">
+              <i class="material-icons">analytics</i>
+              Статистика
+            </router-link>
+            
+            <div class="flex items-center space-x-4">
+              <span class="text-gray-600">{{ authStore.currentUser?.name }}</span>
+              <button @click="handleLogout" class="nav-link text-red-500">
+                <i class="material-icons">logout</i>
+                Вийти
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </nav>
 
-    <!-- Mobile Navigation -->
-    <div v-if="authStore.isAuthenticated && isMobile" 
-         class="fixed bottom-4 left-4 right-4 bg-white/70 backdrop-blur-md rounded-2xl shadow-lg z-50 animate-slide-up">
-      <div class="flex justify-around items-center h-16">
-        <router-link
-          v-for="item in navigation"
-          :key="item.name"
-          :to="item.href"
-          class="group flex flex-col items-center py-2 px-3 rounded-xl transition-all duration-300"
-          :class="[$route.path === item.href ? 'text-primary-600' : 'text-gray-400']"
-        >
-          <span class="material-icons text-xl group-hover:scale-110 transition-transform duration-300">
-            {{ item.icon }}
-          </span>
-        </router-link>
-      </div>
-    </div>
-
-    <!-- Main Content -->
-    <main :class="{
-      'pt-20 md:pt-24 pb-24 md:pb-8': !isMobile,
-      'pt-4 pb-24': isMobile
-    }">
-      <router-view v-slot="{ Component }">
-        <transition
-          enter-active-class="transition-all duration-300 ease-out"
-          enter-from-class="opacity-0 transform translate-y-4"
-          enter-to-class="opacity-100 transform translate-y-0"
-          leave-active-class="transition-all duration-300 ease-in"
-          leave-from-class="opacity-100 transform translate-y-0"
-          leave-to-class="opacity-0 transform translate-y-4"
-        >
-          <component :is="Component" />
-        </transition>
-      </router-view>
+    <!-- Основний контент -->
+    <main :class="{ 'pt-16': isAuthenticated }">
+      <router-view />
     </main>
   </div>
 </template>
@@ -172,6 +154,30 @@ html {
   }
   100% {
     background-position: 0% 50%;
+  }
+}
+
+.nav-link {
+  @apply flex items-center space-x-1 text-gray-600 hover:text-primary-600 transition-colors duration-200;
+}
+
+.nav-link i {
+  @apply mr-1;
+}
+
+@media (max-width: 1024px) {
+  .nav-link span {
+    display: none;
+  }
+  
+  .space-x-8 {
+    @apply space-x-4;
+  }
+}
+
+@media (max-width: 640px) {
+  .nav-link {
+    @apply text-sm;
   }
 }
 </style>
