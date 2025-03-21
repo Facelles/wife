@@ -3,6 +3,7 @@ import { useAuthStore } from './stores/auth'
 import { useRouter } from 'vue-router'
 import { useDevice } from './composables/useDevice'
 import { computed, ref } from 'vue'
+import AppLogo from './components/AppLogo.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -41,53 +42,59 @@ const logout = () => {
     <nav v-if="isAuthenticated" class="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
       <div class="max-w-7xl mx-auto px-4">
         <div class="flex justify-between items-center h-16">
-          <router-link to="/" class="text-3xl text-primary-600 font-light">
-            Кицюня з зайчиком
-          </router-link>
+          <!-- Логотип зліва -->
+          <div class="flex-shrink-0">
+            <router-link to="/" class="flex items-center h-full py-2">
+              <AppLogo size="nav" />
+            </router-link>
+          </div>
           
-          <div class="hidden lg:flex items-center space-x-8">
-            <router-link to="/" class="nav-link">
-              <i class="material-icons">home</i>
-              <span>Головна</span>
-            </router-link>
-            <router-link to="/points" class="nav-link">
-              <i class="material-icons">favorite</i>
-              <span>Бали</span>
-            </router-link>
-            <router-link to="/mood" class="nav-link">
-              <i class="material-icons">mood</i>
-              <span>Настрій</span>
-            </router-link>
-            <router-link to="/sleep" class="nav-link">
-              <i class="material-icons">bedtime</i>
-              <span>Сон</span>
-            </router-link>
-            <router-link to="/tasks" class="nav-link">
-              <i class="material-icons">task</i>
-              <span>Завдання</span>
-            </router-link>
-            <router-link to="/chat" class="nav-link">
-              <i class="material-icons">chat</i>
-              <span>Чат</span>
-            </router-link>
-            <router-link to="/stats" class="nav-link">
-              <i class="material-icons">analytics</i>
-              <span>Статистика</span>
-            </router-link>
+          <!-- Навігаційні посилання по центру -->
+          <div class="flex-grow flex justify-center">
+            <div class="hidden lg:flex items-center space-x-8">
+              <router-link to="/" class="nav-link">
+                <i class="material-icons">home</i>
+                <span>Головна</span>
+              </router-link>
+              <router-link to="/points" class="nav-link">
+                <i class="material-icons">favorite</i>
+                <span>Бали</span>
+              </router-link>
+              <router-link to="/mood" class="nav-link">
+                <i class="material-icons">mood</i>
+                <span>Настрій</span>
+              </router-link>
+              <router-link to="/sleep" class="nav-link">
+                <i class="material-icons">bedtime</i>
+                <span>Сон</span>
+              </router-link>
+              <router-link to="/tasks" class="nav-link">
+                <i class="material-icons">task</i>
+                <span>Завдання</span>
+              </router-link>
+              <router-link to="/chat" class="nav-link">
+                <i class="material-icons">chat</i>
+                <span>Чат</span>
+              </router-link>
+              <router-link to="/stats" class="nav-link">
+                <i class="material-icons">analytics</i>
+                <span>Статистика</span>
+              </router-link>
+            </div>
             
-            <div class="flex items-center space-x-4">
-              <span class="text-gray-600">{{ currentUser }}</span>
-              <button @click="logout" class="nav-link text-red-500">
-                <i class="material-icons">logout</i>
-                <span>Вийти</span>
+            <!-- Мобільне меню -->
+            <div class="lg:hidden flex items-center">
+              <button @click="toggleMobileMenu" class="text-gray-600">
+                <i class="material-icons">menu</i>
               </button>
             </div>
           </div>
-
-          <!-- Мобільне меню -->
-          <div class="lg:hidden flex items-center">
-            <button @click="toggleMobileMenu" class="text-gray-600">
-              <i class="material-icons">menu</i>
+          
+          <!-- Кнопка виходу справа -->
+          <div class="flex-shrink-0">
+            <button @click="logout" class="nav-link text-red-500">
+              <i class="material-icons">logout</i>
+              <span>Вийти</span>
             </button>
           </div>
         </div>
@@ -124,20 +131,12 @@ const logout = () => {
             <i class="material-icons">analytics</i>
             <span>Статистика</span>
           </router-link>
-          
-          <div class="flex justify-between items-center pt-2 border-t border-gray-200 mt-2">
-            <span class="text-gray-600">{{ currentUser }}</span>
-            <button @click="logout" class="mobile-nav-link text-red-500">
-              <i class="material-icons">logout</i>
-              <span>Вийти</span>
-            </button>
-          </div>
         </div>
       </div>
     </nav>
 
     <!-- Основний контент -->
-    <main :class="{ 'pt-16': isAuthenticated }" class="max-w-7xl mx-auto px-4">
+    <main :class="{ 'pt-20': isAuthenticated }" class="max-w-7xl mx-auto px-4">
       <router-view />
     </main>
   </div>
@@ -217,11 +216,11 @@ html {
 }
 
 .nav-link {
-  @apply flex items-center text-lg text-gray-600 hover:text-primary-600 transition-colors duration-200;
+  @apply flex items-center text-base text-gray-600 hover:text-primary-600 transition-colors duration-200;
 }
 
 .nav-link i {
-  @apply mr-2;
+  @apply mr-1;
 }
 
 .mobile-nav-link {
@@ -237,8 +236,8 @@ html {
     display: none;
   }
   
-  .space-x-8 {
-    @apply space-x-4;
+  .nav-link i {
+    @apply text-xl;
   }
 }
 

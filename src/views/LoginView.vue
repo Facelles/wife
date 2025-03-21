@@ -2,10 +2,8 @@
   <div class="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-100">
     <div class="w-[400px] bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl p-8 transform hover:scale-[1.01] transition-all duration-300 animate-fade-in">
       <div class="text-center mb-8">
-        <h2 class="text-4xl font-light text-gray-900 mb-4 animate-slide-down">
-          Кицюня з зайчиком
-        </h2>
-        <p class="text-xl text-gray-500 animate-slide-down delay-100">
+        <AppLogo class="xl" />
+        <p class="text-xl text-gray-500 animate-slide-down delay-100 mt-4">
           Увійдіть у ваш акаунт 💕
         </p>
       </div>
@@ -63,6 +61,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import AppLogo from '@/components/AppLogo.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -92,5 +91,28 @@ const handleLogin = async () => {
   display: flex;
   justify-content: center;
   width: 100%;
+}
+
+@media (max-width: 480px) {
+  .w-\[400px\] {
+    width: 90%;
+    max-width: 400px;
+  }
+  
+  .text-4xl {
+    font-size: 2rem;
+  }
+  
+  .text-3xl {
+    font-size: 1.5rem;
+  }
+  
+  .text-xl {
+    font-size: 1rem;
+  }
+  
+  .p-8 {
+    padding: 1.5rem;
+  }
 }
 </style> 
