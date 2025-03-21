@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-100">
-    <div class="w-[1200px] mx-auto flex justify-center items-center">
-      <div class="w-[480px] bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl p-12 transform hover:scale-[1.01] transition-all duration-300 animate-fade-in">
+    <div class="w-full max-w-lg mx-auto flex justify-center">
+      <div class="w-full bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl p-12 transform hover:scale-[1.01] transition-all duration-300 animate-fade-in">
         <div class="text-center mb-12">
           <h2 class="text-5xl font-light text-gray-900 mb-4 animate-slide-down">
             Кицюня з зайчиком
@@ -75,39 +75,36 @@ const error = ref('')
 
 const handleLogin = async () => {
   error.value = ''
-  const success = authStore.login(username.value, password.value)
-  
-  if (success) {
-    router.push('/')
-  } else {
-    error.value = 'Неправильний логін або пароль'
+  try {
+    const success = await authStore.login(username.value, password.value)
+
+    if (success) {
+      router.push('/')
+    } else {
+      error.value = 'Неправильний логін або пароль'
+    }
+  } catch (err) {
+    error.value = 'Сталася помилка, спробуйте ще раз.'
   }
 }
 </script>
 
 <style scoped>
-@media (max-width: 1200px) {
-  .w-[1200px] {
-    width: 100%;
-    padding: 0 1rem;
-  }
-}
-
 @media (max-width: 640px) {
-  .w-[480px] {
-    width: 100%;
-  }
-
-  .text-5xl {
-    font-size: 2rem;
-  }
-
-  .text-xl {
-    font-size: 1rem;
+  .max-w-lg {
+    max-width: 90%;
   }
 
   .p-12 {
-    padding: 1.5rem;
+    padding: 2rem;
+  }
+
+  .text-5xl {
+    font-size: 2.5rem;
+  }
+
+  .text-xl {
+    font-size: 1.125rem;
   }
 
   .px-6 {
@@ -118,14 +115,6 @@ const handleLogin = async () => {
   .py-4 {
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
-  }
-
-  .space-y-8 > * + * {
-    margin-top: 1.5rem;
-  }
-
-  .mb-12 {
-    margin-bottom: 1.5rem;
   }
 }
 </style> 

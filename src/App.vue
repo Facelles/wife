@@ -2,12 +2,14 @@
 import { useAuthStore } from './stores/auth'
 import { useRouter } from 'vue-router'
 import { useDevice } from './composables/useDevice'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
 const { isMobile, isDesktop } = useDevice()
 const isAuthenticated = computed(() => authStore.isAuthenticated)
+const currentUser = computed(() => authStore.user ? authStore.user.name : '')
+const mobileMenuOpen = ref(false)
 
 const navigation = [
   { name: 'Головна', href: '/', icon: 'home' },
@@ -23,62 +25,119 @@ const handleLogout = () => {
   authStore.logout()
   router.push('/login')
 }
+
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value
+}
+
+const logout = () => {
+  authStore.logout()
+  mobileMenuOpen.value = false
+}
 </script>
 
 <template>
   <div class="min-h-screen bg-gray-50">
-    <!-- Навігаційне меню - показуємо тільки якщо користувач авторизований -->
     <nav v-if="isAuthenticated" class="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
-      <div class="max-w-[1200px] mx-auto px-4">
+      <div class="max-w-7xl mx-auto px-4">
         <div class="flex justify-between items-center h-16">
-          <router-link to="/" class="text-2xl text-primary-600 font-light">
+          <router-link to="/" class="text-3xl text-primary-600 font-light">
             Кицюня з зайчиком
           </router-link>
           
-          <div class="flex items-center space-x-8">
+          <div class="hidden lg:flex items-center space-x-8">
             <router-link to="/" class="nav-link">
               <i class="material-icons">home</i>
-              Головна
+              <span>Головна</span>
             </router-link>
             <router-link to="/points" class="nav-link">
               <i class="material-icons">favorite</i>
-              Бали
+              <span>Бали</span>
             </router-link>
-            <router-link to="/settings" class="nav-link">
-              <i class="material-icons">settings</i>
-              Настрій
+            <router-link to="/mood" class="nav-link">
+              <i class="material-icons">mood</i>
+              <span>Настрій</span>
             </router-link>
             <router-link to="/sleep" class="nav-link">
               <i class="material-icons">bedtime</i>
-              Сон
+              <span>Сон</span>
             </router-link>
             <router-link to="/tasks" class="nav-link">
               <i class="material-icons">task</i>
-              Завдання
+              <span>Завдання</span>
             </router-link>
             <router-link to="/chat" class="nav-link">
               <i class="material-icons">chat</i>
-              Чат
+              <span>Чат</span>
             </router-link>
             <router-link to="/stats" class="nav-link">
               <i class="material-icons">analytics</i>
-              Статистика
+              <span>Статистика</span>
             </router-link>
             
             <div class="flex items-center space-x-4">
-              <span class="text-gray-600">{{ authStore.currentUser?.name }}</span>
-              <button @click="handleLogout" class="nav-link text-red-500">
+              <span class="text-gray-600">{{ currentUser }}</span>
+              <button @click="logout" class="nav-link text-red-500">
                 <i class="material-icons">logout</i>
-                Вийти
+                <span>Вийти</span>
               </button>
             </div>
+          </div>
+
+          <!-- Мобільне меню -->
+          <div class="lg:hidden flex items-center">
+            <button @click="toggleMobileMenu" class="text-gray-600">
+              <i class="material-icons">menu</i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Мобільне навігаційне меню -->
+      <div v-if="mobileMenuOpen" class="lg:hidden bg-white border-t border-gray-200 py-2">
+        <div class="max-w-7xl mx-auto px-4 space-y-1">
+          <router-link to="/" class="mobile-nav-link">
+            <i class="material-icons">home</i>
+            <span>Головна</span>
+          </router-link>
+          <router-link to="/points" class="mobile-nav-link">
+            <i class="material-icons">favorite</i>
+            <span>Бали</span>
+          </router-link>
+          <router-link to="/mood" class="mobile-nav-link">
+            <i class="material-icons">mood</i>
+            <span>Настрій</span>
+          </router-link>
+          <router-link to="/sleep" class="mobile-nav-link">
+            <i class="material-icons">bedtime</i>
+            <span>Сон</span>
+          </router-link>
+          <router-link to="/tasks" class="mobile-nav-link">
+            <i class="material-icons">task</i>
+            <span>Завдання</span>
+          </router-link>
+          <router-link to="/chat" class="mobile-nav-link">
+            <i class="material-icons">chat</i>
+            <span>Чат</span>
+          </router-link>
+          <router-link to="/stats" class="mobile-nav-link">
+            <i class="material-icons">analytics</i>
+            <span>Статистика</span>
+          </router-link>
+          
+          <div class="flex justify-between items-center pt-2 border-t border-gray-200 mt-2">
+            <span class="text-gray-600">{{ currentUser }}</span>
+            <button @click="logout" class="mobile-nav-link text-red-500">
+              <i class="material-icons">logout</i>
+              <span>Вийти</span>
+            </button>
           </div>
         </div>
       </div>
     </nav>
 
     <!-- Основний контент -->
-    <main :class="{ 'pt-16': isAuthenticated }">
+    <main :class="{ 'pt-16': isAuthenticated }" class="max-w-7xl mx-auto px-4">
       <router-view />
     </main>
   </div>
@@ -158,11 +217,19 @@ html {
 }
 
 .nav-link {
-  @apply flex items-center space-x-1 text-gray-600 hover:text-primary-600 transition-colors duration-200;
+  @apply flex items-center text-lg text-gray-600 hover:text-primary-600 transition-colors duration-200;
 }
 
 .nav-link i {
-  @apply mr-1;
+  @apply mr-2;
+}
+
+.mobile-nav-link {
+  @apply flex items-center py-2 text-base text-gray-600 hover:text-primary-600 transition-colors duration-200;
+}
+
+.mobile-nav-link i {
+  @apply mr-2;
 }
 
 @media (max-width: 1024px) {
