@@ -15,17 +15,17 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
-  base: process.env.NODE_ENV === 'production' ? '/wife/' : '/',
+  base: '/wife/',
   build: {
-    outDir: 'dist',
+    outDir: './',
     assetsDir: 'assets',
     sourcemap: true,
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor': ['vue', 'vue-router', 'pinia'],
-          'firebase': ['firebase/app', 'firebase/auth', 'firebase/database'],
-          'chart': ['chart.js', 'vue-chartjs']
+          'vue': ['vue'],
+          'firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/database'],
+          'chart': ['chart.js']
         }
       }
     },
