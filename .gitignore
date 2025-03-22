@@ -33,3 +33,7 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+# Environment variables
+.env.*
+!.env.example

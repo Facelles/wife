@@ -17,15 +17,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
 const db = getFirestore(app)
-const rtdb = getDatabase(app)
+const database = getDatabase(app)
 
 // Підключення до емуляторів в режимі розробки
-if (process.env.NODE_ENV === 'development' && window.location.hostname === 'localhost') {
+if (import.meta.env.DEV) {
   connectAuthEmulator(auth, 'http://localhost:9099')
   connectFirestoreEmulator(db, 'localhost', 8080)
-  connectDatabaseEmulator(rtdb, 'localhost', 9000)
+  connectDatabaseEmulator(database, 'localhost', 9000)
   console.log('Using Firebase emulators')
 }
 
-export { app, auth, db, rtdb } 
+export { app, auth, db, database } 
  

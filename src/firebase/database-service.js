@@ -1,9 +1,9 @@
 import { ref, onValue, set, update, remove, push, child, get } from 'firebase/database'
-import { rtdb } from './index'
+import { database } from './index'
 
 // Отримання даних у реальному часі
 export const listenToData = (path, callback) => {
-  const dataRef = ref(rtdb, path)
+  const dataRef = ref(database, path)
   const unsubscribe = onValue(dataRef, (snapshot) => {
     const data = snapshot.val()
     callback(data)
@@ -15,7 +15,7 @@ export const listenToData = (path, callback) => {
 // Отримання даних один раз
 export const getData = async (path) => {
   try {
-    const snapshot = await get(ref(rtdb, path))
+    const snapshot = await get(ref(database, path))
     return snapshot.val()
   } catch (error) {
     console.error('Error getting data:', error)
@@ -26,7 +26,7 @@ export const getData = async (path) => {
 // Запис даних
 export const writeData = async (path, data) => {
   try {
-    await set(ref(rtdb, path), {
+    await set(ref(database, path), {
       ...data,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -41,7 +41,7 @@ export const writeData = async (path, data) => {
 // Оновлення даних
 export const updateData = async (path, data) => {
   try {
-    await update(ref(rtdb, path), {
+    await update(ref(database, path), {
       ...data,
       updatedAt: new Date().toISOString()
     })
@@ -55,7 +55,7 @@ export const updateData = async (path, data) => {
 // Видалення даних
 export const removeData = async (path) => {
   try {
-    await remove(ref(rtdb, path))
+    await remove(ref(database, path))
     return true
   } catch (error) {
     console.error('Error removing data:', error)
@@ -66,7 +66,7 @@ export const removeData = async (path) => {
 // Додавання даних з автоматичним ID
 export const pushData = async (path, data) => {
   try {
-    const newRef = push(ref(rtdb, path))
+    const newRef = push(ref(database, path))
     await set(newRef, {
       ...data,
       id: newRef.key,
@@ -83,7 +83,7 @@ export const pushData = async (path, data) => {
 // Отримання даних користувача
 export const getUserData = async (userId) => {
   try {
-    const snapshot = await get(ref(rtdb, `users/${userId}`))
+    const snapshot = await get(ref(database, `users/${userId}`))
     return snapshot.val()
   } catch (error) {
     console.error('Error getting user data:', error)
@@ -94,7 +94,7 @@ export const getUserData = async (userId) => {
 // Оновлення даних користувача
 export const updateUserData = async (userId, data) => {
   try {
-    await update(ref(rtdb, `users/${userId}`), {
+    await update(ref(database, `users/${userId}`), {
       ...data,
       updatedAt: new Date().toISOString()
     })
@@ -108,7 +108,7 @@ export const updateUserData = async (userId, data) => {
 // Отримання повідомлень
 export const getMessages = async (limit = 50) => {
   try {
-    const messagesRef = ref(rtdb, 'messages')
+    const messagesRef = ref(database, 'messages')
     const snapshot = await get(messagesRef)
     const messages = []
     
@@ -129,7 +129,7 @@ export const getMessages = async (limit = 50) => {
 // Відправка повідомлення
 export const sendMessage = async (userId, content) => {
   try {
-    const newMessageRef = push(ref(rtdb, 'messages'))
+    const newMessageRef = push(ref(database, 'messages'))
     await set(newMessageRef, {
       userId,
       content,
