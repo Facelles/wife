@@ -2,14 +2,20 @@
 import { useAuthStore } from './stores/auth'
 import { useRouter } from 'vue-router'
 import { useDevice } from './composables/useDevice'
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import AppLogo from './components/AppLogo.vue'
+import { storeToRefs } from 'pinia'
+import { useRoute } from 'vue-router'
 
 const authStore = useAuthStore()
 const router = useRouter()
 const { isMobile, isDesktop } = useDevice()
-const isAuthenticated = computed(() => authStore.isAuthenticated)
-const currentUser = computed(() => authStore.user ? authStore.user.name : '')
+const route = useRoute()
+
+// Використовуємо storeToRefs для реактивних властивостей
+const { user, isAuthenticated, loading } = storeToRefs(authStore)
+
+const currentUser = computed(() => user.value ? user.value.name : '')
 const mobileMenuOpen = ref(false)
 
 const navigation = [
@@ -35,17 +41,32 @@ const logout = () => {
   authStore.logout()
   mobileMenuOpen.value = false
 }
+
+// Показувати навігацію тільки якщо користувач авторизований і це не сторінка логіну
+const showNavigation = computed(() => {
+  console.log('App: Перевірка навігації:', {
+    isAuthenticated: isAuthenticated.value,
+    currentPath: route.path,
+    user: user.value
+  })
+  return isAuthenticated.value && route.path !== '/login'
+})
+
+// Спостерігаємо за змінами стану автентифікації
+watch(isAuthenticated, (newValue) => {
+  console.log('App: Зміна стану автентифікації:', newValue)
+})
 </script>
 
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Показуємо лоадер, поки перевіряється стан автентифікації -->
-    <div v-if="authStore.loading" class="fixed inset-0 flex items-center justify-center z-50 bg-white">
+    <div v-if="loading" class="fixed inset-0 flex items-center justify-center z-50 bg-white">
       <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
     </div>
 
     <!-- Навігація, тільки для авторизованих користувачів -->
-    <nav v-else-if="authStore.isAuthenticated" class="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
+    <nav v-if="isAuthenticated" class="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
       <div class="max-w-7xl mx-auto px-4">
         <div class="flex justify-between items-center h-16">
           <!-- Логотип зліва -->
@@ -142,8 +163,8 @@ const logout = () => {
     </nav>
 
     <!-- Основний контент -->
-    <main :class="{ 'pt-20': authStore.isAuthenticated }" class="max-w-7xl mx-auto px-4">
-      <router-view v-if="!authStore.loading" />
+    <main :class="{ 'pt-20': isAuthenticated }" class="max-w-7xl mx-auto px-4">
+      <router-view v-if="!loading" />
     </main>
   </div>
 </template>

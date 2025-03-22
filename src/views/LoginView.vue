@@ -11,15 +11,15 @@
       <form class="space-y-6" @submit.prevent="handleLogin">
         <div class="space-y-4">
           <div class="animate-slide-up delay-200">
-            <label for="username" class="block text-base font-light text-gray-700 mb-2">Логін</label>
+            <label for="email" class="block text-base font-light text-gray-700 mb-2">Електронна пошта</label>
             <input
-              id="username"     
-              v-model="username"
-              name="username"
-              type="text"
+              id="email"     
+              v-model="email"
+              name="email"
+              type="email"
               required
               class="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl text-gray-900 text-base focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300"
-              placeholder="Введіть ваш логін"
+              placeholder="Введіть вашу електронну пошту"
             />
           </div>
 
@@ -66,22 +66,34 @@ import AppLogo from '@/components/AppLogo.vue'
 const router = useRouter()
 const authStore = useAuthStore()
 
-const username = ref('')
+const email = ref('')
 const password = ref('')
 const error = ref('')
 
-const handleLogin = async () => {
+const handleLogin = async (e) => {
+  e.preventDefault() // Додатково запобігаємо перезавантаженню
+  console.log('Спроба входу з:', { email: email.value })
+  
+  if (!email.value || !password.value) {
+    error.value = 'Будь ласка, заповніть всі поля'
+    return
+  }
+
   error.value = ''
   try {
-    const success = await authStore.login(username.value, password.value)
-
+    console.log('Викликаємо authStore.login...')
+    const success = await authStore.login(email.value, password.value)
+    console.log('Результат входу:', success)
+    
     if (success) {
+      console.log('Успішний вхід, переходимо на головну...')
       router.push('/')
     } else {
-      error.value = 'Неправильний логін або пароль'
+      error.value = authStore.error || 'Неправильний email або пароль'
     }
   } catch (err) {
-    error.value = 'Сталася помилка, спробуйте ще раз.'
+    console.error('Помилка при вході:', err)
+    error.value = err.message || 'Помилка входу. Спробуйте ще раз.'
   }
 }
 </script>

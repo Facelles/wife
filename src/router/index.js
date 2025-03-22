@@ -65,12 +65,22 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
+  console.log('Router Guard:', {
+    to: to.path,
+    from: from.path,
+    isAuthenticated: authStore.isAuthenticated,
+    requiresAuth: to.meta.requiresAuth,
+    user: authStore.user
+  })
   
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    console.log('Router Guard: Перенаправлення на логін - користувач не авторизований')
     next('/login')
   } else if (to.path === '/login' && authStore.isAuthenticated) {
+    console.log('Router Guard: Перенаправлення на головну - користувач вже авторизований')
     next('/')
   } else {
+    console.log('Router Guard: Дозволяємо перехід')
     next()
   }
 })
