@@ -1,48 +1,59 @@
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { useAuthStore } from './auth'
+import { addDocument, getDocuments, updateDocument, deleteDocument } from '@/firebase/firestore-service'
+import { Timestamp } from 'firebase/firestore'
 
-export const useMoodStore = defineStore('mood', {
-  state: () => ({
-    moods: [],
-    moodOptions: [
-      { id: 'happy', emoji: '😊', label: 'Happy' },
-      { id: 'excited', emoji: '🤗', label: 'Excited' },
-      { id: 'calm', emoji: '😌', label: 'Calm' },
-      { id: 'tired', emoji: '😴', label: 'Tired' },
-      { id: 'stressed', emoji: '😰', label: 'Stressed' },
-      { id: 'angry', emoji: '😠', label: 'Angry' },
-      { id: 'sad', emoji: '😢', label: 'Sad' }
-    ]
-  }),
+export const useMoodStore = defineStore('mood', () => {
+  const authStore = useAuthStore()
+  
+  const moodRecords = ref([])
+  const moodOptions = [
+    { id: 'happy', emoji: '😊', label: 'Happy' },
+    { id: 'excited', emoji: '🤗', label: 'Excited' },
+    { id: 'calm', emoji: '😌', label: 'Calm' },
+    { id: 'tired', emoji: '😴', label: 'Tired' },
+    { id: 'stressed', emoji: '😰', label: 'Stressed' },
+    { id: 'angry', emoji: '😠', label: 'Angry' },
+    { id: 'sad', emoji: '😢', label: 'Sad' }
+  ]
 
-  getters: {
+  const getters = {
     todayMood: (state) => {
       const today = new Date().toISOString().split('T')[0]
-      return state.moods.find(mood => mood.date === today)
+      return state.moodRecords.find(mood => mood.date === today)
     },
-    moodHistory: (state) => state.moods,
+    moodHistory: (state) => state.moodRecords,
     moodStats: (state) => {
       const stats = {}
-      state.moods.forEach(mood => {
+      state.moodRecords.forEach(mood => {
         stats[mood.moodId] = (stats[mood.moodId] || 0) + 1
       })
       return stats
     }
-  },
+  }
 
-  actions: {
+  const actions = {
     addMood(moodId, note = '') {
       const today = new Date().toISOString().split('T')[0]
-      const existingIndex = this.moods.findIndex(mood => mood.date === today)
+      const existingIndex = this.moodRecords.findIndex(mood => mood.date === today)
       
       if (existingIndex !== -1) {
-        this.moods[existingIndex] = { date: today, moodId, note }
+        this.moodRecords[existingIndex] = { date: today, moodId, note }
       } else {
-        this.moods.push({ date: today, moodId, note })
+        this.moodRecords.push({ date: today, moodId, note })
       }
     },
 
     getMoodForDate(date) {
-      return this.moods.find(mood => mood.date === date)
+      return this.moodRecords.find(mood => mood.date === date)
     }
+  }
+
+  return {
+    moodRecords,
+    moodOptions,
+    ...getters,
+    ...actions
   }
 }) 

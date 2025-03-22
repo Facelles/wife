@@ -1,65 +1,134 @@
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { useAuthStore } from './auth'
+import { addDocument, getDocuments, updateDocument, deleteDocument } from '@/firebase/firestore-service'
+import { Timestamp } from 'firebase/firestore'
 
-export const useTasksStore = defineStore('tasks', {
-  state: () => ({
-    tasks: [],
-    completedTasks: [],
-    categories: [
-      { id: 'health', name: 'Health', color: 'bg-green-100 text-green-800' },
-      { id: 'romance', name: 'Romance', color: 'bg-red-100 text-red-800' },
-      { id: 'learning', name: 'Learning', color: 'bg-blue-100 text-blue-800' },
-      { id: 'fitness', name: 'Fitness', color: 'bg-purple-100 text-purple-800' },
-      { id: 'other', name: 'Other', color: 'bg-gray-100 text-gray-800' }
-    ]
-  }),
-
-  getters: {
-    activeTasks: (state) => state.tasks,
-    completedTasksList: (state) => state.completedTasks,
-    tasksByCategory: (state) => {
-      const grouped = {}
-      state.categories.forEach(category => {
-        grouped[category.id] = state.tasks.filter(task => task.category === category.id)
-      })
-      return grouped
+export const useTasksStore = defineStore('tasks', () => {
+  const authStore = useAuthStore()
+  
+  const tasks = ref([])
+  const completedTasks = ref([])
+  const loading = ref(false)
+  const error = ref(null)
+  
+  // Категорії завдань
+  const categories = ref(['health', 'romance', 'learning', 'fitness', 'other'])
+  
+  // Активні завдання
+  const activeTasks = computed(() => tasks.value)
+  
+  // Завдання по категоріям
+  const tasksByCategory = computed(() => {
+    const result = {}
+    categories.value.forEach(category => {
+      result[category] = tasks.value.filter(task => task.category === category)
+    })
+    return result
+  })
+  
+  // Завантаження завдань користувача
+  const fetchTasks = async () => {
+    if (!authStore.user) return
+    
+    try {
+      loading.value = true
+      error.value = null
+      
+      // Завантажуємо активні завдання
+      const activeTasks = await getDocuments('tasks', [
+        { field: 'userId', operator: '==', value: authStore.user.uid },
+        { field: 'completed', operator: '==', value: false }
+      ])
+      tasks.value = activeTasks
+      
+      // Завантажуємо завершені завдання
+      const finishedTasks = await getDocuments('tasks', [
+        { field: 'userId', operator: '==', value: authStore.user.uid },
+        { field: 'completed', operator: '==', value: true }
+      ])
+      completedTasks.value = finishedTasks
+      
+    } catch (err) {
+      error.value = err.message
+    } finally {
+      loading.value = false
     }
-  },
-
-  actions: {
-    addTask(task) {
-      this.tasks.push({
-        id: Date.now(),
-        ...task,
+  }
+  
+  // Додавання нового завдання
+  const addTask = async (task) => {
+    if (!authStore.user) return
+    
+    try {
+      loading.value = true
+      error.value = null
+      
+      const newTask = {
+        title: task.title,
+        description: task.description,
+        category: task.category,
+        points: task.points || 1,
         completed: false,
+        userId: authStore.user.uid,
+        partnerView: task.partnerView || false
+      }
+      
+      const taskId = await addDocument('tasks', newTask)
+      
+      // Додаємо в локальний стан
+      tasks.value.push({
+        id: taskId,
+        ...newTask,
         createdAt: new Date().toISOString()
       })
-    },
-
-    completeTask(taskId) {
-      const taskIndex = this.tasks.findIndex(task => task.id === taskId)
-      if (taskIndex !== -1) {
-        const task = this.tasks[taskIndex]
-        this.completedTasks.push({
-          ...task,
-          completed: true,
-          completedAt: new Date().toISOString()
-        })
-        this.tasks.splice(taskIndex, 1)
-      }
-    },
-
-    deleteTask(taskId) {
-      const taskIndex = this.tasks.findIndex(task => task.id === taskId)
-      if (taskIndex !== -1) {
-        this.tasks.splice(taskIndex, 1)
-      }
-    },
-
-    updateTask(taskId, updates) {
-      const taskIndex = this.tasks.findIndex(task => task.id === taskId)
-      if (taskIndex !== -1) {
-        this.tasks[taskIndex] = { ...this.tasks[taskIndex], ...updates }
-      }
+      
+    } catch (err) {
+      error.value = err.message
+    } finally {
+      loading.value = false
     }
+  }
+
+  const completeTask = (taskId) => {
+    const taskIndex = tasks.value.findIndex(task => task.id === taskId)
+    if (taskIndex !== -1) {
+      const task = tasks.value[taskIndex]
+      completedTasks.value.push({
+        ...task,
+        completed: true,
+        completedAt: new Date().toISOString()
+      })
+      tasks.value.splice(taskIndex, 1)
+    }
+  }
+
+  const deleteTask = (taskId) => {
+    const taskIndex = tasks.value.findIndex(task => task.id === taskId)
+    if (taskIndex !== -1) {
+      tasks.value.splice(taskIndex, 1)
+    }
+  }
+
+  const updateTask = (taskId, updates) => {
+    const taskIndex = tasks.value.findIndex(task => task.id === taskId)
+    if (taskIndex !== -1) {
+      tasks.value[taskIndex] = { ...tasks.value[taskIndex], ...updates }
+    }
+  }
+
+  return {
+    tasks,
+    completedTasks,
+    categories,
+    activeTasks,
+    tasksByCategory,
+    loading,
+    error,
+    fetchTasks,
+    addTask,
+    completeTask,
+    deleteTask,
+    updateTask
   }
 }) 

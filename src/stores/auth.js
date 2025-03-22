@@ -1,28 +1,34 @@
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { auth } from '@/firebase'
+import { loginUser, logoutUser, updateUserProfile } from '@/firebase/auth-service'
+import { onAuthStateChanged } from 'firebase/auth'
+import router from '@/router'
 
-export const useAuthStore = defineStore('auth', {
-  state: () => ({
-    currentUser: null,
-    isAuthenticated: false,
-  }),
+export const useAuthStore = defineStore('auth', () => {
+  const user = ref(null)
+  const loading = ref(true)
+  const error = ref(null)
 
-  actions: {
-    login(username, password) {
-      if (username === 'зайчик' && password === 'ilovemarta') {
-        this.currentUser = { id: 1, name: 'Зайчик', role: 'user' }
-        this.isAuthenticated = true
-        return true
-      } else if (username === 'кицюня' && password === 'ilovevladick') {
-        this.currentUser = { id: 2, name: 'Кицюня', role: 'user' }
-        this.isAuthenticated = true
-        return true
+  // Встановлюємо слухача для зміни стану автентифікації
+  onAuthStateChanged(auth, (firebaseUser) => {
+    loading.value = false
+    
+    if (firebaseUser) {
+      user.value = {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        name: firebaseUser.displayName || '',
+        photoURL: firebaseUser.photoURL || ''
       }
-      return false
-    },
+    } else {
+      user.value = null
+    }
+  })
 
-    logout() {
-      this.currentUser = null
-      this.isAuthenticated = false
-    },
-  },
+  return {
+    user,
+    loading,
+    error,
+  }
 }) 
