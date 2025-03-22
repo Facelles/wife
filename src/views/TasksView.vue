@@ -202,6 +202,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
+import { listenToData, pushData, updateData, deleteData } from '../firebase/database-service'
 
 const authStore = useAuthStore()
 const tasks = ref([])
@@ -228,10 +229,23 @@ onMounted(() => {
   loadTasks()
 })
 
-const loadTasks = () => {
-  const savedTasks = localStorage.getItem(`tasks_${authStore.user?.uid}`)
-  if (savedTasks) {
-    tasks.value = JSON.parse(savedTasks)
+const loadTasks = async () => {
+  if (!authStore.user) return
+
+  try {
+    listenToData('tasks', (data) => {
+      if (!data) return
+      
+      tasks.value = Object.entries(data)
+        .map(([id, task]) => ({
+          id,
+          ...task
+        }))
+        .filter(task => task.userId === authStore.user.uid)
+        .sort((a, b) => b.createdAt - a.createdAt)
+    })
+  } catch (error) {
+    console.error('Помилка при завантаженні завдань:', error)
   }
 }
 
@@ -281,9 +295,17 @@ const getStatusLabel = (status) => {
   }
 }
 
-const toggleTaskStatus = (task) => {
-  task.status = task.status === 'completed' ? 'pending' : 'completed'
-  saveTasks()
+const toggleTaskStatus = async (task) => {
+  if (!authStore.user) return
+
+  try {
+    await updateData(`tasks/${task.id}`, {
+      status: task.status === 'completed' ? 'pending' : 'completed'
+    })
+  } catch (error) {
+    console.error('Помилка при зміні статусу завдання:', error)
+    alert('Помилка при зміні статусу завдання')
+  }
 }
 
 const openTaskModal = (task = null) => {
@@ -308,35 +330,44 @@ const closeTaskModal = () => {
   selectedTask.value = null
 }
 
-const saveTask = () => {
+const saveTask = async () => {
   if (!taskForm.value.title) {
     alert('Будь ласка, введіть назву завдання')
     return
   }
 
-  const taskData = {
-    ...taskForm.value,
-    id: selectedTask.value?.id || Date.now().toString()
-  }
+  try {
+    const taskData = {
+      ...taskForm.value,
+      userId: authStore.user.uid,
+      userEmail: authStore.user.email,
+      createdAt: Date.now()
+    }
 
-  if (selectedTask.value) {
-    const index = tasks.value.findIndex(t => t.id === selectedTask.value.id)
-    tasks.value[index] = taskData
-  } else {
-    tasks.value.push(taskData)
-  }
+    if (selectedTask.value) {
+      await updateData(`tasks/${selectedTask.value.id}`, taskData)
+    } else {
+      await pushData('tasks', taskData)
+    }
 
-  saveTasks()
-  closeTaskModal()
+    closeTaskModal()
+  } catch (error) {
+    console.error('Помилка при збереженні завдання:', error)
+    alert('Помилка при збереженні завдання')
+  }
 }
 
-const deleteTask = () => {
+const deleteTask = async () => {
   if (!selectedTask.value) return
   
   if (confirm('Ви впевнені, що хочете видалити це завдання?')) {
-    tasks.value = tasks.value.filter(t => t.id !== selectedTask.value.id)
-    saveTasks()
-    closeTaskModal()
+    try {
+      await deleteData(`tasks/${selectedTask.value.id}`)
+      closeTaskModal()
+    } catch (error) {
+      console.error('Помилка при видаленні завдання:', error)
+      alert('Помилка при видаленні завдання')
+    }
   }
 }
 </script>

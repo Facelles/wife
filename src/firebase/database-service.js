@@ -66,13 +66,17 @@ export const removeData = async (path) => {
 // Додавання даних з автоматичним ID
 export const pushData = async (path, data) => {
   try {
+    console.log('Pushing data to path:', path, 'with data:', data)
     const newRef = push(ref(database, path))
-    await set(newRef, {
+    const dataToSave = {
       ...data,
       id: newRef.key,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    })
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    }
+    console.log('Saving data:', dataToSave)
+    await set(newRef, dataToSave)
+    console.log('Data saved successfully')
     return newRef.key
   } catch (error) {
     console.error('Error pushing data:', error)
@@ -141,4 +145,10 @@ export const sendMessage = async (userId, content) => {
     console.error('Error sending message:', error)
     throw error
   }
+}
+
+// Функція для видалення даних
+export const deleteData = async (path) => {
+  const dataRef = ref(database, path)
+  await remove(dataRef)
 } 

@@ -70,7 +70,8 @@ export const updateDocument = async (collectionName, docId, data) => {
 // Видалення документа
 export const deleteDocument = async (collectionName, docId) => {
   try {
-    await deleteDoc(doc(db, collectionName, docId))
+    const docRef = doc(db, collectionName, docId)
+    await deleteDoc(docRef)
     return true
   } catch (error) {
     console.error('Error deleting document:', error)

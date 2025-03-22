@@ -1,44 +1,49 @@
 {
   "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
     "messages": {
-      ".read": "auth != null",
-      ".write": "auth != null",
       "$messageId": {
-        ".validate": "newData.hasChildren(['userId', 'content', 'createdAt'])"
+        ".validate": "newData.hasChildren(['userId', 'content', 'createdAt', 'userEmail'])"
       }
     },
     "users": {
       "$uid": {
-        ".read": "auth != null",
-        ".write": "auth != null && auth.uid == $uid"
+        ".validate": "auth.uid == $uid"
       }
     },
     "tasks": {
-      ".read": "auth != null",
-      ".write": "auth != null",
       "$taskId": {
-        ".validate": "newData.hasChildren(['userId', 'title', 'createdAt'])"
+        ".validate": "newData.hasChildren(['userId', 'title', 'createdAt', 'userEmail'])"
       }
     },
-    "sleepRecords": {
-      ".read": "auth != null",
-      ".write": "auth != null",
-      "$recordId": {
-        ".validate": "newData.hasChildren(['userId', 'hours', 'quality', 'date'])"
+    "moods": {
+      "$uid": {
+        "$moodId": {
+          ".validate": "newData.hasChildren(['value', 'emoji', 'timestamp', 'userId', 'userEmail'])"
+        }
       }
     },
-    "moodRecords": {
-      ".read": "auth != null",
-      ".write": "auth != null",
-      "$recordId": {
-        ".validate": "newData.hasChildren(['userId', 'score', 'date'])"
+    "sleep": {
+      "$uid": {
+        "$sleepId": {
+          ".validate": "newData.hasChildren(['value', 'emoji', 'timestamp', 'userId', 'userEmail'])"
+        }
       }
     },
     "notes": {
-      ".read": "auth != null",
-      ".write": "auth != null",
       "$noteId": {
-        ".validate": "newData.hasChildren(['userId', 'title', 'content', 'createdAt'])"
+        ".validate": "newData.hasChildren(['userId', 'title', 'content', 'createdAt', 'userEmail'])"
+      }
+    },
+    "points": {
+      "$uid": {
+        ".validate": "newData.hasChildren(['current', 'updatedAt', 'userId', 'userEmail'])",
+        "history": {
+          "$historyId": {
+            ".validate": "newData.hasChildren(['amount', 'reason', 'timestamp', 'userId', 'userEmail'])"
+          }
+        }
       }
     }
   }

@@ -17,14 +17,34 @@
         <p class="text-4xl md:text-6xl font-light text-gray-800 group-hover:text-primary-600 transition-colors duration-300">{{ points }}</p>
       </div>
       
-      <div @click="showMoodSelector = true" class="group bg-white/50 backdrop-blur-sm rounded-2xl p-8 md:p-12 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-100 cursor-pointer">
-        <h3 class="text-sm md:text-base font-light text-gray-400 mb-3 group-hover:text-primary-500 transition-colors duration-300">Настрій</h3>
-        <p class="text-4xl md:text-6xl group-hover:scale-125 transition-transform duration-300">{{ currentMood || '😊' }}</p>
+      <div class="space-y-4">
+        <div @click="showMoodSelector = true" class="group bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-100 cursor-pointer">
+          <h3 class="text-sm md:text-base font-light text-gray-400 mb-2 group-hover:text-primary-500 transition-colors duration-300">
+            {{ isKitty ? 'Кицюня' : 'Зайчик' }}
+          </h3>
+          <p class="text-4xl md:text-6xl group-hover:scale-125 transition-transform duration-300">{{ currentMood || '😊' }}</p>
+        </div>
+        <div class="group bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up delay-100">
+          <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">
+            {{ isKitty ? 'Зайчик' : 'Кицюня' }}
+          </h3>
+          <p class="text-4xl md:text-6xl">{{ partnerMood || '😊' }}</p>
+        </div>
       </div>
       
-      <div @click="showSleepSelector = true" class="group bg-white/50 backdrop-blur-sm rounded-2xl p-8 md:p-12 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-200 cursor-pointer">
-        <h3 class="text-sm md:text-base font-light text-gray-400 mb-3 group-hover:text-primary-500 transition-colors duration-300">Сон</h3>
-        <p class="text-4xl md:text-6xl group-hover:scale-125 transition-transform duration-300">{{ currentSleep || '😴' }}</p>
+      <div class="space-y-4">
+        <div @click="showSleepSelector = true" class="group bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-200 cursor-pointer">
+          <h3 class="text-sm md:text-base font-light text-gray-400 mb-2 group-hover:text-primary-500 transition-colors duration-300">
+            {{ isKitty ? 'Кицюня' : 'Зайчик' }}
+          </h3>
+          <p class="text-4xl md:text-6xl group-hover:scale-125 transition-transform duration-300">{{ currentSleep || '😴' }}</p>
+        </div>
+        <div class="group bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up delay-200">
+          <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">
+            {{ isKitty ? 'Зайчик' : 'Кицюня' }}
+          </h3>
+          <p class="text-4xl md:text-6xl">{{ partnerSleep || '😴' }}</p>
+        </div>
       </div>
     </div>
 
@@ -32,12 +52,12 @@
     <div class="space-y-8 px-4 md:px-8">
       <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Дії</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-        <router-link 
+        <div
           v-for="(action, index) in actions" 
-          :key="action.to" 
-          :to="action.to"
+          :key="action.text"
           :style="{ animationDelay: `${index * 100}ms` }"
-          class="group bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 flex items-center justify-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up"
+          class="group bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 flex items-center justify-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up cursor-pointer"
+          @click="action.action ? action.action() : $router.push(action.to)"
         >
           <span class="material-icons text-gray-400 mr-3 text-2xl md:text-3xl group-hover:text-primary-500 transition-colors duration-300">
             {{ action.icon }}
@@ -45,7 +65,7 @@
           <span class="font-light text-gray-600 text-lg md:text-xl group-hover:text-primary-600 transition-colors duration-300">
             {{ action.text }}
           </span>
-        </router-link>
+        </div>
       </div>
     </div>
 
@@ -70,42 +90,48 @@
       </div>
     </div>
 
-    <!-- Модальне вікно для вибору настрою -->
+    <!-- Mood Selector Modal -->
     <div v-if="showMoodSelector" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-2xl p-6 w-96">
-        <h3 class="text-xl font-semibold mb-4">Виберіть настрій</h3>
-        <div class="grid grid-cols-5 gap-4">
+      <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4">
+        <h3 class="text-xl font-medium text-gray-900 mb-4">Виберіть настрій</h3>
+        <div class="grid grid-cols-5 gap-4 mb-6">
           <button
             v-for="mood in moods"
             :key="mood.value"
+            class="text-4xl p-2 rounded-lg hover:bg-gray-100 transition-colors"
             @click="selectMood(mood)"
-            class="text-3xl p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             {{ mood.emoji }}
           </button>
         </div>
-        <button @click="showMoodSelector = false" class="mt-4 w-full py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">
-          Закрити
+        <button
+          @click="showMoodSelector = false"
+          class="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+        >
+          Скасувати
         </button>
       </div>
     </div>
 
-    <!-- Модальне вікно для вибору якості сну -->
+    <!-- Sleep Selector Modal -->
     <div v-if="showSleepSelector" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-2xl p-6 w-96">
-        <h3 class="text-xl font-semibold mb-4">Оцініть якість сну</h3>
-        <div class="grid grid-cols-5 gap-4">
+      <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4">
+        <h3 class="text-xl font-medium text-gray-900 mb-4">Оцініть якість сну</h3>
+        <div class="grid grid-cols-5 gap-4 mb-6">
           <button
-            v-for="sleep in sleepQuality"
+            v-for="sleep in sleepOptions"
             :key="sleep.value"
+            class="text-4xl p-2 rounded-lg hover:bg-gray-100 transition-colors"
             @click="selectSleep(sleep)"
-            class="text-3xl p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             {{ sleep.emoji }}
           </button>
         </div>
-        <button @click="showSleepSelector = false" class="mt-4 w-full py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">
-          Закрити
+        <button
+          @click="showSleepSelector = false"
+          class="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+        >
+          Скасувати
         </button>
       </div>
     </div>
@@ -113,27 +139,196 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useDevice } from '../composables/useDevice'
 import { useAuthStore } from '../stores/auth'
-import { addMetric } from '../firebase/metrics-service'
+import { listenToData, pushData } from '../firebase/database-service'
 
 const { isMobile, isDesktop } = useDevice()
 const authStore = useAuthStore()
 
 const points = ref(0)
 const currentMood = ref(null)
+const partnerMood = ref(null)
 const currentSleep = ref(null)
+const partnerSleep = ref(null)
 const showMoodSelector = ref(false)
 const showSleepSelector = ref(false)
 
+// Визначаємо, хто є хто
+const isKitty = computed(() => authStore.user?.email === 'soulfacelles@gmail.com')
+
+// Опції для настрою
+const moods = [
+  { value: 'great', emoji: '😄' },
+  { value: 'good', emoji: '🙂' },
+  { value: 'neutral', emoji: '😐' },
+  { value: 'bad', emoji: '😔' },
+  { value: 'awful', emoji: '😢' }
+]
+
+// Опції для сну
+const sleepOptions = [
+  { value: 'perfect', emoji: '🌟' },
+  { value: 'good', emoji: '😊' },
+  { value: 'normal', emoji: '😐' },
+  { value: 'bad', emoji: '😫' },
+  { value: 'awful', emoji: '😴' }
+]
+
+// Слухаємо зміни даних
+onMounted(() => {
+  console.log('Mounted, user:', authStore.user)
+  
+  // Слухаємо настрій
+  listenToData('moods', (data) => {
+    console.log('Moods data received:', data)
+    if (!data) return
+    
+    Object.entries(data).forEach(([userId, moodData]) => {
+      if (!moodData) return
+      
+      // Знаходимо останній запис
+      const entries = Object.entries(moodData)
+      if (entries.length === 0) return
+      
+      const latestMood = entries.sort(([, a], [, b]) => b.timestamp - a.timestamp)[0][1]
+      console.log('Latest mood for user', userId, ':', latestMood)
+      
+      if (userId === authStore.user?.uid) {
+        currentMood.value = latestMood.emoji
+        console.log('Set current mood:', currentMood.value)
+      } else {
+        partnerMood.value = latestMood.emoji
+        console.log('Set partner mood:', partnerMood.value)
+      }
+    })
+  })
+
+  // Слухаємо сон
+  listenToData('sleep', (data) => {
+    console.log('Sleep data received:', data)
+    if (!data) return
+    
+    Object.entries(data).forEach(([userId, sleepData]) => {
+      if (!sleepData) return
+      
+      // Знаходимо останній запис
+      const entries = Object.entries(sleepData)
+      if (entries.length === 0) return
+      
+      const latestSleep = entries.sort(([, a], [, b]) => b.timestamp - a.timestamp)[0][1]
+      console.log('Latest sleep for user', userId, ':', latestSleep)
+      
+      if (userId === authStore.user?.uid) {
+        currentSleep.value = latestSleep.emoji
+        console.log('Set current sleep:', currentSleep.value)
+      } else {
+        partnerSleep.value = latestSleep.emoji
+        console.log('Set partner sleep:', partnerSleep.value)
+      }
+    })
+  })
+})
+
+// Вибір настрою
+const selectMood = async (mood) => {
+  if (!authStore.user) {
+    console.error('No user found')
+    return
+  }
+  
+  try {
+    console.log('Setting mood:', mood)
+    const moodData = {
+      value: mood.value,
+      emoji: mood.emoji,
+      timestamp: Date.now(),
+      userId: authStore.user.uid,
+      userEmail: authStore.user.email
+    }
+    
+    await pushData(`moods/${authStore.user.uid}`, moodData)
+    console.log('Mood set successfully')
+    
+    currentMood.value = mood.emoji
+    showMoodSelector.value = false
+  } catch (error) {
+    console.error('Error setting mood:', error)
+    alert('Помилка при зміні настрою')
+  }
+}
+
+// Вибір якості сну
+const selectSleep = async (sleep) => {
+  if (!authStore.user) {
+    console.error('No user found')
+    return
+  }
+  
+  try {
+    console.log('Setting sleep:', sleep)
+    const sleepData = {
+      value: sleep.value,
+      emoji: sleep.emoji,
+      timestamp: Date.now(),
+      userId: authStore.user.uid,
+      userEmail: authStore.user.email
+    }
+    
+    await pushData(`sleep/${authStore.user.uid}`, sleepData)
+    console.log('Sleep set successfully')
+    
+    currentSleep.value = sleep.emoji
+    showSleepSelector.value = false
+  } catch (error) {
+    console.error('Error setting sleep:', error)
+    alert('Помилка при зміні якості сну')
+  }
+}
+
+// Дії
 const actions = [
-  { to: '/points', icon: 'add_circle', text: 'Додати бали' },
-  { to: '/mood', icon: 'mood', text: 'Настрій' },
-  { to: '/sleep', icon: 'bedtime', text: 'Сон' },
-  { to: '/tasks', icon: 'assignment', text: 'Завдання' },
-  { to: '/chat', icon: 'chat', text: 'Повідомлення' },
-  { to: '/stats', icon: 'bar_chart', text: 'Статистика' }
+  { 
+    to: '#', 
+    icon: 'add_circle', 
+    text: 'Додати бали',
+    action: () => {
+      // TODO: Додати логіку для балів
+    }
+  },
+  { 
+    to: '#', 
+    icon: 'mood', 
+    text: 'Настрій',
+    action: () => showMoodSelector.value = true
+  },
+  { 
+    to: '#', 
+    icon: 'bedtime', 
+    text: 'Сон',
+    action: () => showSleepSelector.value = true
+  },
+  { 
+    to: '/tasks', 
+    icon: 'assignment', 
+    text: 'Завдання'
+  },
+  { 
+    to: '/chat', 
+    icon: 'chat', 
+    text: 'Повідомлення'
+  },
+  { 
+    to: '/photos', 
+    icon: 'photo_camera', 
+    text: 'Світлини'
+  },
+  { 
+    to: '/stats', 
+    icon: 'bar_chart', 
+    text: 'Статистика'
+  }
 ]
 
 const desktopFeatures = [
@@ -142,42 +337,6 @@ const desktopFeatures = [
   { icon: 'playlist_add_check', text: 'Розширені завдання' },
   { icon: 'analytics', text: 'Детальна аналітика' }
 ]
-
-const moods = [
-  { value: 1, emoji: '😢', label: 'Дуже погано' },
-  { value: 2, emoji: '😕', label: 'Погано' },
-  { value: 3, emoji: '😐', label: 'Нормально' },
-  { value: 4, emoji: '🙂', label: 'Добре' },
-  { value: 5, emoji: '😄', label: 'Чудово' }
-]
-
-const sleepQuality = [
-  { value: 1, emoji: '😴', label: 'Дуже погано' },
-  { value: 2, emoji: '🛏️', label: 'Погано' },
-  { value: 3, emoji: '💤', label: 'Нормально' },
-  { value: 4, emoji: '✨', label: 'Добре' },
-  { value: 5, emoji: '🌟', label: 'Чудово' }
-]
-
-const selectMood = async (mood) => {
-  if (!authStore.user) return
-  
-  const success = await addMetric(authStore.user.uid, 'mood', mood.value)
-  if (success) {
-    currentMood.value = mood.emoji
-    showMoodSelector.value = false
-  }
-}
-
-const selectSleep = async (sleep) => {
-  if (!authStore.user) return
-  
-  const success = await addMetric(authStore.user.uid, 'sleep', sleep.value)
-  if (success) {
-    currentSleep.value = sleep.emoji
-    showSleepSelector.value = false
-  }
-}
 </script>
 
 <style scoped>
