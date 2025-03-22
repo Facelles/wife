@@ -15,10 +15,20 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
-  base: '/wife/', // Замініть 'wife' на назву вашого репозиторію
+  base: process.env.NODE_ENV === 'production' ? '/wife/' : '/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
-    sourcemap: true
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['vue', 'vue-router', 'pinia'],
+          'firebase': ['firebase/app', 'firebase/auth', 'firebase/database'],
+          'chart': ['chart.js', 'vue-chartjs']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000
   }
 })
