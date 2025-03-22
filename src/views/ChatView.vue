@@ -6,8 +6,8 @@
         <h2 class="text-2xl font-bold text-gray-900 mb-4">Chat</h2>
         
         <!-- Messages -->
-        <div class="space-y-6 mb-6">
-          <div v-for="(messages, date) in chat.messagesByDate" :key="date" class="space-y-4">
+        <div class="space-y-6 mb-6" ref="messagesContainer">
+          <div v-for="(messages, date) in groupedMessages" :key="date" class="space-y-4">
             <div class="text-center">
               <span class="px-2 py-1 text-xs font-medium text-gray-500 bg-gray-100 rounded-full">
                 {{ date }}
@@ -18,20 +18,20 @@
               :key="message.id"
               :class="[
                 'flex',
-                message.sender === chat.currentUser ? 'justify-end' : 'justify-start'
+                message.userId === currentUser?.uid ? 'justify-end' : 'justify-start'
               ]"
             >
               <div
                 :class="[
                   'max-w-[70%] rounded-lg px-4 py-2',
-                  message.sender === chat.currentUser
+                  message.userId === currentUser?.uid
                     ? 'bg-primary-600 text-white'
                     : 'bg-gray-100 text-gray-900'
                 ]"
               >
                 <p class="text-sm">{{ message.content }}</p>
                 <p class="text-xs mt-1 opacity-75">
-                  {{ new Date(message.timestamp).toLocaleTimeString() }}
+                  {{ new Date(message.createdAt).toLocaleTimeString() }}
                 </p>
               </div>
             </div>
@@ -39,7 +39,7 @@
         </div>
 
         <!-- Message input -->
-        <form @submit.prevent="sendMessage" class="flex space-x-4">
+        <form @submit.prevent="handleSendMessage" class="flex space-x-4">
           <input
             v-model="newMessage"
             type="text"
@@ -70,7 +70,7 @@
         <!-- Notes list -->
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div
-            v-for="note in chat.allNotes"
+            v-for="note in notes"
             :key="note.id"
             class="p-4 bg-gray-50 rounded-lg"
           >
@@ -147,10 +147,21 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
-import { useChatStore } from '../stores/chat'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useAuthStore } from '../stores/auth'
+import { 
+  sendMessage, 
+  listenToData, 
+  pushData, 
+  updateData, 
+  removeData 
+} from '../firebase/database-service'
 
-const chat = useChatStore()
+const authStore = useAuthStore()
+const currentUser = computed(() => authStore.user)
+
+const messages = ref([])
+const notes = ref([])
 const newMessage = ref('')
 const showAddNoteModal = ref(false)
 const editingNote = ref(null)
@@ -158,27 +169,61 @@ const noteForm = ref({
   title: '',
   content: ''
 })
+const messagesContainer = ref(null)
 
-const sendMessage = async () => {
-  if (newMessage.value.trim()) {
-    chat.sendMessage(newMessage.value.trim())
-    newMessage.value = ''
-    await nextTick()
-    // Scroll to bottom of chat
-    const chatContainer = document.querySelector('.space-y-6')
-    if (chatContainer) {
-      chatContainer.scrollTop = chatContainer.scrollHeight
+// Групування повідомлень за датою
+const groupedMessages = computed(() => {
+  const groups = {}
+  messages.value.forEach(message => {
+    const date = new Date(message.createdAt).toLocaleDateString()
+    if (!groups[date]) {
+      groups[date] = []
+    }
+    groups[date].push(message)
+  })
+  return groups
+})
+
+// Відправка повідомлення
+const handleSendMessage = async () => {
+  if (newMessage.value.trim() && currentUser.value) {
+    try {
+      await sendMessage(currentUser.value.uid, newMessage.value.trim())
+      newMessage.value = ''
+      scrollToBottom()
+    } catch (error) {
+      console.error('Error sending message:', error)
     }
   }
 }
 
-const handleNoteSubmit = () => {
-  if (editingNote.value) {
-    chat.updateNote(editingNote.value.id, noteForm.value)
-  } else {
-    chat.addNote(noteForm.value.title, noteForm.value.content)
+// Прокрутка до нижньої частини чату
+const scrollToBottom = () => {
+  if (messagesContainer.value) {
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
   }
-  closeNoteModal()
+}
+
+// Обробка нотаток
+const handleNoteSubmit = async () => {
+  if (!currentUser.value) return
+
+  try {
+    if (editingNote.value) {
+      await updateData(`notes/${editingNote.value.id}`, {
+        ...noteForm.value,
+        userId: currentUser.value.uid
+      })
+    } else {
+      await pushData('notes', {
+        ...noteForm.value,
+        userId: currentUser.value.uid
+      })
+    }
+    closeNoteModal()
+  } catch (error) {
+    console.error('Error saving note:', error)
+  }
 }
 
 const editNote = (note) => {
@@ -190,9 +235,13 @@ const editNote = (note) => {
   showAddNoteModal.value = true
 }
 
-const deleteNote = (noteId) => {
+const deleteNote = async (noteId) => {
   if (confirm('Are you sure you want to delete this note?')) {
-    chat.deleteNote(noteId)
+    try {
+      await removeData(`notes/${noteId}`)
+    } catch (error) {
+      console.error('Error deleting note:', error)
+    }
   }
 }
 
@@ -205,11 +254,39 @@ const closeNoteModal = () => {
   }
 }
 
+// Підписка на повідомлення та нотатки
+let unsubscribeMessages
+let unsubscribeNotes
+
 onMounted(() => {
-  // Scroll to bottom of chat on mount
-  const chatContainer = document.querySelector('.space-y-6')
-  if (chatContainer) {
-    chatContainer.scrollTop = chatContainer.scrollHeight
-  }
+  // Підписка на повідомлення
+  unsubscribeMessages = listenToData('messages', (data) => {
+    if (data) {
+      messages.value = Object.entries(data).map(([id, message]) => ({
+        id,
+        ...message
+      }))
+      scrollToBottom()
+    }
+  })
+
+  // Підписка на нотатки
+  unsubscribeNotes = listenToData('notes', (data) => {
+    if (data) {
+      notes.value = Object.entries(data)
+        .map(([id, note]) => ({
+          id,
+          ...note
+        }))
+        .filter(note => note.userId === currentUser.value?.uid)
+    }
+  })
 })
+
+onUnmounted(() => {
+  // Відписка від прослуховування
+  if (unsubscribeMessages) unsubscribeMessages()
+  if (unsubscribeNotes) unsubscribeNotes()
+})
+</script> 
 </script> 

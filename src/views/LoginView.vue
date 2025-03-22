@@ -13,7 +13,7 @@
           <div class="animate-slide-up delay-200">
             <label for="username" class="block text-base font-light text-gray-700 mb-2">Логін</label>
             <input
-              id="username"
+              id="username"     
               v-model="username"
               name="username"
               type="text"

@@ -1,0 +1,46 @@
+{
+  /* Visit https://firebase.google.com/docs/database/security to learn more about security rules. */
+  "rules": {
+    "messages": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$messageId": {
+        ".validate": "newData.hasChildren(['userId', 'content', 'createdAt'])"
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+    "tasks": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$taskId": {
+        ".validate": "newData.hasChildren(['userId', 'title', 'createdAt'])"
+      }
+    },
+    "sleepRecords": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$recordId": {
+        ".validate": "newData.hasChildren(['userId', 'hours', 'quality', 'date'])"
+      }
+    },
+    "moodRecords": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$recordId": {
+        ".validate": "newData.hasChildren(['userId', 'score', 'date'])"
+      }
+    },
+    "notes": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$noteId": {
+        ".validate": "newData.hasChildren(['userId', 'title', 'content', 'createdAt'])"
+      }
+    }
+  }
+}
