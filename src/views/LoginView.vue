@@ -71,8 +71,7 @@ const password = ref('')
 const error = ref('')
 
 const handleLogin = async (e) => {
-  e.preventDefault() // Додатково запобігаємо перезавантаженню
-  console.log('Спроба входу з:', { email: email.value })
+  e.preventDefault()
   
   if (!email.value || !password.value) {
     error.value = 'Будь ласка, заповніть всі поля'
@@ -81,19 +80,13 @@ const handleLogin = async (e) => {
 
   error.value = ''
   try {
-    console.log('Викликаємо authStore.login...')
-    const success = await authStore.login(email.value, password.value)
-    console.log('Результат входу:', success)
-    
-    if (success) {
-      console.log('Успішний вхід, переходимо на головну...')
-      router.push('/')
-    } else {
-      error.value = authStore.error || 'Неправильний email або пароль'
+    await authStore.login(email.value, password.value)
+    if (authStore.error) {
+      error.value = authStore.error
     }
   } catch (err) {
     console.error('Помилка при вході:', err)
-    error.value = err.message || 'Помилка входу. Спробуйте ще раз.'
+    error.value = 'Помилка входу. Спробуйте ще раз.'
   }
 }
 </script>

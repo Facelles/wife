@@ -3,52 +3,81 @@
     <!-- Chat section -->
     <div class="bg-white shadow rounded-lg">
       <div class="px-4 py-5 sm:p-6">
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">Chat</h2>
+        <div class="flex justify-between items-center mb-6">
+          <h1 class="text-2xl font-bold text-gray-900">Чат</h1>
+          <button 
+            @click="clearChat" 
+            class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors flex items-center"
+          >
+            <i class="material-icons mr-2">delete</i>
+            Очистити чат
+          </button>
+        </div>
         
         <!-- Messages -->
-        <div class="space-y-6 mb-6" ref="messagesContainer">
-          <div v-for="(messages, date) in groupedMessages" :key="date" class="space-y-4">
-            <div class="text-center">
-              <span class="px-2 py-1 text-xs font-medium text-gray-500 bg-gray-100 rounded-full">
-                {{ date }}
-              </span>
+        <div class="space-y-4 mb-6 max-h-[60vh] overflow-y-auto" ref="messagesContainer">
+          <div
+            v-for="message in messages"
+            :key="message.id"
+            :class="[
+              'flex items-start space-x-4',
+              message.userId === authStore.user?.uid ? 'flex-row-reverse space-x-reverse' : ''
+            ]"
+          >
+            <!-- User avatar/info -->
+            <div class="flex-shrink-0">
+              <div 
+                class="w-10 h-10 rounded-full flex items-center justify-center"
+                :class="getUserStyle(message.userEmail).bgColor"
+              >
+                <span class="text-xl">
+                  {{ getUserStyle(message.userEmail).emoji }}
+                </span>
+              </div>
+              <div class="mt-1 text-xs text-center font-medium"
+                :class="getUserStyle(message.userEmail).textColor"
+              >
+                {{ getUserStyle(message.userEmail).nickname }}
+              </div>
             </div>
+
+            <!-- Message content -->
             <div
-              v-for="message in messages"
-              :key="message.id"
               :class="[
-                'flex',
-                message.userId === currentUser?.uid ? 'justify-end' : 'justify-start'
+                'flex max-w-[70%] rounded-lg px-4 py-2',
+                message.userId === authStore.user?.uid
+                  ? 'bg-primary-500 text-white'
+                  : 'bg-pink-100 text-gray-900'
               ]"
             >
-              <div
-                :class="[
-                  'max-w-[70%] rounded-lg px-4 py-2',
-                  message.userId === currentUser?.uid
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-gray-100 text-gray-900'
-                ]"
-              >
-                <p class="text-sm">{{ message.content }}</p>
-                <p class="text-xs mt-1 opacity-75">
-                  {{ new Date(message.createdAt).toLocaleTimeString() }}
-                </p>
+              <div>
+                <div class="break-words">{{ message.text }}</div>
+                <div 
+                  :class="[
+                    'text-xs mt-1',
+                    message.userId === authStore.user?.uid
+                      ? 'text-primary-100'
+                      : 'text-gray-500'
+                  ]"
+                >
+                  {{ formatDate(message.createdAt) }}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Message input -->
-        <form @submit.prevent="handleSendMessage" class="flex space-x-4">
+        <form @submit.prevent="sendMessage" class="flex space-x-4">
           <input
             v-model="newMessage"
             type="text"
             class="flex-1 input"
-            placeholder="Type a message..."
+            placeholder="Напишіть повідомлення..."
             required
           >
           <button type="submit" class="btn btn-primary">
-            Send
+            Надіслати
           </button>
         </form>
       </div>
@@ -147,10 +176,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { 
-  sendMessage, 
   listenToData, 
   pushData, 
   updateData, 
@@ -171,36 +199,77 @@ const noteForm = ref({
 })
 const messagesContainer = ref(null)
 
-// Групування повідомлень за датою
-const groupedMessages = computed(() => {
-  const groups = {}
-  messages.value.forEach(message => {
-    const date = new Date(message.createdAt).toLocaleDateString()
-    if (!groups[date]) {
-      groups[date] = []
+// Прокрутка до останнього повідомлення
+const scrollToBottom = () => {
+  if (messagesContainer.value) {
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+  }
+}
+
+onMounted(() => {
+  // Підписка на повідомлення
+  listenToData('messages', (data) => {
+    if (data) {
+      messages.value = Object.entries(data)
+        .map(([id, message]) => ({
+          id,
+          ...message,
+          createdAt: new Date(message.createdAt)
+        }))
+        .sort((a, b) => a.createdAt - b.createdAt)
+      
+      nextTick(() => {
+        scrollToBottom()
+      })
     }
-    groups[date].push(message)
   })
-  return groups
+
+  // Підписка на нотатки
+  listenToData('notes', (data) => {
+    if (data) {
+      notes.value = Object.entries(data)
+        .map(([id, note]) => ({
+          id,
+          ...note
+        }))
+        .filter(note => note.userId === currentUser.value?.uid)
+    }
+  })
 })
 
 // Відправка повідомлення
-const handleSendMessage = async () => {
-  if (newMessage.value.trim() && currentUser.value) {
+const sendMessage = async () => {
+  if (newMessage.value.trim() && authStore.user) {
     try {
-      await sendMessage(currentUser.value.uid, newMessage.value.trim())
+      const userEmail = authStore.user.email
+      console.log('Sending message as:', userEmail) // Додаємо лог для перевірки
+      
+      await pushData('messages', {
+        text: newMessage.value.trim(),
+        userId: authStore.user.uid,
+        userEmail: userEmail, // Переконуємось що використовуємо правильний email
+        createdAt: Date.now()
+      })
+      
       newMessage.value = ''
       scrollToBottom()
     } catch (error) {
-      console.error('Error sending message:', error)
+      console.error('Помилка при відправці повідомлення:', error)
+      alert('Помилка при відправці повідомлення: ' + error.message)
     }
   }
 }
 
-// Прокрутка до нижньої частини чату
-const scrollToBottom = () => {
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+// Очищення чату
+const clearChat = async () => {
+  if (confirm('Ви впевнені, що хочете очистити весь чат?')) {
+    try {
+      await removeData('messages')
+      messages.value = []
+      console.log('Чат успішно очищено')
+    } catch (error) {
+      console.error('Помилка при очищенні чату:', error)
+    }
   }
 }
 
@@ -254,38 +323,51 @@ const closeNoteModal = () => {
   }
 }
 
-// Підписка на повідомлення та нотатки
-let unsubscribeMessages
-let unsubscribeNotes
+const formatDate = (date) => {
+  if (!date) return ''
+  return new Intl.DateTimeFormat('uk-UA', {
+    hour: '2-digit',
+    minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit'
+  }).format(date)
+}
 
-onMounted(() => {
-  // Підписка на повідомлення
-  unsubscribeMessages = listenToData('messages', (data) => {
-    if (data) {
-      messages.value = Object.entries(data).map(([id, message]) => ({
-        id,
-        ...message
-      }))
-      scrollToBottom()
-    }
-  })
+const getUserInitials = (email) => {
+  if (!email) return '?'
+  const name = email.split('@')[0]
+  return name.substring(0, 2).toUpperCase()
+}
 
-  // Підписка на нотатки
-  unsubscribeNotes = listenToData('notes', (data) => {
-    if (data) {
-      notes.value = Object.entries(data)
-        .map(([id, note]) => ({
-          id,
-          ...note
-        }))
-        .filter(note => note.userId === currentUser.value?.uid)
-    }
-  })
-})
+const getUserNickname = (email) => {
+  if (!email) return 'Невідомий'
+  return email.split('@')[0]
+}
 
-onUnmounted(() => {
-  // Відписка від прослуховування
-  if (unsubscribeMessages) unsubscribeMessages()
-  if (unsubscribeNotes) unsubscribeNotes()
-})
+const getUserStyle = (email) => {
+  console.log('Getting style for email:', email) // Додаємо лог для перевірки
+  switch (email) {
+    case 'facellesit@gmail.com':
+      return {
+        emoji: '🐰',
+        nickname: 'Зайчик',
+        bgColor: 'bg-primary-100',
+        textColor: 'text-primary-600'
+      }
+    case 'soulfacelles@gmail.com':
+      return {
+        emoji: '😺',
+        nickname: 'Кицюня',
+        bgColor: 'bg-pink-100',
+        textColor: 'text-pink-500'
+      }
+    default:
+      return {
+        emoji: '👤',
+        nickname: email?.split('@')[0] || 'Невідомий',
+        bgColor: 'bg-gray-100',
+        textColor: 'text-gray-600'
+      }
+  }
+}
 </script> 

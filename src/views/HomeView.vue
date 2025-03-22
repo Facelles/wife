@@ -14,17 +14,17 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 px-4 md:px-8">
       <div class="group bg-white/50 backdrop-blur-sm rounded-2xl p-8 md:p-12 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up cursor-pointer">
         <h3 class="text-sm md:text-base font-light text-gray-400 mb-3 group-hover:text-primary-500 transition-colors duration-300">Бали</h3>
-        <p class="text-4xl md:text-6xl font-light text-gray-800 group-hover:text-primary-600 transition-colors duration-300">0</p>
+        <p class="text-4xl md:text-6xl font-light text-gray-800 group-hover:text-primary-600 transition-colors duration-300">{{ points }}</p>
       </div>
       
-      <div class="group bg-white/50 backdrop-blur-sm rounded-2xl p-8 md:p-12 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-100 cursor-pointer">
+      <div @click="showMoodSelector = true" class="group bg-white/50 backdrop-blur-sm rounded-2xl p-8 md:p-12 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-100 cursor-pointer">
         <h3 class="text-sm md:text-base font-light text-gray-400 mb-3 group-hover:text-primary-500 transition-colors duration-300">Настрій</h3>
-        <p class="text-4xl md:text-6xl group-hover:scale-125 transition-transform duration-300">😊</p>
+        <p class="text-4xl md:text-6xl group-hover:scale-125 transition-transform duration-300">{{ currentMood || '😊' }}</p>
       </div>
       
-      <div class="group bg-white/50 backdrop-blur-sm rounded-2xl p-8 md:p-12 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-200 cursor-pointer">
+      <div @click="showSleepSelector = true" class="group bg-white/50 backdrop-blur-sm rounded-2xl p-8 md:p-12 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-200 cursor-pointer">
         <h3 class="text-sm md:text-base font-light text-gray-400 mb-3 group-hover:text-primary-500 transition-colors duration-300">Сон</h3>
-        <p class="text-4xl md:text-6xl font-light text-gray-800 group-hover:text-primary-600 transition-colors duration-300">0</p>
+        <p class="text-4xl md:text-6xl group-hover:scale-125 transition-transform duration-300">{{ currentSleep || '😴' }}</p>
       </div>
     </div>
 
@@ -69,13 +69,63 @@
         </div>
       </div>
     </div>
+
+    <!-- Модальне вікно для вибору настрою -->
+    <div v-if="showMoodSelector" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-2xl p-6 w-96">
+        <h3 class="text-xl font-semibold mb-4">Виберіть настрій</h3>
+        <div class="grid grid-cols-5 gap-4">
+          <button
+            v-for="mood in moods"
+            :key="mood.value"
+            @click="selectMood(mood)"
+            class="text-3xl p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            {{ mood.emoji }}
+          </button>
+        </div>
+        <button @click="showMoodSelector = false" class="mt-4 w-full py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">
+          Закрити
+        </button>
+      </div>
+    </div>
+
+    <!-- Модальне вікно для вибору якості сну -->
+    <div v-if="showSleepSelector" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-2xl p-6 w-96">
+        <h3 class="text-xl font-semibold mb-4">Оцініть якість сну</h3>
+        <div class="grid grid-cols-5 gap-4">
+          <button
+            v-for="sleep in sleepQuality"
+            :key="sleep.value"
+            @click="selectSleep(sleep)"
+            class="text-3xl p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            {{ sleep.emoji }}
+          </button>
+        </div>
+        <button @click="showSleepSelector = false" class="mt-4 w-full py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">
+          Закрити
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useDevice } from '../composables/useDevice'
+import { useAuthStore } from '../stores/auth'
+import { addMetric } from '../firebase/metrics-service'
 
 const { isMobile, isDesktop } = useDevice()
+const authStore = useAuthStore()
+
+const points = ref(0)
+const currentMood = ref(null)
+const currentSleep = ref(null)
+const showMoodSelector = ref(false)
+const showSleepSelector = ref(false)
 
 const actions = [
   { to: '/points', icon: 'add_circle', text: 'Додати бали' },
@@ -86,13 +136,48 @@ const actions = [
   { to: '/stats', icon: 'bar_chart', text: 'Статистика' }
 ]
 
-// Додаткові функції для десктопної версії
 const desktopFeatures = [
   { icon: 'calendar_today', text: 'Календар подій' },
   { icon: 'photo_library', text: 'Галерея фото' },
   { icon: 'playlist_add_check', text: 'Розширені завдання' },
   { icon: 'analytics', text: 'Детальна аналітика' }
 ]
+
+const moods = [
+  { value: 1, emoji: '😢', label: 'Дуже погано' },
+  { value: 2, emoji: '😕', label: 'Погано' },
+  { value: 3, emoji: '😐', label: 'Нормально' },
+  { value: 4, emoji: '🙂', label: 'Добре' },
+  { value: 5, emoji: '😄', label: 'Чудово' }
+]
+
+const sleepQuality = [
+  { value: 1, emoji: '😴', label: 'Дуже погано' },
+  { value: 2, emoji: '🛏️', label: 'Погано' },
+  { value: 3, emoji: '💤', label: 'Нормально' },
+  { value: 4, emoji: '✨', label: 'Добре' },
+  { value: 5, emoji: '🌟', label: 'Чудово' }
+]
+
+const selectMood = async (mood) => {
+  if (!authStore.user) return
+  
+  const success = await addMetric(authStore.user.uid, 'mood', mood.value)
+  if (success) {
+    currentMood.value = mood.emoji
+    showMoodSelector.value = false
+  }
+}
+
+const selectSleep = async (sleep) => {
+  if (!authStore.user) return
+  
+  const success = await addMetric(authStore.user.uid, 'sleep', sleep.value)
+  if (success) {
+    currentSleep.value = sleep.emoji
+    showSleepSelector.value = false
+  }
+}
 </script>
 
 <style scoped>

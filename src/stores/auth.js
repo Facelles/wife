@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { auth } from '@/firebase'
-import { loginUser, logoutUser, updateUserProfile } from '@/firebase/auth-service'
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth'
 import router from '@/router'
 
@@ -25,8 +24,14 @@ export const useAuthStore = defineStore('auth', () => {
         name: firebaseUser.displayName || '',
         photoURL: firebaseUser.photoURL || ''
       }
+      if (router.currentRoute.value.path === '/login') {
+        router.push('/')
+      }
     } else {
       user.value = null
+      if (router.currentRoute.value.path !== '/login') {
+        router.push('/login')
+      }
     }
   })
 
@@ -37,35 +42,25 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       error.value = null
       loading.value = true
-      console.log('Auth Store: Викликаємо signInWithEmailAndPassword...')
       
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
       console.log('Auth Store: Успішний вхід:', userCredential.user.email)
       
-      user.value = {
-        uid: userCredential.user.uid,
-        email: userCredential.user.email,
-        name: userCredential.user.displayName || '',
-        photoURL: userCredential.user.photoURL || ''
-      }
       return true
     } catch (err) {
       console.error('Auth Store: Помилка при вході:', err.code, err.message)
-      error.value = err.message
+      error.value = 'Неправильний email або пароль'
       return false
     } finally {
       loading.value = false
-      console.log('Auth Store: Процес логіну завершено. User:', user.value)
-      console.log('Auth Store: isAuthenticated:', isAuthenticated.value)
     }
   }
 
   // Функція для виходу
   const logout = async () => {
     try {
+      error.value = null
       await signOut(auth)
-      user.value = null
-      router.push('/login')
     } catch (err) {
       console.error('Auth Store: Помилка при виході:', err)
       error.value = 'Помилка при виході з системи'

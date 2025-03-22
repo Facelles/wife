@@ -1,74 +1,145 @@
 <template>
   <div class="space-y-6">
-    <!-- Overview stats -->
-    <div class="bg-white shadow rounded-lg">
+    <!-- Stats header -->
+    <div class="bg-white overflow-hidden shadow rounded-lg">
       <div class="px-4 py-5 sm:p-6">
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">Overview</h2>
-        <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <h2 class="text-2xl font-bold text-gray-900">Детальна аналітика</h2>
+        
+        <!-- Date range selector -->
+        <div class="mt-4 flex items-center space-x-4">
           <div>
-            <dt class="text-sm font-medium text-gray-500">Total Points</dt>
-            <dd class="mt-1 text-3xl font-semibold text-primary-600">{{ points.totalPoints }}</dd>
+            <label class="block text-sm font-medium text-gray-700">Період</label>
+            <select
+              v-model="selectedRange"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+            >
+              <option value="week">Тиждень</option>
+              <option value="month">Місяць</option>
+              <option value="year">Рік</option>
+            </select>
           </div>
-          <div>
-            <dt class="text-sm font-medium text-gray-500">Average Sleep</dt>
-            <dd class="mt-1 text-3xl font-semibold text-primary-600">{{ sleep.averageSleepHours }}h</dd>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats grid -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <!-- Mood stats -->
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Настрій</h3>
+          <div class="space-y-4">
+            <div v-for="mood in moodStats" :key="mood.value" class="flex items-center justify-between">
+              <div class="flex items-center">
+                <span class="text-2xl mr-2">{{ mood.emoji }}</span>
+                <span class="text-sm text-gray-500">{{ mood.label }}</span>
+              </div>
+              <div class="flex items-center">
+                <div class="w-32 bg-gray-200 rounded-full h-2 mr-2">
+                  <div
+                    class="bg-primary-600 h-2 rounded-full"
+                    :style="{ width: `${mood.percentage}%` }"
+                  ></div>
+                </div>
+                <span class="text-sm text-gray-500">{{ mood.count }}</span>
+              </div>
+            </div>
           </div>
-          <div>
-            <dt class="text-sm font-medium text-gray-500">Completed Tasks</dt>
-            <dd class="mt-1 text-3xl font-semibold text-primary-600">{{ tasks.completedTasksList.length }}</dd>
+        </div>
+      </div>
+
+      <!-- Task completion stats -->
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Завдання</h3>
+          <div class="relative pt-1">
+            <div class="flex mb-2 items-center justify-between">
+              <div>
+                <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-primary-600 bg-primary-200">
+                  Прогрес
+                </span>
+              </div>
+              <div class="text-right">
+                <span class="text-xs font-semibold inline-block text-primary-600">
+                  {{ taskCompletionRate }}%
+                </span>
+              </div>
+            </div>
+            <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-primary-200">
+              <div
+                :style="{ width: `${taskCompletionRate}%` }"
+                class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary-500"
+              ></div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 text-center">
+              <div class="bg-green-100 p-3 rounded-lg">
+                <div class="text-xl font-bold text-green-800">{{ completedTasks }}</div>
+                <div class="text-sm text-green-600">Завершено</div>
+              </div>
+              <div class="bg-yellow-100 p-3 rounded-lg">
+                <div class="text-xl font-bold text-yellow-800">{{ pendingTasks }}</div>
+                <div class="text-sm text-yellow-600">В процесі</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Points stats -->
+      <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Бали</h3>
+          <div class="text-center">
+            <div class="text-4xl font-bold text-primary-600 mb-2">{{ totalPoints }}</div>
+            <div class="text-sm text-gray-500">Загальна кількість балів</div>
+          </div>
+          <div class="mt-6">
+            <h4 class="text-sm font-medium text-gray-700 mb-2">Останні нарахування</h4>
+            <div class="space-y-2">
+              <div v-for="point in recentPoints" :key="point.id" class="flex justify-between items-center text-sm">
+                <span class="text-gray-500">{{ point.description }}</span>
+                <span :class="point.value > 0 ? 'text-green-600' : 'text-red-600'">
+                  {{ point.value > 0 ? '+' : '' }}{{ point.value }}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Mood chart -->
+    <!-- Activity timeline -->
     <div class="bg-white shadow rounded-lg">
       <div class="px-4 py-5 sm:p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Mood Trends</h3>
-        <div class="h-64">
-          <Line
-            :data="moodChartData"
-            :options="chartOptions"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Sleep chart -->
-    <div class="bg-white shadow rounded-lg">
-      <div class="px-4 py-5 sm:p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Sleep Patterns</h3>
-        <div class="h-64">
-          <Bar
-            :data="sleepChartData"
-            :options="chartOptions"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Points chart -->
-    <div class="bg-white shadow rounded-lg">
-      <div class="px-4 py-5 sm:p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Points History</h3>
-        <div class="h-64">
-          <Line
-            :data="pointsChartData"
-            :options="chartOptions"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Task completion by category -->
-    <div class="bg-white shadow rounded-lg">
-      <div class="px-4 py-5 sm:p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Tasks by Category</h3>
-        <div class="h-64">
-          <Doughnut
-            :data="tasksChartData"
-            :options="chartOptions"
-          />
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Активність</h3>
+        <div class="flow-root">
+          <ul class="-mb-8">
+            <li v-for="activity in activityTimeline" :key="activity.id">
+              <div class="relative pb-8">
+                <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                <div class="relative flex space-x-3">
+                  <div>
+                    <span :class="[
+                      'h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white',
+                      getActivityTypeClass(activity.type)
+                    ]">
+                      {{ activity.icon }}
+                    </span>
+                  </div>
+                  <div class="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
+                    <div>
+                      <p class="text-sm text-gray-500">
+                        {{ activity.description }}
+                      </p>
+                    </div>
+                    <div class="whitespace-nowrap text-right text-sm text-gray-500">
+                      {{ formatDate(activity.date) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -76,130 +147,89 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { Line, Bar, Doughnut } from 'vue-chartjs'
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js'
-import { usePointsStore } from '../stores/points'
-import { useMoodStore } from '../stores/mood'
-import { useSleepStore } from '../stores/sleep'
-import { useTasksStore } from '../stores/tasks'
+import { ref, computed, onMounted } from 'vue'
+import { useAuthStore } from '../stores/auth'
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend
-)
+const authStore = useAuthStore()
+const selectedRange = ref('week')
 
-const points = usePointsStore()
-const mood = useMoodStore()
-const sleep = useSleepStore()
-const tasks = useTasksStore()
+// Моки даних для прикладу
+const moodStats = ref([
+  { value: 1, emoji: '😢', label: 'Дуже погано', count: 2, percentage: 10 },
+  { value: 2, emoji: '😕', label: 'Погано', count: 3, percentage: 15 },
+  { value: 3, emoji: '😐', label: 'Нормально', count: 5, percentage: 25 },
+  { value: 4, emoji: '🙂', label: 'Добре', count: 6, percentage: 30 },
+  { value: 5, emoji: '😄', label: 'Чудово', count: 4, percentage: 20 }
+])
 
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false
+const completedTasks = ref(15)
+const pendingTasks = ref(5)
+const taskCompletionRate = computed(() => {
+  const total = completedTasks.value + pendingTasks.value
+  return total > 0 ? Math.round((completedTasks.value / total) * 100) : 0
+})
+
+const totalPoints = ref(1250)
+const recentPoints = ref([
+  { id: 1, description: 'Завершення завдання', value: 50, date: new Date() },
+  { id: 2, description: 'Щоденний настрій', value: 10, date: new Date() },
+  { id: 3, description: 'Пропущений день', value: -20, date: new Date() },
+  { id: 4, description: 'Бонус за серію', value: 100, date: new Date() }
+])
+
+const activityTimeline = ref([
+  {
+    id: 1,
+    type: 'task',
+    icon: '✓',
+    description: 'Завершено завдання "Прибирання"',
+    date: new Date()
+  },
+  {
+    id: 2,
+    type: 'mood',
+    icon: '😄',
+    description: 'Відмічено чудовий настрій',
+    date: new Date()
+  },
+  {
+    id: 3,
+    type: 'points',
+    icon: '★',
+    description: 'Отримано 100 балів за серію',
+    date: new Date()
+  }
+])
+
+const getActivityTypeClass = (type) => {
+  switch (type) {
+    case 'task':
+      return 'bg-green-500 text-white'
+    case 'mood':
+      return 'bg-blue-500 text-white'
+    case 'points':
+      return 'bg-yellow-500 text-white'
+    default:
+      return 'bg-gray-500 text-white'
+  }
 }
 
-// Mood chart data
-const moodChartData = computed(() => {
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date()
-    date.setDate(date.getDate() - i)
-    return date.toISOString().split('T')[0]
-  }).reverse()
+const formatDate = (date) => {
+  return new Intl.DateTimeFormat('uk-UA', {
+    hour: '2-digit',
+    minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit'
+  }).format(date)
+}
 
-  return {
-    labels: last7Days.map(date => new Date(date).toLocaleDateString()),
-    datasets: [{
-      label: 'Mood Score',
-      data: last7Days.map(date => {
-        const moodEntry = mood.getMoodForDate(date)
-        return moodEntry ? mood.moodOptions.findIndex(m => m.id === moodEntry.moodId) + 1 : null
-      }),
-      borderColor: '#0ea5e9',
-      tension: 0.4
-    }]
-  }
+onMounted(() => {
+  // Тут можна додати завантаження реальних даних
 })
+</script>
 
-// Sleep chart data
-const sleepChartData = computed(() => {
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date()
-    date.setDate(date.getDate() - i)
-    return date.toISOString().split('T')[0]
-  }).reverse()
-
-  return {
-    labels: last7Days.map(date => new Date(date).toLocaleDateString()),
-    datasets: [{
-      label: 'Hours of Sleep',
-      data: last7Days.map(date => {
-        const sleepEntry = sleep.getSleepForDate(date)
-        return sleepEntry ? sleepEntry.hours : 0
-      }),
-      backgroundColor: '#0ea5e9'
-    }]
-  }
-})
-
-// Points chart data
-const pointsChartData = computed(() => {
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date()
-    date.setDate(date.getDate() - i)
-    return date.toISOString().split('T')[0]
-  }).reverse()
-
-  return {
-    labels: last7Days.map(date => new Date(date).toLocaleDateString()),
-    datasets: [{
-      label: 'Points Earned',
-      data: last7Days.map(date => {
-        const pointsForDay = points.pointsHistory.filter(
-          entry => entry.timestamp.startsWith(date)
-        ).reduce((sum, entry) => sum + entry.amount, 0)
-        return pointsForDay
-      }),
-      borderColor: '#0ea5e9',
-      tension: 0.4
-    }]
-  }
-})
-
-// Tasks chart data
-const tasksChartData = computed(() => {
-  const categoryCounts = {}
-  tasks.completedTasksList.forEach(task => {
-    categoryCounts[task.category] = (categoryCounts[task.category] || 0) + 1
-  })
-
-  return {
-    labels: tasks.categories.map(cat => cat.name),
-    datasets: [{
-      data: tasks.categories.map(cat => categoryCounts[cat.id] || 0),
-      backgroundColor: tasks.categories.map(cat => {
-        const color = cat.color.split(' ')[0]
-        return color.replace('bg-', '#')
-      })
-    }]
-  }
-})
-</script> 
+<style scoped>
+.activity-icon {
+  @apply h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white;
+}
+</style> 
