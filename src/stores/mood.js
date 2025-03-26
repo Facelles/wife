@@ -10,11 +10,11 @@ export const useMoodStore = defineStore('mood', () => {
   const moodRecords = ref([])
   const moodOptions = [
     { id: 'happy', emoji: '😊', label: 'Happy' },
-    { id: 'excited', emoji: '🤗', label: 'Excited' },
+    { id: 'excited', emoji: '😍', label: 'Love' },
     { id: 'calm', emoji: '😌', label: 'Calm' },
-    { id: 'tired', emoji: '😴', label: 'Tired' },
+    { id: 'tired', emoji: '🥲', label: 'Tired' },
     { id: 'stressed', emoji: '😰', label: 'Stressed' },
-    { id: 'angry', emoji: '😠', label: 'Angry' },
+    { id: 'angry', emoji: '💋', label: 'Kiss' },
     { id: 'sad', emoji: '😢', label: 'Sad' }
   ]
 
