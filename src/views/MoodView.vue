@@ -97,10 +97,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
-import { db } from '../firebase'
-import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore'
+import { listenToData, pushData } from '../firebase/database-service'
 
 const authStore = useAuthStore()
 const moodNote = ref('')
@@ -119,22 +118,18 @@ onMounted(() => {
   if (!authStore.user) return
 
   // Підписуємось на зміни в настрої
-  const q = query(
-    collection(db, 'moods'),
-    where('userId', '==', authStore.user.uid),
-    orderBy('createdAt', 'desc')
-  )
-
-  const unsubscribe = onSnapshot(q, (snapshot) => {
-    moodHistory.value = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate() || new Date()
-    }))
+  listenToData('moods', (data) => {
+    if (data) {
+      moodHistory.value = Object.entries(data)
+        .map(([id, mood]) => ({
+          id,
+          ...mood,
+          createdAt: new Date(mood.timestamp)
+        }))
+        .filter(mood => mood.userId === authStore.user.uid)
+        .sort((a, b) => b.timestamp - a.timestamp)
+    }
   })
-
-  // Відписуємось при розмонтуванні компонента
-  onUnmounted(() => unsubscribe())
 })
 
 const selectMood = (mood) => {
@@ -145,17 +140,19 @@ const saveMood = async () => {
   if (!currentMood.value || !authStore.user) return
 
   try {
-    await addDoc(collection(db, 'moods'), {
+    await pushData('moods', {
       userId: authStore.user.uid,
+      userEmail: authStore.user.email,
       value: currentMood.value.value,
       note: moodNote.value.trim(),
-      createdAt: serverTimestamp()
+      timestamp: Date.now()
     })
 
     moodNote.value = ''
     currentMood.value = null
   } catch (error) {
     console.error('Помилка при збереженні настрою:', error)
+    alert('Помилка при збереженні настрою')
   }
 }
 

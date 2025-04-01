@@ -235,6 +235,25 @@ onMounted(() => {
         .filter(note => note.userId === currentUser.value?.uid)
     }
   })
+
+  if (authStore.user) {
+    // Слухаємо зміни настрою для конкретного користувача
+    listenToData(`moods/${authStore.user.uid}`, (data) => {
+      if (data) {
+        const moodEntries = Object.entries(data)
+          .map(([id, mood]) => ({
+            id,
+            ...mood,
+            timestamp: new Date(mood.timestamp)
+          }))
+          .sort((a, b) => b.timestamp - a.timestamp)
+
+        if (moodEntries.length > 0) {
+          currentMood.value = moodEntries[0].emoji
+        }
+      }
+    })
+  }
 })
 
 // Відправка повідомлення
@@ -368,6 +387,24 @@ const getUserStyle = (email) => {
         bgColor: 'bg-gray-100',
         textColor: 'text-gray-600'
       }
+  }
+}
+
+const selectMood = async (mood) => {
+  if (!authStore.user) return
+  
+  try {
+    // Додаємо ID користувача до шляху
+    await pushData(`moods/${authStore.user.uid}`, {
+      value: 'neutral',
+      emoji: mood,
+      timestamp: Date.now(),
+      userId: authStore.user.uid,
+      userEmail: authStore.user.email
+    })
+    currentMood.value = mood
+  } catch (error) {
+    console.error('Error setting mood:', error)
   }
 }
 </script> 

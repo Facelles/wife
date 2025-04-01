@@ -19,6 +19,8 @@
     },
     "moods": {
       "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid === $uid",
         "$moodId": {
           ".validate": "newData.hasChildren(['value', 'emoji', 'timestamp', 'userId', 'userEmail'])"
         }
@@ -26,6 +28,8 @@
     },
     "sleep": {
       "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid === $uid",
         "$sleepId": {
           ".validate": "newData.hasChildren(['value', 'emoji', 'timestamp', 'userId', 'userEmail'])"
         }

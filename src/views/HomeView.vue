@@ -94,14 +94,17 @@
     <div v-if="showMoodSelector" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4">
         <h3 class="text-xl font-medium text-gray-900 mb-4">Виберіть настрій</h3>
-        <div class="grid grid-cols-5 gap-4 mb-6">
+        <div class="grid grid-cols-5 gap-4">
           <button
-            v-for="mood in moods"
-            :key="mood.value"
-            class="text-4xl p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            @click="selectMood(mood)"
+            v-for="(moodData, emoji) in moods"
+            :key="emoji"
+            @click="selectMood(emoji)"
+            :class="[
+              'p-4 text-3xl rounded-lg transition-colors',
+              currentMood === emoji ? 'bg-primary-100 ring-2 ring-primary-500' : 'hover:bg-gray-100'
+            ]"
           >
-            {{ mood.emoji }}
+            {{ emoji }}
           </button>
         </div>
         <button
@@ -119,12 +122,15 @@
         <h3 class="text-xl font-medium text-gray-900 mb-4">Оцініть якість сну</h3>
         <div class="grid grid-cols-5 gap-4 mb-6">
           <button
-            v-for="sleep in sleepOptions"
-            :key="sleep.value"
-            class="text-4xl p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            v-for="sleep in ['😴', '😌', '😑', '😫', '🥱']"
+            :key="sleep"
             @click="selectSleep(sleep)"
+            :class="[
+              'p-4 text-3xl rounded-lg transition-colors',
+              currentSleep === sleep ? 'bg-primary-100 ring-2 ring-primary-500' : 'hover:bg-gray-100'
+            ]"
           >
-            {{ sleep.emoji }}
+            {{ sleep }}
           </button>
         </div>
         <button
@@ -158,14 +164,14 @@ const showSleepSelector = ref(false)
 // Визначаємо, хто є хто
 const isKitty = computed(() => authStore.user?.email === 'soulfacelles@gmail.com')
 
-// Опції для настрою
-const moods = [
-  { value: 'great', emoji: '😄' },
-  { value: 'good', emoji: '🙂' },
-  { value: 'neutral', emoji: '😐' },
-  { value: 'bad', emoji: '😔' },
-  { value: 'awful', emoji: '😢' }
-]
+// Визначаємо можливі настрої
+const moods = {
+  '😊': { value: 'great', emoji: '😊' },
+  '🙂': { value: 'good', emoji: '🙂' },
+  '😐': { value: 'neutral', emoji: '😐' },
+  '😕': { value: 'bad', emoji: '😕' },
+  '😢': { value: 'terrible', emoji: '😢' }
+}
 
 // Опції для сну
 const sleepOptions = [
@@ -176,114 +182,91 @@ const sleepOptions = [
   { value: 'awful', emoji: '😴' }
 ]
 
+// Визначаємо стани настрою та сну
+const sleepStates = {
+  '😴': { value: 'great', emoji: '😴' },
+  '😌': { value: 'good', emoji: '😌' },
+  '😑': { value: 'neutral', emoji: '😑' },
+  '😫': { value: 'bad', emoji: '😫' },
+  '🥱': { value: 'terrible', emoji: '🥱' }
+}
+
 // Слухаємо зміни даних
 onMounted(() => {
-  console.log('Mounted, user:', authStore.user)
-  
-  // Слухаємо настрій
-  listenToData('moods', (data) => {
-    console.log('Moods data received:', data)
-    if (!data) return
-    
-    Object.entries(data).forEach(([userId, moodData]) => {
-      if (!moodData) return
-      
-      // Знаходимо останній запис
-      const entries = Object.entries(moodData)
-      if (entries.length === 0) return
-      
-      const latestMood = entries.sort(([, a], [, b]) => b.timestamp - a.timestamp)[0][1]
-      console.log('Latest mood for user', userId, ':', latestMood)
-      
-      if (userId === authStore.user?.uid) {
-        currentMood.value = latestMood.emoji
-        console.log('Set current mood:', currentMood.value)
-      } else {
-        partnerMood.value = latestMood.emoji
-        console.log('Set partner mood:', partnerMood.value)
-      }
-    })
-  })
+  if (authStore.user) {
+    // Слухаємо зміни настрою для конкретного користувача
+    listenToData(`moods/${authStore.user.uid}`, (data) => {
+      if (data) {
+        const moodEntries = Object.entries(data)
+          .map(([id, mood]) => ({
+            id,
+            ...mood,
+            timestamp: new Date(mood.timestamp)
+          }))
+          .sort((a, b) => b.timestamp - a.timestamp)
 
-  // Слухаємо сон
-  listenToData('sleep', (data) => {
-    console.log('Sleep data received:', data)
-    if (!data) return
-    
-    Object.entries(data).forEach(([userId, sleepData]) => {
-      if (!sleepData) return
-      
-      // Знаходимо останній запис
-      const entries = Object.entries(sleepData)
-      if (entries.length === 0) return
-      
-      const latestSleep = entries.sort(([, a], [, b]) => b.timestamp - a.timestamp)[0][1]
-      console.log('Latest sleep for user', userId, ':', latestSleep)
-      
-      if (userId === authStore.user?.uid) {
-        currentSleep.value = latestSleep.emoji
-        console.log('Set current sleep:', currentSleep.value)
-      } else {
-        partnerSleep.value = latestSleep.emoji
-        console.log('Set partner sleep:', partnerSleep.value)
+        if (moodEntries.length > 0) {
+          currentMood.value = moodEntries[0].emoji
+        }
       }
     })
-  })
+
+    // Слухаємо зміни сну для конкретного користувача
+    listenToData(`sleep/${authStore.user.uid}`, (data) => {
+      if (data) {
+        const sleepEntries = Object.entries(data)
+          .map(([id, sleep]) => ({
+            id,
+            ...sleep,
+            timestamp: new Date(sleep.timestamp)
+          }))
+          .sort((a, b) => b.timestamp - a.timestamp)
+
+        if (sleepEntries.length > 0) {
+          currentSleep.value = sleepEntries[0].emoji
+        }
+      }
+    })
+  }
 })
 
 // Вибір настрою
 const selectMood = async (mood) => {
-  if (!authStore.user) {
-    console.error('No user found')
-    return
-  }
+  console.log('Setting mood:', mood)
+  if (!authStore.user) return
   
   try {
-    console.log('Setting mood:', mood)
-    const moodData = {
-      value: mood.value,
-      emoji: mood.emoji,
+    // Зберігаємо в підпапці користувача
+    await pushData(`moods/${authStore.user.uid}`, {
+      value: moods[mood].value,
+      emoji: mood,
       timestamp: Date.now(),
       userId: authStore.user.uid,
       userEmail: authStore.user.email
-    }
-    
-    await pushData(`moods/${authStore.user.uid}`, moodData)
-    console.log('Mood set successfully')
-    
-    currentMood.value = mood.emoji
-    showMoodSelector.value = false
+    })
+    currentMood.value = mood
   } catch (error) {
     console.error('Error setting mood:', error)
-    alert('Помилка при зміні настрою')
   }
 }
 
 // Вибір якості сну
 const selectSleep = async (sleep) => {
-  if (!authStore.user) {
-    console.error('No user found')
-    return
-  }
+  console.log('Setting sleep:', sleep)
+  if (!authStore.user) return
   
   try {
-    console.log('Setting sleep:', sleep)
-    const sleepData = {
-      value: sleep.value,
-      emoji: sleep.emoji,
+    // Зберігаємо в підпапці користувача
+    await pushData(`sleep/${authStore.user.uid}`, {
+      value: sleepStates[sleep].value,
+      emoji: sleep,
       timestamp: Date.now(),
       userId: authStore.user.uid,
       userEmail: authStore.user.email
-    }
-    
-    await pushData(`sleep/${authStore.user.uid}`, sleepData)
-    console.log('Sleep set successfully')
-    
-    currentSleep.value = sleep.emoji
-    showSleepSelector.value = false
+    })
+    currentSleep.value = sleep
   } catch (error) {
     console.error('Error setting sleep:', error)
-    alert('Помилка при зміні якості сну')
   }
 }
 
