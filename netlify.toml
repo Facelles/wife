@@ -20,8 +20,4 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
 
 [build.processing]
-  skip_processing = true
-
-[plugins]
-  # Explicitly disable all plugins
-  package = [] 
+  skip_processing = true 
