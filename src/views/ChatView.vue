@@ -373,7 +373,7 @@ const getUserStyle = (email) => {
         bgColor: 'bg-primary-100',
         textColor: 'text-primary-600'
       }
-    case 'martadaniluk4@gmail.com':                  // changed to my kitty
+    case 'martadaniluk4@gmail.com':                
       return {
         emoji: '😺',
         nickname: 'Кицюня',
