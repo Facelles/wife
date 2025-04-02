@@ -13,7 +13,6 @@
     "deploy:preview": "npm run build && netlify deploy"
   },
   "dependencies": {
-    "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.2.0",
     "@tailwindcss/forms": "^0.5.10",
