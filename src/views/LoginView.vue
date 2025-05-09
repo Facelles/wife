@@ -25,15 +25,26 @@
 
           <div class="animate-slide-up delay-300">
             <label for="password" class="block text-base font-light text-gray-700 mb-2">Пароль</label>
-            <input
-              id="password"
-              v-model="password"
-              name="password"
-              type="password"
-              required
-              class="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl text-gray-900 text-base focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300"
-              placeholder="Введіть ваш пароль"
-            />
+            <div class="relative">
+              <input
+                id="password"
+                v-model="password"
+                name="password"
+                :type="showPassword ? 'text' : 'password'"
+                required
+                class="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl text-gray-900 text-base focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300"
+                placeholder="Введіть ваш пароль"
+              />
+              <button
+                type="button"
+                @click="togglePassword"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                <span class="material-icons">
+                  {{ showPassword ? 'visibility_off' : 'visibility' }}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -69,6 +80,11 @@ const authStore = useAuthStore()
 const email = ref('')
 const password = ref('')
 const error = ref('')
+const showPassword = ref(false)
+
+const togglePassword = () => {
+  showPassword.value = !showPassword.value
+}
 
 const handleLogin = async (e) => {
   e.preventDefault()
