@@ -1,5 +1,5 @@
 [build]
-  command = "npm install --save-dev terser && npm run build"
+  command = "npm run build"
   publish = "dist"
 
 [build.environment]
@@ -20,7 +20,7 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Content-Security-Policy = "default-src 'self' https: wss: 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src 'self' https: wss:; img-src 'self' https: data: blob:; font-src 'self' https: data:;"
+    Content-Security-Policy = "default-src 'self' https: wss: 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src 'self' https: wss: https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com wss://*.firebasedatabase.app; img-src 'self' https: data: blob:; font-src 'self' https: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:;"
 
 # Cache control
 [[headers]]

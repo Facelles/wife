@@ -1,9 +1,13 @@
 <template>
   <div class="app-logo" :class="size">
     <div class="logo-text">
-      <div class="text-logo-line">Кицюня</div>
+      <div class="text-logo-line">
+        <span class="heart">❤️</span> Кицюня
+      </div>
       <div class="text-logo-line">з</div>
-      <div class="text-logo-line">зайчиком</div>
+      <div class="text-logo-line">
+        зайчиком <span class="heart">❤️</span>
+      </div>
     </div>
   </div>
 </template>
@@ -34,6 +38,19 @@ defineProps({
   line-height: 1.2;
   font-weight: 300;
   color: #2563eb; /* primary-600 колір */
+}
+
+.heart {
+  font-size: 1.1em;
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0% { transform: scale(1); }
+  14% { transform: scale(1.1); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+  70% { transform: scale(1); }
 }
 
 /* Для головної навігації (компактний варіант, але не занадто маленький) */
