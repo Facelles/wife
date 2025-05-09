@@ -266,7 +266,7 @@ const sendMessage = async () => {
       await pushData('messages', {
         text: newMessage.value.trim(),
         userId: authStore.user.uid,
-        userEmail: userEmail, // Переконуємось що використовуємо правильний email
+        userEmail: userEmail,
         createdAt: Date.now()
       })
       
@@ -365,7 +365,17 @@ const getUserNickname = (email) => {
 
 const getUserStyle = (email) => {
   console.log('Getting style for email:', email) // Додаємо лог для перевірки
-  switch (email) {
+  if (!email) {
+    console.warn('Email is undefined or null')
+    return {
+      emoji: '👤',
+      nickname: 'Невідомий',
+      bgColor: 'bg-gray-100',
+      textColor: 'text-gray-600'
+    }
+  }
+
+  switch (email.toLowerCase()) { // Додаємо toLowerCase() для порівняння
     case 'facellesit@gmail.com':
       return {
         emoji: '🐰',
@@ -381,6 +391,7 @@ const getUserStyle = (email) => {
         textColor: 'text-pink-500'
       }
     default:
+      console.warn('Unknown email:', email)
       return {
         emoji: '👤',
         nickname: email?.split('@')[0] || 'Невідомий',
