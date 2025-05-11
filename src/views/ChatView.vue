@@ -204,6 +204,7 @@ const notes = ref([])
 const newMessage = ref('')
 const showAddNoteModal = ref(false)
 const editingNote = ref(null)
+const currentMood = ref(null)
 const noteForm = ref({
   title: '',
   content: ''

@@ -26,6 +26,15 @@
         }
       }
     },
+    "moodmain": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid === $uid",
+        "$moodId": {
+          ".validate": "newData.hasChildren(['value', 'emoji', 'createdAt', 'userId', 'userEmail'])"
+        }
+      }
+    },
     "sleep": {
       "$uid": {
         ".read": "auth != null",
