@@ -175,7 +175,6 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { listenToData, pushData } from '../firebase/database-service'
-import { db, push, set } from '../firebase/firebase'
 
 const authStore = useAuthStore()
 const moodNote = ref('')
@@ -291,17 +290,15 @@ const applyMoodChanges = async () => {
   try {
     const timestamp = new Date(`${selectedDate.value}T${selectedTime.value}`).getTime()
     const moodData = {
-      mood: selectedMood.value,
-      timestamp,
-      note: selectedNote.value,
-      date: selectedDate.value,
-      time: selectedTime.value
+      value: selectedMood.value,
+      emoji: moods.find(m => m.value === selectedMood.value)?.emoji,
+      note: selectedNote.value.trim(),
+      createdAt: timestamp,
+      userId: authStore.user.uid,
+      userEmail: authStore.user.email
     }
 
-    const moodRef = ref(db, `moodmain/${authStore.user.uid}`)
-    const newMoodRef = push(moodRef)
-    await set(newMoodRef, moodData)
-    
+    await pushData(`moodmain/${authStore.user.uid}`, moodData)
     closeMoodModal()
   } catch (error) {
     console.error('Error saving mood:', error)
