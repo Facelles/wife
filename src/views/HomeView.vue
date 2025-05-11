@@ -170,8 +170,12 @@ const partnerSleep = ref(null)
 const showMoodSelector = ref(false)
 const showSleepSelector = ref(false)
 
-// Визначаємо, хто є хто
-const isKitty = computed(() => authStore.user?.email === 'soulfacelles@gmail.com')
+const myEmail = computed(() => authStore.user?.email)
+const partnerEmail = computed(() =>
+  myEmail.value === 'facellesit@gmail.com'
+    ? 'martadaniluk4@gmail.com'
+    : 'facellesit@gmail.com'
+)
 
 // Визначаємо можливі настрої
 const moods = {
@@ -200,43 +204,38 @@ const sleepStates = {
   '🥱': { value: 'terrible', emoji: '🥱' }
 }
 
-// Слухаємо зміни даних
 onMounted(() => {
-  if (authStore.user) {
-    // Слухаємо зміни настрою для конкретного користувача
-    listenToData(`moods/${authStore.user.uid}`, (data) => {
-      if (data) {
-        const moodEntries = Object.entries(data)
-          .map(([id, mood]) => ({
-            id,
-            ...mood,
-            timestamp: new Date(mood.timestamp)
-          }))
-          .sort((a, b) => b.timestamp - a.timestamp)
-
-        if (moodEntries.length > 0) {
-          currentMood.value = moodEntries[0].emoji
-        }
+  // Підписка на всі настрої
+  listenToData('moods', (data) => {
+    if (data) {
+      // mood поточного користувача
+      const myMood = Object.values(data).filter(m => m.userEmail === myEmail.value)
+        .sort((a, b) => b.timestamp - a.timestamp)[0]
+      currentMood.value = myMood?.emoji || null
+      // mood партнера
+      const partnerMoodObj = Object.values(data).filter(m => m.userEmail === partnerEmail.value)
+        .sort((a, b) => b.timestamp - a.timestamp)[0]
+      partnerMood.value = partnerMoodObj?.emoji || null
+    }
+  })
+  // Підписка на всі записи сну
+  listenToData('sleepmain', (data) => {
+    if (data) {
+      // sleep поточного користувача
+      const mySleepArr = Object.entries(data[authStore.user.uid] || {})
+        .sort((a, b) => b[1].createdAt - a[1].createdAt)
+      currentSleep.value = mySleepArr.length ? mySleepArr[0][1].emoji || mySleepArr[0][1].sleep || null : null
+      // sleep партнера
+      const partnerUid = myEmail.value === 'facellesit@gmail.com' ? Object.keys(data).find(uid => uid !== authStore.user.uid) : Object.keys(data).find(uid => uid !== authStore.user.uid)
+      if (partnerUid && data[partnerUid]) {
+        const partnerSleepArr = Object.entries(data[partnerUid])
+          .sort((a, b) => b[1].createdAt - a[1].createdAt)
+        partnerSleep.value = partnerSleepArr.length ? partnerSleepArr[0][1].emoji || partnerSleepArr[0][1].sleep || null : null
+      } else {
+        partnerSleep.value = null
       }
-    })
-
-    // Слухаємо зміни сну для конкретного користувача
-    listenToData(`sleepmain/${authStore.user.uid}`, (data) => {
-      if (data) {
-        const sleepEntries = Object.entries(data)
-          .map(([id, sleep]) => ({
-            id,
-            ...sleep,
-            timestamp: new Date(sleep.timestamp)
-          }))
-          .sort((a, b) => b.timestamp - a.timestamp)
-
-        if (sleepEntries.length > 0) {
-          currentSleep.value = sleepEntries[0].emoji
-        }
-      }
-    })
-  }
+    }
+  })
 })
 
 // Вибір настрою
