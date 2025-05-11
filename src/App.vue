@@ -66,104 +66,96 @@ watch(isAuthenticated, (newValue) => {
     </div>
 
     <!-- Навігація, тільки для авторизованих користувачів -->
-    <nav v-if="isAuthenticated" class="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
+    <nav v-if="showNavigation" class="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
       <div class="max-w-7xl mx-auto px-4">
-        <div class="flex justify-between items-center h-16">
-          <!-- Логотип зліва -->
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo -->
           <div class="flex-shrink-0">
-            <router-link to="/" class="flex items-center h-full py-2">
-              <AppLogo size="nav" />
+            <router-link to="/" class="flex items-center">
+              <AppLogo class="h-8 w-auto" />
             </router-link>
           </div>
-          
-          <!-- Навігаційні посилання по центру -->
-          <div class="flex-grow flex justify-center">
-            <div class="hidden lg:flex items-center space-x-8">
-              <router-link to="/" class="nav-link">
-                <i class="material-icons">home</i>
-                <span>Головна</span>
-              </router-link>
-              <router-link to="/points" class="nav-link">
-                <i class="material-icons">favorite</i>
-                <span>Бали</span>
-              </router-link>
-              <router-link to="/mood" class="nav-link">
-                <i class="material-icons">mood</i>
-                <span>Настрій</span>
-              </router-link>
-              <router-link to="/sleep" class="nav-link">
-                <i class="material-icons">bedtime</i>
-                <span>Сон</span>
-              </router-link>
-              <router-link to="/tasks" class="nav-link">
-                <i class="material-icons">task</i>
-                <span>Завдання</span>
-              </router-link>
-              <router-link to="/chat" class="nav-link">
-                <i class="material-icons">chat</i>
-                <span>Чат</span>
-              </router-link>
-              <router-link to="/stats" class="nav-link">
-                <i class="material-icons">analytics</i>
-                <span>Статистика</span>
-              </router-link>
-            </div>
-            
-            <!-- Мобільне меню -->
-            <div class="lg:hidden flex items-center">
-              <button @click="toggleMobileMenu" class="text-gray-600">
-                <i class="material-icons">menu</i>
-              </button>
-            </div>
+
+          <!-- Desktop Navigation -->
+          <div class="hidden lg:flex items-center space-x-8">
+            <router-link 
+              v-for="item in navigation" 
+              :key="item.href"
+              :to="item.href" 
+              class="nav-link"
+              :class="{ 'text-primary-600': route.path === item.href }"
+            >
+              <i class="material-icons">{{ item.icon }}</i>
+              <span>{{ item.name }}</span>
+            </router-link>
           </div>
-          
-          <!-- Кнопка виходу справа -->
-          <div class="flex-shrink-0">
-            <button @click="logout" class="nav-link text-red-500">
+
+          <!-- Mobile menu button -->
+          <div class="lg:hidden flex items-center">
+            <button 
+              @click="toggleMobileMenu" 
+              class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+            >
+              <i class="material-icons">{{ mobileMenuOpen ? 'close' : 'menu' }}</i>
+            </button>
+          </div>
+
+          <!-- User menu -->
+          <div class="hidden lg:flex items-center">
+            <span class="text-gray-700 mr-4">{{ currentUser }}</span>
+            <button 
+              @click="handleLogout" 
+              class="text-gray-400 hover:text-gray-500"
+            >
               <i class="material-icons">logout</i>
-              <span>Вийти</span>
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Мобільне навігаційне меню -->
-      <div v-if="mobileMenuOpen" class="lg:hidden bg-white border-t border-gray-200 py-2">
-        <div class="max-w-7xl mx-auto px-4 space-y-1">
-          <router-link to="/" class="mobile-nav-link">
-            <i class="material-icons">home</i>
-            <span>Головна</span>
+      <!-- Mobile menu -->
+      <div 
+        v-if="mobileMenuOpen" 
+        class="lg:hidden bg-white border-t border-gray-200"
+      >
+        <div class="px-2 pt-2 pb-3 space-y-1">
+          <router-link 
+            v-for="item in navigation" 
+            :key="item.href"
+            :to="item.href" 
+            class="mobile-nav-link"
+            :class="{ 'bg-primary-50 text-primary-600': route.path === item.href }"
+            @click="mobileMenuOpen = false"
+          >
+            <i class="material-icons">{{ item.icon }}</i>
+            <span>{{ item.name }}</span>
           </router-link>
-          <router-link to="/points" class="mobile-nav-link">
-            <i class="material-icons">favorite</i>
-            <span>Бали</span>
-          </router-link>
-          <router-link to="/mood" class="mobile-nav-link">
-            <i class="material-icons">mood</i>
-            <span>Настрій</span>
-          </router-link>
-          <router-link to="/sleep" class="mobile-nav-link">
-            <i class="material-icons">bedtime</i>
-            <span>Сон</span>
-          </router-link>
-          <router-link to="/tasks" class="mobile-nav-link">
-            <i class="material-icons">task</i>
-            <span>Завдання</span>
-          </router-link>
-          <router-link to="/chat" class="mobile-nav-link">
-            <i class="material-icons">chat</i>
-            <span>Чат</span>
-          </router-link>
-          <router-link to="/stats" class="mobile-nav-link">
-            <i class="material-icons">analytics</i>
-            <span>Статистика</span>
-          </router-link>
+          
+          <div class="pt-4 pb-3 border-t border-gray-200">
+            <div class="flex items-center px-4">
+              <div class="flex-shrink-0">
+                <i class="material-icons text-gray-400">account_circle</i>
+              </div>
+              <div class="ml-3">
+                <div class="text-base font-medium text-gray-800">{{ currentUser }}</div>
+              </div>
+            </div>
+            <div class="mt-3 px-2">
+              <button 
+                @click="handleLogout" 
+                class="w-full flex items-center px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-md"
+              >
+                <i class="material-icons mr-3">logout</i>
+                Вийти
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </nav>
 
     <!-- Основний контент -->
-    <main :class="{ 'pt-20': isAuthenticated }" class="max-w-7xl mx-auto px-4">
+    <main :class="{ 'pt-16': showNavigation }" class="max-w-7xl mx-auto px-4 py-6">
       <router-view v-if="!loading" />
     </main>
   </div>
@@ -197,11 +189,11 @@ html {
 
 /* Animations */
 .animate-fade-in {
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .animate-slide-up {
-  animation: slideUp 0.5s ease-out forwards;
+  animation: slideUp 0.3s ease-out forwards;
 }
 
 @keyframes fadeIn {
@@ -247,15 +239,15 @@ html {
 }
 
 .nav-link i {
-  @apply mr-1;
+  @apply mr-2;
 }
 
 .mobile-nav-link {
-  @apply flex items-center py-2 text-base text-gray-600 hover:text-primary-600 transition-colors duration-200;
+  @apply flex items-center px-4 py-3 text-base text-gray-600 hover:text-primary-600 hover:bg-gray-50 transition-colors duration-200 rounded-md;
 }
 
 .mobile-nav-link i {
-  @apply mr-2;
+  @apply mr-3;
 }
 
 @media (max-width: 1024px) {

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-12 animate-fade-in max-w-4xl mx-auto">
+  <div class="space-y-8">
     <!-- Welcome Section -->
     <div class="text-center animate-slide-down">
       <h1 class="text-5xl md:text-6xl font-light text-gray-900 mb-4 hover:text-primary-600 transition-colors duration-300">
@@ -24,17 +24,17 @@
     <!-- Mood Section -->
     <div class="space-y-4 px-4 md:px-8">
       <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Настрій</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
         <div
           class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up cursor-pointer hover:shadow-lg transition"
           @click="showMoodSelector = true"
         >
           <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">{{ authStore.user?.email === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня' }}</h3>
-          <p class="text-4xl md:text-6xl">{{ currentMood || '😊' }}</p>
+          <p class="text-4xl md:text-6xl">{{ currentMood || '😐' }}</p>
         </div>
         <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up">
           <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">{{ authStore.user?.email === 'facellesit@gmail.com' ? 'Кицюня' : 'Зайчик' }}</h3>
-          <p class="text-4xl md:text-6xl">{{ partnerMood || '😊' }}</p>
+          <p class="text-4xl md:text-6xl">{{ partnerMood || '😐' }}</p>
         </div>
       </div>
     </div>
@@ -53,7 +53,7 @@
     <!-- Sleep Section -->
     <div class="space-y-4 px-4 md:px-8">
       <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Сон</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
         <div
           class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up cursor-pointer hover:shadow-lg transition"
           @click="showSleepSelector = true"
@@ -71,10 +71,10 @@
     <!-- Tasks Section -->
     <div class="space-y-4 px-4 md:px-8">
       <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Завдання</h2>
-      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 animate-slide-up flex justify-center">
-        <router-link to="/tasks" class="flex items-center space-x-4 px-6 py-3 bg-primary-100 rounded-xl shadow hover:bg-primary-200 transition-colors">
-          <span class="material-icons text-3xl text-primary-500">assignment</span>
-          <span class="font-light text-gray-700 text-lg md:text-xl">Перейти до завдань</span>
+      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 md:p-8 animate-slide-up flex justify-center">
+        <router-link to="/tasks" class="flex items-center space-x-4 px-4 md:px-6 py-3 bg-primary-100 rounded-xl shadow hover:bg-primary-200 transition-colors">
+          <span class="material-icons text-2xl md:text-3xl text-primary-500">assignment</span>
+          <span class="font-light text-gray-700 text-base md:text-xl">Перейти до завдань</span>
         </router-link>
       </div>
     </div>
@@ -82,9 +82,23 @@
     <!-- Points Section -->
     <div class="space-y-4 px-4 md:px-8">
       <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Бали</h2>
-      <div class="group bg-white/50 backdrop-blur-sm rounded-2xl p-8 md:p-12 text-center animate-slide-up">
-        <h3 class="text-sm md:text-base font-light text-gray-400 mb-3 group-hover:text-primary-500 transition-colors duration-300">Ваші бали</h3>
-        <p class="text-4xl md:text-6xl font-light text-gray-800 group-hover:text-primary-600 transition-colors duration-300">{{ points }}</p>
+      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 md:p-8 animate-slide-up">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div class="text-center md:text-left">
+            <h3 class="text-sm md:text-base font-light text-gray-400">{{ authStore.user?.email === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня' }}</h3>
+            <p class="text-3xl md:text-5xl font-bold text-primary-600">{{ points }}</p>
+          </div>
+          <div class="flex gap-2">
+            <button
+              v-for="action in actions"
+              :key="action.text"
+              @click="action.action"
+              class="p-2 md:p-3 bg-white rounded-xl shadow hover:shadow-md transition-shadow"
+            >
+              <i class="material-icons text-primary-500">{{ action.icon }}</i>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -100,20 +114,20 @@
     </div>
 
     <!-- Mood Selector Modal -->
-    <div v-if="showMoodSelector" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4">
+    <div v-if="showMoodSelector" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl p-4 md:p-6 max-w-sm w-full">
         <h3 class="text-xl font-medium text-gray-900 mb-4">Виберіть настрій</h3>
-        <div class="grid grid-cols-5 gap-4">
+        <div class="grid grid-cols-5 gap-4 mb-6">
           <button
-            v-for="(moodData, emoji) in moods"
-            :key="emoji"
-            @click="selectMood(emoji)"
+            v-for="mood in moods"
+            :key="mood.value"
+            @click="selectMood(mood.emoji)"
             :class="[
               'p-4 text-3xl rounded-lg transition-colors',
-              currentMood === emoji ? 'bg-primary-100 ring-2 ring-primary-500' : 'hover:bg-gray-100'
+              currentMood === mood.emoji ? 'bg-primary-100 ring-2 ring-primary-500' : 'hover:bg-gray-100'
             ]"
           >
-            {{ emoji }}
+            {{ mood.emoji }}
           </button>
         </div>
         <button
@@ -126,8 +140,8 @@
     </div>
 
     <!-- Sleep Selector Modal -->
-    <div v-if="showSleepSelector" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4">
+    <div v-if="showSleepSelector" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl p-4 md:p-6 max-w-sm w-full">
         <h3 class="text-xl font-medium text-gray-900 mb-4">Оцініть якість сну</h3>
         <div class="grid grid-cols-5 gap-4 mb-6">
           <button
@@ -178,13 +192,13 @@ const partnerEmail = computed(() =>
 )
 
 // Визначаємо можливі настрої
-const moods = {
-  '😊': { value: 'great', emoji: '😊' },
-  '🙂': { value: 'good', emoji: '🙂' },
-  '😐': { value: 'neutral', emoji: '😐' },
-  '😕': { value: 'bad', emoji: '😕' },
-  '😢': { value: 'terrible', emoji: '😢' }
-}
+const moods = [
+  { value: 'great', emoji: '😊' },
+  { value: 'good', emoji: '🙂' },
+  { value: 'neutral', emoji: '😐' },
+  { value: 'bad', emoji: '😕' },
+  { value: 'terrible', emoji: '😢' }
+]
 
 // Опції для сну
 const sleepOptions = [
@@ -206,18 +220,25 @@ const sleepStates = {
 
 onMounted(() => {
   // Підписка на всі настрої
-  listenToData('moods', (data) => {
+  listenToData('moodmain', (data) => {
     if (data) {
       // mood поточного користувача
-      const myMoods = Object.values(data).filter(m => m.userEmail === myEmail.value)
-      const myMood = myMoods.sort((a, b) => b.timestamp - a.timestamp)[0]
-      currentMood.value = myMood?.emoji || null
+      const myMoodArr = Object.entries(data[authStore.user.uid] || {})
+        .sort((a, b) => b[1].createdAt - a[1].createdAt)
+      currentMood.value = myMoodArr.length ? myMoodArr[0][1].emoji || myMoodArr[0][1].mood || null : null
+      
       // mood партнера
-      const partnerMoods = Object.values(data).filter(m => m.userEmail === partnerEmail.value)
-      const partnerMoodObj = partnerMoods.sort((a, b) => b.timestamp - a.timestamp)[0]
-      partnerMood.value = partnerMoodObj?.emoji || null
+      const partnerUid = myEmail.value === 'facellesit@gmail.com' ? Object.keys(data).find(uid => uid !== authStore.user.uid) : Object.keys(data).find(uid => uid !== authStore.user.uid)
+      if (partnerUid && data[partnerUid]) {
+        const partnerMoodArr = Object.entries(data[partnerUid])
+          .sort((a, b) => b[1].createdAt - a[1].createdAt)
+        partnerMood.value = partnerMoodArr.length ? partnerMoodArr[0][1].emoji || partnerMoodArr[0][1].mood || null : null
+      } else {
+        partnerMood.value = null
+      }
     }
   })
+
   // Підписка на всі записи сну
   listenToData('sleepmain', (data) => {
     if (data) {
@@ -244,9 +265,9 @@ const selectMood = async (mood) => {
   if (!authStore.user) return
   
   try {
-    // Зберігаємо в підпапці користувача
-    await pushData(`moods/${authStore.user.uid}`, {
-      value: moods[mood].value,
+    // Зберігаємо в moodmain
+    await pushData(`moodmain/${authStore.user.uid}`, {
+      value: moods.find(m => m.emoji === mood)?.value || 'neutral',
       emoji: mood,
       timestamp: Date.now(),
       userId: authStore.user.uid,

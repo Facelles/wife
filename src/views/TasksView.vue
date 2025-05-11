@@ -2,12 +2,12 @@
   <div class="space-y-6">
     <!-- Tasks header -->
     <div class="bg-white overflow-hidden shadow rounded-lg">
-      <div class="px-4 py-5 sm:p-6">
-        <div class="flex items-center justify-between">
-          <h2 class="text-2xl font-bold text-gray-900">Розширені завдання</h2>
+      <div class="px-4 py-4 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Розширені завдання</h2>
           <button
             @click="openTaskModal()"
-            class="btn btn-primary"
+            class="btn btn-primary w-full sm:w-auto"
           >
             Нове завдання
           </button>
@@ -39,19 +39,19 @@
         :key="task.id"
         class="bg-white shadow rounded-lg overflow-hidden hover:shadow-md transition-shadow"
       >
-        <div class="px-4 py-5 sm:p-6">
-          <div class="flex items-start justify-between">
-            <div class="flex items-center space-x-3">
+        <div class="px-4 py-4 sm:p-6">
+          <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div class="flex items-start space-x-3">
               <input
                 type="checkbox"
                 :checked="task.status === 'completed'"
                 @change="toggleTaskStatus(task)"
-                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                class="h-5 w-5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded mt-1"
               />
               <div>
                 <h3 
                   :class="[
-                    'text-lg font-medium',
+                    'text-base sm:text-lg font-medium',
                     task.status === 'completed' ? 'text-gray-500 line-through' : 'text-gray-900'
                   ]"
                 >
@@ -73,7 +73,7 @@
               </span>
               <button
                 @click="openTaskModal(task)"
-                class="text-gray-400 hover:text-gray-500"
+                class="text-gray-400 hover:text-gray-500 p-1"
               >
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -83,8 +83,8 @@
           </div>
           
           <!-- Task metadata -->
-          <div class="mt-4 flex items-center justify-between text-sm text-gray-500">
-            <div class="flex items-center space-x-4">
+          <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm text-gray-500 gap-2">
+            <div class="flex flex-wrap gap-4">
               <div>
                 <span class="font-medium">Дедлайн:</span>
                 {{ task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'Не встановлено' }}
@@ -122,8 +122,8 @@
     </div>
 
     <!-- Task modal -->
-    <div v-if="showTaskModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 max-w-md w-full" @click.stop>
+    <div v-if="showTaskModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full" @click.stop>
         <h3 class="text-lg font-medium mb-4">
           {{ selectedTask ? 'Редагувати завдання' : 'Нове завдання' }}
         </h3>
