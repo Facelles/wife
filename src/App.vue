@@ -59,44 +59,47 @@ watch(isAuthenticated, (newValue) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">
     <!-- Показуємо лоадер, поки перевіряється стан автентифікації -->
     <div v-if="loading" class="fixed inset-0 flex items-center justify-center z-50 bg-white">
       <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
     </div>
 
     <!-- Навігація, тільки для авторизованих користувачів -->
-    <nav v-if="showNavigation" class="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
+    <nav v-if="showNavigation" class="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md shadow-sm z-50">
       <div class="max-w-7xl mx-auto px-4">
         <div class="flex items-center justify-between h-16">
           <!-- Logo -->
-          <div class="flex-shrink-0">
-            <router-link to="/" class="flex items-center">
-              <AppLogo class="h-8 w-auto" />
-            </router-link>
-          </div>
+          <router-link to="/" class="flex items-center space-x-2">
+            <div class="flex items-center justify-center w-8 h-8 bg-primary-500 rounded-lg text-white">
+              <span class="material-icons text-xl">favorite</span>
+            </div>
+            <span class="text-lg font-light text-gray-900">Кицюня з зайчиком</span>
+          </router-link>
 
           <!-- Desktop Navigation -->
-          <div class="hidden lg:flex items-center space-x-8">
-            <router-link 
-              v-for="item in navigation" 
-              :key="item.href"
-              :to="item.href" 
-              class="nav-link"
+          <div class="hidden md:flex items-center space-x-8">
+            <router-link
+              v-for="item in navigation"
+              :key="item.name"
+              :to="item.href"
+              class="text-gray-600 hover:text-primary-600 transition-colors flex items-center space-x-1"
               :class="{ 'text-primary-600': route.path === item.href }"
             >
-              <i class="material-icons">{{ item.icon }}</i>
+              <span class="material-icons text-xl">{{ item.icon }}</span>
               <span>{{ item.name }}</span>
             </router-link>
           </div>
 
           <!-- Mobile menu button -->
-          <div class="lg:hidden flex items-center">
-            <button 
-              @click="toggleMobileMenu" 
-              class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+          <div class="md:hidden">
+            <button
+              @click="mobileMenuOpen = !mobileMenuOpen"
+              class="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
             >
-              <i class="material-icons">{{ mobileMenuOpen ? 'close' : 'menu' }}</i>
+              <span class="material-icons text-2xl">
+                {{ mobileMenuOpen ? 'close' : 'menu' }}
+              </span>
             </button>
           </div>
 
@@ -114,42 +117,22 @@ watch(isAuthenticated, (newValue) => {
       </div>
 
       <!-- Mobile menu -->
-      <div 
-        v-if="mobileMenuOpen" 
-        class="lg:hidden bg-white border-t border-gray-200"
+      <div
+        v-if="mobileMenuOpen"
+        class="md:hidden bg-white border-t"
       >
-        <div class="px-2 pt-2 pb-3 space-y-1">
-          <router-link 
-            v-for="item in navigation" 
-            :key="item.href"
-            :to="item.href" 
-            class="mobile-nav-link"
+        <div class="px-4 py-2 space-y-1">
+          <router-link
+            v-for="item in navigation"
+            :key="item.name"
+            :to="item.href"
+            class="flex items-center space-x-2 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
             :class="{ 'bg-primary-50 text-primary-600': route.path === item.href }"
             @click="mobileMenuOpen = false"
           >
-            <i class="material-icons">{{ item.icon }}</i>
+            <span class="material-icons">{{ item.icon }}</span>
             <span>{{ item.name }}</span>
           </router-link>
-          
-          <div class="pt-4 pb-3 border-t border-gray-200">
-            <div class="flex items-center px-4">
-              <div class="flex-shrink-0">
-                <i class="material-icons text-gray-400">account_circle</i>
-              </div>
-              <div class="ml-3">
-                <div class="text-base font-medium text-gray-800">{{ currentUser }}</div>
-              </div>
-            </div>
-            <div class="mt-3 px-2">
-              <button 
-                @click="handleLogout" 
-                class="w-full flex items-center px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-md"
-              >
-                <i class="material-icons mr-3">logout</i>
-                Вийти
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </nav>

@@ -1,30 +1,30 @@
 <template>
-  <div class="space-y-8">
+  <div class="space-y-8 max-w-4xl mx-auto px-4">
     <!-- Welcome Section -->
     <div class="text-center animate-slide-down">
-      <h1 class="text-5xl md:text-6xl font-light text-gray-900 mb-4 hover:text-primary-600 transition-colors duration-300">
+      <h1 class="text-4xl sm:text-5xl md:text-6xl font-light text-gray-900 mb-4 hover:text-primary-600 transition-colors duration-300">
         Кицюня з зайчиком
       </h1>
-      <p class="text-xl md:text-2xl text-gray-500 hover:text-gray-700 transition-colors duration-300">
+      <p class="text-lg sm:text-xl md:text-2xl text-gray-500 hover:text-gray-700 transition-colors duration-300">
         Ваші спільні моменти 💕
       </p>
     </div>
 
     <!-- Chat Section -->
-    <div class="space-y-4 px-4 md:px-8">
+    <div class="space-y-4">
       <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Чат</h2>
-      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 animate-slide-up flex justify-center">
-        <router-link to="/chat" class="flex items-center space-x-4 px-6 py-3 bg-primary-100 rounded-xl shadow hover:bg-primary-200 transition-colors">
-          <span class="material-icons text-3xl text-primary-500">chat</span>
-          <span class="font-light text-gray-700 text-lg md:text-xl">Перейти до чату</span>
+      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 md:p-8 animate-slide-up flex justify-center">
+        <router-link to="/chat" class="flex items-center space-x-4 px-4 md:px-6 py-3 bg-primary-100 rounded-xl shadow hover:bg-primary-200 transition-colors">
+          <span class="material-icons text-2xl md:text-3xl text-primary-500">chat</span>
+          <span class="font-light text-gray-700 text-base md:text-xl">Перейти до чату</span>
         </router-link>
       </div>
     </div>
 
     <!-- Mood Section -->
-    <div class="space-y-4 px-4 md:px-8">
+    <div class="space-y-4">
       <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Настрій</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div
           class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up cursor-pointer hover:shadow-lg transition"
           @click="showMoodSelector = true"
@@ -40,20 +40,20 @@
     </div>
 
     <!-- Photos Section -->
-    <div class="space-y-4 px-4 md:px-8">
+    <div class="space-y-4">
       <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Світлини</h2>
-      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 animate-slide-up flex justify-center">
-        <router-link to="/photos" class="flex items-center space-x-4 px-6 py-3 bg-primary-100 rounded-xl shadow hover:bg-primary-200 transition-colors">
-          <span class="material-icons text-3xl text-primary-500">photo_camera</span>
-          <span class="font-light text-gray-700 text-lg md:text-xl">Перейти до галереї</span>
+      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 md:p-8 animate-slide-up flex justify-center">
+        <router-link to="/photos" class="flex items-center space-x-4 px-4 md:px-6 py-3 bg-primary-100 rounded-xl shadow hover:bg-primary-200 transition-colors">
+          <span class="material-icons text-2xl md:text-3xl text-primary-500">photo_camera</span>
+          <span class="font-light text-gray-700 text-base md:text-xl">Перейти до галереї</span>
         </router-link>
       </div>
     </div>
 
     <!-- Sleep Section -->
-    <div class="space-y-4 px-4 md:px-8">
+    <div class="space-y-4">
       <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Сон</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div
           class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up cursor-pointer hover:shadow-lg transition"
           @click="showSleepSelector = true"
@@ -69,7 +69,7 @@
     </div>
 
     <!-- Tasks Section -->
-    <div class="space-y-4 px-4 md:px-8">
+    <div class="space-y-4">
       <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Завдання</h2>
       <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 md:p-8 animate-slide-up flex justify-center">
         <router-link to="/tasks" class="flex items-center space-x-4 px-4 md:px-6 py-3 bg-primary-100 rounded-xl shadow hover:bg-primary-200 transition-colors">
@@ -80,7 +80,7 @@
     </div>
 
     <!-- Points Section -->
-    <div class="space-y-4 px-4 md:px-8">
+    <div class="space-y-4">
       <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Бали</h2>
       <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 md:p-8 animate-slide-up">
         <div class="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -103,12 +103,12 @@
     </div>
 
     <!-- Stats Section -->
-    <div class="space-y-4 px-4 md:px-8">
+    <div class="space-y-4">
       <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Статистика</h2>
-      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 animate-slide-up flex justify-center">
-        <router-link to="/stats" class="flex items-center space-x-4 px-6 py-3 bg-primary-100 rounded-xl shadow hover:bg-primary-200 transition-colors">
-          <span class="material-icons text-3xl text-primary-500">bar_chart</span>
-          <span class="font-light text-gray-700 text-lg md:text-xl">Перейти до статистики</span>
+      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 md:p-8 animate-slide-up flex justify-center">
+        <router-link to="/stats" class="flex items-center space-x-4 px-4 md:px-6 py-3 bg-primary-100 rounded-xl shadow hover:bg-primary-200 transition-colors">
+          <span class="material-icons text-2xl md:text-3xl text-primary-500">bar_chart</span>
+          <span class="font-light text-gray-700 text-base md:text-xl">Перейти до статистики</span>
         </router-link>
       </div>
     </div>
