@@ -10,94 +10,98 @@
       </p>
     </div>
 
-    <!-- Chat Section -->
+    <!-- Quick Actions -->
     <div class="space-y-8 px-4 md:px-8">
-      <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Чат</h2>
-      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 animate-slide-up">
-        <router-link to="/chat" class="flex items-center justify-center space-x-4">
-          <span class="material-icons text-4xl text-primary-500">chat</span>
-          <span class="font-light text-gray-600 text-lg md:text-xl">Перейти до чату</span>
-        </router-link>
-      </div>
-    </div>
-
-    <!-- Mood Section -->
-    <div class="space-y-8 px-4 md:px-8">
-      <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Настрій</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div @click="showMoodSelector = true" class="group bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-100 cursor-pointer">
-          <h3 class="text-sm md:text-base font-light text-gray-400 mb-2 group-hover:text-primary-500 transition-colors duration-300">
-            {{ isKitty ? 'Кицюня' : 'Зайчик' }}
-          </h3>
-          <p class="text-4xl md:text-6xl group-hover:scale-125 transition-transform duration-300">{{ currentMood || '😊' }}</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <!-- Chat -->
+        <div
+          class="group bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 flex items-center justify-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up cursor-pointer"
+          @click="$router.push('/chat')"
+        >
+          <span class="material-icons text-gray-400 mr-3 text-2xl md:text-3xl group-hover:text-primary-500 transition-colors duration-300">
+            chat
+          </span>
+          <span class="font-light text-gray-600 text-lg md:text-xl group-hover:text-primary-600 transition-colors duration-300">
+            Чат
+          </span>
         </div>
-        <div class="group bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up delay-100">
-          <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">
-            {{ isKitty ? 'Зайчик' : 'Кицюня' }}
-          </h3>
-          <p class="text-4xl md:text-6xl">{{ partnerMood || '😊' }}</p>
+
+        <!-- Mood -->
+        <div
+          class="group bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 flex items-center justify-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-100 cursor-pointer"
+          @click="showMoodSelector = true"
+        >
+          <span class="material-icons text-gray-400 mr-3 text-2xl md:text-3xl group-hover:text-primary-500 transition-colors duration-300">
+            mood
+          </span>
+          <span class="font-light text-gray-600 text-lg md:text-xl group-hover:text-primary-600 transition-colors duration-300">
+            Настрій
+          </span>
         </div>
-      </div>
-    </div>
 
-    <!-- Photos Section -->
-    <div class="space-y-8 px-4 md:px-8">
-      <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Світлини</h2>
-      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 animate-slide-up">
-        <router-link to="/photos" class="flex items-center justify-center space-x-4">
-          <span class="material-icons text-4xl text-primary-500">photo_camera</span>
-          <span class="font-light text-gray-600 text-lg md:text-xl">Перейти до галереї</span>
-        </router-link>
-      </div>
-    </div>
-
-    <!-- Sleep Section -->
-    <div class="space-y-8 px-4 md:px-8">
-      <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Сон</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div @click="showSleepSelector = true" class="group bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-200 cursor-pointer">
-          <h3 class="text-sm md:text-base font-light text-gray-400 mb-2 group-hover:text-primary-500 transition-colors duration-300">
-            {{ isKitty ? 'Кицюня' : 'Зайчик' }}
-          </h3>
-          <p class="text-4xl md:text-6xl group-hover:scale-125 transition-transform duration-300">{{ currentSleep || '😴' }}</p>
+        <!-- Photos -->
+        <div
+          class="group bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 flex items-center justify-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-200 cursor-pointer"
+          @click="$router.push('/photos')"
+        >
+          <span class="material-icons text-gray-400 mr-3 text-2xl md:text-3xl group-hover:text-primary-500 transition-colors duration-300">
+            photo_camera
+          </span>
+          <span class="font-light text-gray-600 text-lg md:text-xl group-hover:text-primary-600 transition-colors duration-300">
+            Світлини
+          </span>
         </div>
-        <div class="group bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up delay-200">
-          <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">
-            {{ isKitty ? 'Зайчик' : 'Кицюня' }}
-          </h3>
-          <p class="text-4xl md:text-6xl">{{ partnerSleep || '😴' }}</p>
+
+        <!-- Sleep -->
+        <div
+          class="group bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 flex items-center justify-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-300 cursor-pointer"
+          @click="showSleepSelector = true"
+        >
+          <span class="material-icons text-gray-400 mr-3 text-2xl md:text-3xl group-hover:text-primary-500 transition-colors duration-300">
+            bedtime
+          </span>
+          <span class="font-light text-gray-600 text-lg md:text-xl group-hover:text-primary-600 transition-colors duration-300">
+            Сон
+          </span>
         </div>
-      </div>
-    </div>
 
-    <!-- Tasks Section -->
-    <div class="space-y-8 px-4 md:px-8">
-      <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Завдання</h2>
-      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 animate-slide-up">
-        <router-link to="/tasks" class="flex items-center justify-center space-x-4">
-          <span class="material-icons text-4xl text-primary-500">assignment</span>
-          <span class="font-light text-gray-600 text-lg md:text-xl">Перейти до завдань</span>
-        </router-link>
-      </div>
-    </div>
+        <!-- Tasks -->
+        <div
+          class="group bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 flex items-center justify-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-400 cursor-pointer"
+          @click="$router.push('/tasks')"
+        >
+          <span class="material-icons text-gray-400 mr-3 text-2xl md:text-3xl group-hover:text-primary-500 transition-colors duration-300">
+            assignment
+          </span>
+          <span class="font-light text-gray-600 text-lg md:text-xl group-hover:text-primary-600 transition-colors duration-300">
+            Завдання
+          </span>
+        </div>
 
-    <!-- Points Section -->
-    <div class="space-y-8 px-4 md:px-8">
-      <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Бали</h2>
-      <div class="group bg-white/50 backdrop-blur-sm rounded-2xl p-8 md:p-12 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up">
-        <h3 class="text-sm md:text-base font-light text-gray-400 mb-3 group-hover:text-primary-500 transition-colors duration-300">Ваші бали</h3>
-        <p class="text-4xl md:text-6xl font-light text-gray-800 group-hover:text-primary-600 transition-colors duration-300">{{ points }}</p>
-      </div>
-    </div>
+        <!-- Points -->
+        <div
+          class="group bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 flex items-center justify-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-500 cursor-pointer"
+        >
+          <span class="material-icons text-gray-400 mr-3 text-2xl md:text-3xl group-hover:text-primary-500 transition-colors duration-300">
+            add_circle
+          </span>
+          <span class="font-light text-gray-600 text-lg md:text-xl group-hover:text-primary-600 transition-colors duration-300">
+            Бали: {{ points }}
+          </span>
+        </div>
 
-    <!-- Stats Section -->
-    <div class="space-y-8 px-4 md:px-8">
-      <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Статистика</h2>
-      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 animate-slide-up">
-        <router-link to="/stats" class="flex items-center justify-center space-x-4">
-          <span class="material-icons text-4xl text-primary-500">bar_chart</span>
-          <span class="font-light text-gray-600 text-lg md:text-xl">Перейти до статистики</span>
-        </router-link>
+        <!-- Stats -->
+        <div
+          class="group bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 flex items-center justify-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-600 cursor-pointer"
+          @click="$router.push('/stats')"
+        >
+          <span class="material-icons text-gray-400 mr-3 text-2xl md:text-3xl group-hover:text-primary-500 transition-colors duration-300">
+            bar_chart
+          </span>
+          <span class="font-light text-gray-600 text-lg md:text-xl group-hover:text-primary-600 transition-colors duration-300">
+            Статистика
+          </span>
+        </div>
       </div>
     </div>
 
