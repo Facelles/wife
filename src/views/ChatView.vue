@@ -345,6 +345,7 @@ const deleteNote = async (noteId) => {
   if (confirm('Are you sure you want to delete this note?')) {
     try {
       await removeData(`chatNotes/${noteId}`)
+      notes.value = notes.value.filter(n => n.id !== noteId)
     } catch (error) {
       console.error('Error deleting note:', error)
     }

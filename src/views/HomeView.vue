@@ -26,11 +26,11 @@
       <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Настрій</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up">
-          <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">{{ isKitty ? 'Кицюня' : 'Зайчик' }}</h3>
+          <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">{{ authStore.user?.email === 'martadaniluk4@gmail.com' ? 'Кицюня' : 'Зайчик' }}</h3>
           <p class="text-4xl md:text-6xl">{{ currentMood || '😊' }}</p>
         </div>
         <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up">
-          <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">{{ isKitty ? 'Зайчик' : 'Кицюня' }}</h3>
+          <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">{{ authStore.user?.email === 'martadaniluk4@gmail.com' ? 'Зайчик' : 'Кицюня' }}</h3>
           <p class="text-4xl md:text-6xl">{{ partnerMood || '😊' }}</p>
         </div>
       </div>
