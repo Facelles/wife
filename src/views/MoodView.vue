@@ -47,19 +47,21 @@
         <div class="space-y-4">
           <div
             v-for="entry in moodHistory"
-            :key="entry.createdAt"
+            :key="entry.id"
+            v-if="entry.value"
             class="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg"
           >
             <span class="text-2xl">
-              {{ moods.find(m => m.value === entry.value)?.emoji }}
+              {{ moods.find(m => m.value === entry.value)?.emoji || entry.emoji }}
             </span>
             <div class="flex-1">
               <div class="flex items-center justify-between">
                 <span class="font-medium">
-                  {{ moods.find(m => m.value === entry.value)?.label }}
+                  {{ moods.find(m => m.value === entry.value)?.label || '' }}
+                  <span v-if="entry.userType === 'partner'" class="ml-2 text-xs text-pink-500">(Партнер)</span>
                 </span>
                 <span class="text-sm text-gray-500">
-                  {{ new Date(entry.createdAt).toLocaleDateString() }}
+                  {{ entry.createdAt ? entry.createdAt.toLocaleDateString() : '' }}
                 </span>
               </div>
               <p v-if="entry.note" class="mt-1 text-sm text-gray-600">
@@ -97,7 +99,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { listenToData, pushData } from '../firebase/database-service'
 
@@ -114,26 +116,52 @@ const moods = [
   { value: 5, emoji: '😄', label: 'Чудово' }
 ]
 
+const myEmail = computed(() => authStore.user?.email)
+const partnerEmail = computed(() =>
+  myEmail.value === 'facellesit@gmail.com'
+    ? 'martadaniluk4@gmail.com'
+    : 'facellesit@gmail.com'
+)
+
 onMounted(() => {
   if (!authStore.user) return
 
-  // Підписуємось на зміни в настрої (оновлено на moodmain)
   listenToData('moodmain', (data) => {
-    if (data && data[authStore.user.uid]) {
-      const moodsArr = Object.entries(data[authStore.user.uid])
-        .map(([id, mood]) => ({
-          id,
-          ...mood,
-          createdAt: new Date(mood.createdAt || mood.timestamp)
-        }))
-        .sort((a, b) => b.createdAt - a.createdAt)
-      moodHistory.value = moodsArr
-      // Встановлюємо поточний настрій (останній)
-      currentMood.value = moodsArr.length ? moods.find(m => m.emoji === moodsArr[0].emoji) || null : null
-    } else {
-      moodHistory.value = []
-      currentMood.value = null
+    let allMoods = []
+    if (data) {
+      // Додаємо історію для поточного користувача
+      if (data[authStore.user.uid]) {
+        allMoods = allMoods.concat(
+          Object.entries(data[authStore.user.uid])
+            .map(([id, mood]) => ({
+              ...mood,
+              id,
+              userType: 'me',
+              createdAt: new Date(mood.createdAt || mood.timestamp)
+            }))
+        )
+      }
+      // Додаємо історію для партнера
+      const partnerUid = Object.keys(data).find(uid => uid !== authStore.user.uid)
+      if (partnerUid && data[partnerUid]) {
+        allMoods = allMoods.concat(
+          Object.entries(data[partnerUid])
+            .map(([id, mood]) => ({
+              ...mood,
+              id,
+              userType: 'partner',
+              createdAt: new Date(mood.createdAt || mood.timestamp)
+            }))
+        )
+      }
     }
+    // Сортуємо за датою
+    moodHistory.value = allMoods
+      .filter(m => m.value) // тільки валідні
+      .sort((a, b) => b.createdAt - a.createdAt)
+    // Встановлюємо поточний настрій (останній мій)
+    const myMoods = moodHistory.value.filter(m => m.userType === 'me')
+    currentMood.value = myMoods.length ? moods.find(m => m.emoji === myMoods[0].emoji) || null : null
   })
 })
 
