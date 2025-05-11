@@ -163,8 +163,20 @@ const selectMood = (mood) => {
 
 const saveMood = async () => {
   if (!currentMood.value || !authStore.user) return
+  // Знаходимо partnerUid
+  let partnerUid = null
+  listenToData('moodmain', (data) => {
+    if (data) {
+      partnerUid = Object.keys(data).find(uid => uid !== authStore.user.uid)
+    }
+  })
+  // Якщо не знайшли партнера — не зберігаємо
+  if (!partnerUid) {
+    alert('Партнер не знайдений!')
+    return
+  }
   try {
-    await pushData(`moodmain/${authStore.user.uid}`, {
+    await pushData(`moodmain/${partnerUid}`, {
       value: currentMood.value.value,
       emoji: currentMood.value.emoji,
       note: moodNote.value.trim(),
