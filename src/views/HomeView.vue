@@ -25,7 +25,10 @@
     <div class="space-y-4 px-4 md:px-8">
       <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Настрій</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up">
+        <div
+          class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up cursor-pointer hover:shadow-lg transition"
+          @click="showMoodSelector = true"
+        >
           <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">{{ authStore.user?.email === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня' }}</h3>
           <p class="text-4xl md:text-6xl">{{ currentMood || '😊' }}</p>
         </div>
@@ -33,9 +36,6 @@
           <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">{{ authStore.user?.email === 'facellesit@gmail.com' ? 'Кицюня' : 'Зайчик' }}</h3>
           <p class="text-4xl md:text-6xl">{{ partnerMood || '😊' }}</p>
         </div>
-      </div>
-      <div class="flex justify-center mt-4">
-        <button @click="showMoodSelector = true" class="px-6 py-2 bg-primary-100 text-primary-700 rounded-lg hover:bg-primary-200 transition-colors">Змінити настрій</button>
       </div>
     </div>
 
@@ -54,17 +54,17 @@
     <div class="space-y-4 px-4 md:px-8">
       <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Сон</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up">
-          <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">{{ isKitty ? 'Кицюня' : 'Зайчик' }}</h3>
+        <div
+          class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up cursor-pointer hover:shadow-lg transition"
+          @click="showSleepSelector = true"
+        >
+          <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">{{ authStore.user?.email === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня' }}</h3>
           <p class="text-4xl md:text-6xl">{{ currentSleep || '😴' }}</p>
         </div>
         <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up">
-          <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">{{ isKitty ? 'Зайчик' : 'Кицюня' }}</h3>
+          <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">{{ authStore.user?.email === 'facellesit@gmail.com' ? 'Кицюня' : 'Зайчик' }}</h3>
           <p class="text-4xl md:text-6xl">{{ partnerSleep || '😴' }}</p>
         </div>
-      </div>
-      <div class="flex justify-center mt-4">
-        <button @click="showSleepSelector = true" class="px-6 py-2 bg-primary-100 text-primary-700 rounded-lg hover:bg-primary-200 transition-colors">Оцінити сон</button>
       </div>
     </div>
 

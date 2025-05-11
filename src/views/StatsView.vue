@@ -147,7 +147,10 @@
     <!-- Mood comparison -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       <!-- mood поточного користувача -->
-      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up">
+      <div
+        class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up cursor-pointer"
+        @click="showMoodSelector = true"
+      >
         <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">
           {{ authStore.user?.email === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня' }}
         </h3>
@@ -296,6 +299,8 @@ const formatDate = (date) => {
 // Mood comparison
 const currentMood = ref(null)
 const partnerMood = ref(null)
+
+const showMoodSelector = ref(false)
 </script>
 
 <style scoped>
