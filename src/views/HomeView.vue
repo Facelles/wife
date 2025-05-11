@@ -115,15 +115,15 @@
 
     <!-- Mood Selector Modal -->
     <div v-if="showMoodSelector" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-2xl p-4 md:p-6 max-w-sm w-full">
-        <h3 class="text-xl font-medium text-gray-900 mb-4">Виберіть настрій</h3>
-        <div class="grid grid-cols-5 gap-4 mb-6">
+      <div class="bg-white rounded-2xl p-4 md:p-6 w-full max-w-sm mx-auto transform transition-all">
+        <h3 class="text-xl font-medium text-gray-900 mb-4 text-center">Виберіть настрій</h3>
+        <div class="grid grid-cols-5 gap-3 mb-6">
           <button
             v-for="mood in moods"
             :key="mood.value"
             @click="selectMood(mood.emoji)"
             :class="[
-              'p-4 text-3xl rounded-lg transition-colors',
+              'p-3 text-3xl rounded-lg transition-colors flex items-center justify-center',
               currentMood === mood.emoji ? 'bg-primary-100 ring-2 ring-primary-500' : 'hover:bg-gray-100'
             ]"
           >
@@ -141,15 +141,15 @@
 
     <!-- Sleep Selector Modal -->
     <div v-if="showSleepSelector" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-2xl p-4 md:p-6 max-w-sm w-full">
-        <h3 class="text-xl font-medium text-gray-900 mb-4">Оцініть якість сну</h3>
-        <div class="grid grid-cols-5 gap-4 mb-6">
+      <div class="bg-white rounded-2xl p-4 md:p-6 w-full max-w-sm mx-auto transform transition-all">
+        <h3 class="text-xl font-medium text-gray-900 mb-4 text-center">Оцініть якість сну</h3>
+        <div class="grid grid-cols-5 gap-3 mb-6">
           <button
             v-for="sleep in ['😴', '😌', '😑', '😫', '🥱']"
             :key="sleep"
             @click="selectSleep(sleep)"
             :class="[
-              'p-4 text-3xl rounded-lg transition-colors',
+              'p-3 text-3xl rounded-lg transition-colors flex items-center justify-center',
               currentSleep === sleep ? 'bg-primary-100 ring-2 ring-primary-500' : 'hover:bg-gray-100'
             ]"
           >

@@ -121,10 +121,10 @@
       </div>
     </div>
 
-    <!-- Task modal -->
+    <!-- Task Modal -->
     <div v-if="showTaskModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full" @click.stop>
-        <h3 class="text-lg font-medium mb-4">
+      <div class="bg-white rounded-2xl p-4 md:p-6 w-full max-w-md mx-auto transform transition-all">
+        <h3 class="text-xl font-medium text-gray-900 mb-4 text-center">
           {{ selectedTask ? 'Редагувати завдання' : 'Нове завдання' }}
         </h3>
         
@@ -147,38 +147,25 @@
             ></textarea>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Дедлайн</label>
-              <input
-                v-model="taskForm.dueDate"
-                type="date"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-              />
-            </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Термін</label>
+            <input
+              v-model="taskForm.dueDate"
+              type="date"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+            />
+          </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Пріоритет</label>
-              <select
-                v-model="taskForm.priority"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-              >
-                <option value="Низький">Низький</option>
-                <option value="Середній">Середній</option>
-                <option value="Високий">Високий</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Бали</label>
-              <input
-                v-model.number="taskForm.points"
-                type="number"
-                min="0"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                placeholder="0"
-              />
-            </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Пріоритет</label>
+            <select
+              v-model="taskForm.priority"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+            >
+              <option value="Низький">Низький</option>
+              <option value="Середній">Середній</option>
+              <option value="Високий">Високий</option>
+            </select>
           </div>
 
           <div>
@@ -187,7 +174,16 @@
               v-model="taskForm.category"
               type="text"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-              placeholder="Наприклад: Робота, Особисте, тощо."
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Бали</label>
+            <input
+              v-model.number="taskForm.points"
+              type="number"
+              min="0"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
             />
           </div>
         </div>

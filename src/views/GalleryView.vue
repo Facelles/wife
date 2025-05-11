@@ -63,9 +63,9 @@
     </div>
 
     <!-- Модальне вікно для створення/редагування папки -->
-    <div v-if="showCreateFolderModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-      <div class="bg-white rounded-lg p-6 max-w-md w-full">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">
+    <div v-if="showCreateFolderModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl p-4 md:p-6 w-full max-w-md mx-auto transform transition-all">
+        <h3 class="text-xl font-medium text-gray-900 mb-4 text-center">
           {{ editingFolder ? 'Редагувати папку' : 'Створити нову папку' }}
         </h3>
         <form @submit.prevent="handleFolderSubmit" class="space-y-4">
@@ -74,7 +74,7 @@
             <input
               v-model="folderForm.name"
               type="text"
-              class="input mt-1"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
               required
             >
           </div>
@@ -90,7 +90,7 @@
             <button
               type="button"
               @click="closeFolderModal"
-              class="btn"
+              class="btn btn-secondary"
             >
               Скасувати
             </button>
@@ -106,10 +106,10 @@
     </div>
 
     <!-- Модальне вікно для перегляду папки -->
-    <div v-if="selectedFolder" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-      <div class="bg-white rounded-lg p-6 max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+    <div v-if="selectedFolder" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl p-4 md:p-6 w-full max-w-6xl mx-auto transform transition-all max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-6">
-          <h3 class="text-lg font-medium text-gray-900">{{ selectedFolder.name }}</h3>
+          <h3 class="text-xl font-medium text-gray-900">{{ selectedFolder.name }}</h3>
           <div class="flex space-x-4">
             <label class="btn btn-primary cursor-pointer">
               <i class="material-icons mr-2">add_photo_alternate</i>
@@ -124,7 +124,7 @@
             </label>
             <button
               @click="selectedFolder = null"
-              class="btn"
+              class="btn btn-secondary"
             >
               Закрити
             </button>

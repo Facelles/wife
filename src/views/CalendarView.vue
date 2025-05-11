@@ -89,9 +89,9 @@
     </div>
 
     <!-- Event modal -->
-    <div v-if="showEventModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 max-w-md w-full" @click.stop>
-        <h3 class="text-lg font-medium mb-4">
+    <div v-if="showEventModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl p-4 md:p-6 w-full max-w-md mx-auto transform transition-all">
+        <h3 class="text-xl font-medium text-gray-900 mb-4 text-center">
           {{ selectedEvent ? 'Редагувати подію' : 'Нова подія' }}
         </h3>
         

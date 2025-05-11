@@ -54,24 +54,42 @@
     </div>
 
     <!-- Add points modal -->
-    <div v-if="showAddPointsModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-      <div class="bg-white rounded-lg p-6 max-w-md w-full">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Add Points</h3>
+    <div v-if="showAddPointsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl p-4 md:p-6 w-full max-w-md mx-auto transform transition-all">
+        <h3 class="text-xl font-medium text-gray-900 mb-4 text-center">Додати бали</h3>
         <form @submit.prevent="handleAddPoints" class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Amount</label>
-            <input type="number" v-model="newPoints.amount" class="input mt-1" min="1" required>
+            <label class="block text-sm font-medium text-gray-700">Кількість</label>
+            <input 
+              type="number" 
+              v-model="newPoints.amount" 
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" 
+              min="1" 
+              required
+            >
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Description</label>
-            <input type="text" v-model="newPoints.description" class="input mt-1" required>
+            <label class="block text-sm font-medium text-gray-700">Опис</label>
+            <input 
+              type="text" 
+              v-model="newPoints.description" 
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" 
+              required
+            >
           </div>
           <div class="flex justify-end space-x-3">
-            <button type="button" @click="showAddPointsModal = false" class="btn">
-              Cancel
+            <button 
+              type="button" 
+              @click="showAddPointsModal = false" 
+              class="btn btn-secondary"
+            >
+              Скасувати
             </button>
-            <button type="submit" class="btn btn-primary">
-              Add Points
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+            >
+              Додати бали
             </button>
           </div>
         </form>
