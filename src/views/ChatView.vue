@@ -218,6 +218,20 @@ const scrollToBottom = () => {
   }
 }
 
+// Завантаження нотаток для чату (спільна колекція)
+const loadNotes = async () => {
+  try {
+    listenToData('chatNotes', (data) => {
+      if (!data) return
+      notes.value = Object.entries(data)
+        .map(([id, note]) => ({ id, ...note }))
+        .sort((a, b) => b.createdAt - a.createdAt)
+    })
+  } catch (error) {
+    console.error('Помилка при завантаженні нотаток:', error)
+  }
+}
+
 onMounted(() => {
   // Підписка на повідомлення
   listenToData('messages', (data) => {
@@ -236,17 +250,8 @@ onMounted(() => {
     }
   })
 
-  // Підписка на нотатки
-  listenToData('notes', (data) => {
-    if (data) {
-      notes.value = Object.entries(data)
-        .map(([id, note]) => ({
-          id,
-          ...note
-        }))
-        .sort((a, b) => b.createdAt - a.createdAt)
-    }
-  })
+  // Завантаження нотаток
+  loadNotes()
 
   if (authStore.user) {
     // Слухаємо зміни настрою для конкретного користувача
@@ -318,9 +323,9 @@ const handleNoteSubmit = async () => {
     }
 
     if (editingNote.value) {
-      await updateData(`notes/${editingNote.value.id}`, noteData)
+      await updateData(`chatNotes/${editingNote.value.id}`, noteData)
     } else {
-      await pushData('notes', noteData)
+      await pushData('chatNotes', noteData)
     }
     closeNoteModal()
   } catch (error) {
@@ -340,7 +345,7 @@ const editNote = (note) => {
 const deleteNote = async (noteId) => {
   if (confirm('Are you sure you want to delete this note?')) {
     try {
-      await removeData(`notes/${noteId}`)
+      await removeData(`chatNotes/${noteId}`)
     } catch (error) {
       console.error('Error deleting note:', error)
     }

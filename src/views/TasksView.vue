@@ -93,6 +93,14 @@
                 <span class="font-medium">Категорія:</span>
                 {{ task.category }}
               </div>
+              <div>
+                <span class="font-medium">Бали:</span>
+                {{ task.points || 0 }}
+              </div>
+              <div>
+                <span class="font-medium">Автор:</span>
+                {{ task.userEmail || '—' }}
+              </div>
             </div>
             <div class="flex items-center space-x-2">
               <span 
@@ -160,6 +168,17 @@
                 <option value="Високий">Високий</option>
               </select>
             </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Бали</label>
+              <input
+                v-model.number="taskForm.points"
+                type="number"
+                min="0"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                placeholder="0"
+              />
+            </div>
           </div>
 
           <div>
@@ -216,7 +235,8 @@ const taskForm = ref({
   dueDate: '',
   priority: 'Середній',
   category: '',
-  status: 'pending'
+  status: 'pending',
+  points: 0
 })
 
 const taskStatuses = [
@@ -324,7 +344,8 @@ const openTaskModal = (task = null) => {
       dueDate: '',
       priority: 'Середній',
       category: '',
-      status: 'pending'
+      status: 'pending',
+      points: 0
     }
   }
   showTaskModal.value = true
@@ -346,7 +367,8 @@ const saveTask = async () => {
       ...taskForm.value,
       userId: authStore.user.uid,
       userEmail: authStore.user.email,
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      points: taskForm.value.points || 0
     }
 
     if (selectedTask.value) {
