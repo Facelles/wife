@@ -184,12 +184,29 @@ const getMoodCount = (value) => {
   return moodHistory.value.filter(entry => entry.value === value).length
 }
 </script>
-
 <style scoped>
 .btn {
-  @apply px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  outline: none;
+}
+.btn:focus {
+  outline: none;
+  --tw-ring-offset-width: 2px;
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
 }
 .btn-primary {
-  @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+  background-color: rgb(79 70 229);
+  color: white;
 }
-</style> 
+.btn-primary:hover {
+  background-color: rgb(67 56 202);
+}
+.btn-primary:focus {
+  --tw-ring-color: rgb(99 102 241);
+}
+</style>
