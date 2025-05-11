@@ -21,13 +21,13 @@ export const useSleepStore = defineStore('sleep', () => {
       error.value = null
       
       // Завантаження записів про сон
-      const records = await getDocuments('sleepRecords', [
+      const records = await getDocuments('sleepmain', [
         { field: 'userId', operator: '==', value: authStore.user.uid }
       ], 'date', 'desc')
       sleepRecords.value = records
       
       // Завантаження цілей сну
-      const goalsQuery = await getDocuments('sleepGoals', [
+      const goalsQuery = await getDocuments('sleepmainGoals', [
         { field: 'userId', operator: '==', value: authStore.user.uid }
       ], 'updatedAt', 'desc', 1)
       
@@ -43,7 +43,7 @@ export const useSleepStore = defineStore('sleep', () => {
           targetWakeup: '07:00'
         }
         
-        const goalId = await addDocument('sleepGoals', defaultGoals)
+        const goalId = await addDocument('sleepmainGoals', defaultGoals)
         sleepGoals.value = {
           id: goalId,
           ...defaultGoals,
@@ -75,7 +75,7 @@ export const useSleepStore = defineStore('sleep', () => {
         userId: authStore.user.uid
       }
       
-      const recordId = await addDocument('sleepRecords', newRecord)
+      const recordId = await addDocument('sleepmain', newRecord)
       
       // Додаємо в локальний стан
       sleepRecords.value.unshift({
@@ -110,7 +110,7 @@ export const useSleepStore = defineStore('sleep', () => {
       }
       
       // Оновлюємо цілі в Firebase
-      await updateDocument('sleepGoals', sleepGoals.value.id, updates)
+      await updateDocument('sleepmainGoals', sleepGoals.value.id, updates)
       
       // Оновлюємо локальний стан
       sleepGoals.value = {
@@ -137,7 +137,7 @@ export const useSleepStore = defineStore('sleep', () => {
       error.value = null
       
       // Видаляємо запис в Firebase
-      await deleteDocument('sleepRecords', recordId)
+      await deleteDocument('sleepmain', recordId)
       
       // Оновлюємо локальний стан
       sleepRecords.value = sleepRecords.value.filter(r => r.id !== recordId)
