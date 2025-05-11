@@ -101,18 +101,30 @@
           <div
             v-for="note in notes"
             :key="note.id"
-            class="p-4 bg-gray-50 rounded-lg"
+            :class="[
+              'p-4 rounded-lg',
+              note.userId === currentUser.value?.uid 
+                ? 'bg-primary-50' 
+                : 'bg-pink-50'
+            ]"
           >
             <div class="flex justify-between items-start">
-              <h3 class="font-medium text-gray-900">{{ note.title }}</h3>
+              <div>
+                <h3 class="font-medium text-gray-900">{{ note.title }}</h3>
+                <p class="text-xs text-gray-500 mt-1">
+                  {{ getUserStyle(note.userEmail).nickname }}
+                </p>
+              </div>
               <div class="flex space-x-2">
                 <button
+                  v-if="note.userId === currentUser.value?.uid"
                   @click="editNote(note)"
                   class="text-primary-600 hover:text-primary-800"
                 >
                   Edit
                 </button>
                 <button
+                  v-if="note.userId === currentUser.value?.uid"
                   @click="deleteNote(note.id)"
                   class="text-red-600 hover:text-red-800"
                 >
@@ -232,7 +244,7 @@ onMounted(() => {
           id,
           ...note
         }))
-        .filter(note => note.userId === currentUser.value?.uid)
+        .sort((a, b) => b.createdAt - a.createdAt)
     }
   })
 
@@ -297,16 +309,18 @@ const handleNoteSubmit = async () => {
   if (!currentUser.value) return
 
   try {
+    const noteData = {
+      ...noteForm.value,
+      userId: currentUser.value.uid,
+      userEmail: currentUser.value.email,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    }
+
     if (editingNote.value) {
-      await updateData(`notes/${editingNote.value.id}`, {
-        ...noteForm.value,
-        userId: currentUser.value.uid
-      })
+      await updateData(`notes/${editingNote.value.id}`, noteData)
     } else {
-      await pushData('notes', {
-        ...noteForm.value,
-        userId: currentUser.value.uid
-      })
+      await pushData('notes', noteData)
     }
     closeNoteModal()
   } catch (error) {

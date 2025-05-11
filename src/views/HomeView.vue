@@ -10,14 +10,21 @@
       </p>
     </div>
 
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 px-4 md:px-8">
-      <div class="group bg-white/50 backdrop-blur-sm rounded-2xl p-8 md:p-12 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up cursor-pointer">
-        <h3 class="text-sm md:text-base font-light text-gray-400 mb-3 group-hover:text-primary-500 transition-colors duration-300">Бали</h3>
-        <p class="text-4xl md:text-6xl font-light text-gray-800 group-hover:text-primary-600 transition-colors duration-300">{{ points }}</p>
+    <!-- Chat Section -->
+    <div class="space-y-8 px-4 md:px-8">
+      <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Чат</h2>
+      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 animate-slide-up">
+        <router-link to="/chat" class="flex items-center justify-center space-x-4">
+          <span class="material-icons text-4xl text-primary-500">chat</span>
+          <span class="font-light text-gray-600 text-lg md:text-xl">Перейти до чату</span>
+        </router-link>
       </div>
-      
-      <div class="space-y-4">
+    </div>
+
+    <!-- Mood Section -->
+    <div class="space-y-8 px-4 md:px-8">
+      <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Настрій</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div @click="showMoodSelector = true" class="group bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-100 cursor-pointer">
           <h3 class="text-sm md:text-base font-light text-gray-400 mb-2 group-hover:text-primary-500 transition-colors duration-300">
             {{ isKitty ? 'Кицюня' : 'Зайчик' }}
@@ -31,8 +38,23 @@
           <p class="text-4xl md:text-6xl">{{ partnerMood || '😊' }}</p>
         </div>
       </div>
-      
-      <div class="space-y-4">
+    </div>
+
+    <!-- Photos Section -->
+    <div class="space-y-8 px-4 md:px-8">
+      <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Світлини</h2>
+      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 animate-slide-up">
+        <router-link to="/photos" class="flex items-center justify-center space-x-4">
+          <span class="material-icons text-4xl text-primary-500">photo_camera</span>
+          <span class="font-light text-gray-600 text-lg md:text-xl">Перейти до галереї</span>
+        </router-link>
+      </div>
+    </div>
+
+    <!-- Sleep Section -->
+    <div class="space-y-8 px-4 md:px-8">
+      <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Сон</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div @click="showSleepSelector = true" class="group bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up delay-200 cursor-pointer">
           <h3 class="text-sm md:text-base font-light text-gray-400 mb-2 group-hover:text-primary-500 transition-colors duration-300">
             {{ isKitty ? 'Кицюня' : 'Зайчик' }}
@@ -48,45 +70,34 @@
       </div>
     </div>
 
-    <!-- Quick Actions -->
+    <!-- Tasks Section -->
     <div class="space-y-8 px-4 md:px-8">
-      <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Дії</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-        <div
-          v-for="(action, index) in actions" 
-          :key="action.text"
-          :style="{ animationDelay: `${index * 100}ms` }"
-          class="group bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 flex items-center justify-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up cursor-pointer"
-          @click="action.action ? action.action() : $router.push(action.to)"
-        >
-          <span class="material-icons text-gray-400 mr-3 text-2xl md:text-3xl group-hover:text-primary-500 transition-colors duration-300">
-            {{ action.icon }}
-          </span>
-          <span class="font-light text-gray-600 text-lg md:text-xl group-hover:text-primary-600 transition-colors duration-300">
-            {{ action.text }}
-          </span>
-        </div>
+      <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Завдання</h2>
+      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 animate-slide-up">
+        <router-link to="/tasks" class="flex items-center justify-center space-x-4">
+          <span class="material-icons text-4xl text-primary-500">assignment</span>
+          <span class="font-light text-gray-600 text-lg md:text-xl">Перейти до завдань</span>
+        </router-link>
       </div>
     </div>
 
-    <!-- Додаткові функції для десктопної версії -->
-    <div v-if="isDesktop" class="space-y-8 px-4 md:px-8">
-      <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">
-        Додаткові можливості
-      </h2>
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-        <div
-          v-for="feature in desktopFeatures"
-          :key="feature.text"
-          class="group bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 flex flex-col items-center justify-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up"
-        >
-          <span class="material-icons text-4xl text-primary-500 mb-4 group-hover:scale-110 transition-transform duration-300">
-            {{ feature.icon }}
-          </span>
-          <span class="font-light text-gray-600 text-lg md:text-xl text-center group-hover:text-primary-600 transition-colors duration-300">
-            {{ feature.text }}
-          </span>
-        </div>
+    <!-- Points Section -->
+    <div class="space-y-8 px-4 md:px-8">
+      <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Бали</h2>
+      <div class="group bg-white/50 backdrop-blur-sm rounded-2xl p-8 md:p-12 text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl animate-slide-up">
+        <h3 class="text-sm md:text-base font-light text-gray-400 mb-3 group-hover:text-primary-500 transition-colors duration-300">Ваші бали</h3>
+        <p class="text-4xl md:text-6xl font-light text-gray-800 group-hover:text-primary-600 transition-colors duration-300">{{ points }}</p>
+      </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="space-y-8 px-4 md:px-8">
+      <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Статистика</h2>
+      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 animate-slide-up">
+        <router-link to="/stats" class="flex items-center justify-center space-x-4">
+          <span class="material-icons text-4xl text-primary-500">bar_chart</span>
+          <span class="font-light text-gray-600 text-lg md:text-xl">Перейти до статистики</span>
+        </router-link>
       </div>
     </div>
 
