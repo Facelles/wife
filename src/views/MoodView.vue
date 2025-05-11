@@ -94,85 +94,11 @@
         </div>
       </div>
     </div>
-
-    <!-- Mood Selection Modal -->
-    <Teleport to="body">
-      <Transition name="modal">
-        <div v-if="showMoodModal" class="modal-overlay" @click="closeMoodModal">
-          <div class="modal-content" @click.stop>
-            <h2 class="text-xl font-bold mb-4">Оберіть свій настрій</h2>
-            
-            <div class="grid grid-cols-3 gap-4 mb-6">
-              <button
-                v-for="mood in moods"
-                :key="mood.value"
-                @click="selectedMood = mood.value"
-                class="p-4 rounded-lg transition-all duration-200 flex flex-col items-center gap-2"
-                :class="[
-                  selectedMood === mood.value
-                    ? 'bg-primary/20 border-2 border-primary'
-                    : 'bg-white/10 hover:bg-white/20'
-                ]"
-              >
-                <span class="text-3xl">{{ mood.emoji }}</span>
-                <span class="text-sm">{{ mood.label }}</span>
-              </button>
-            </div>
-
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium mb-1">Дата</label>
-                <input
-                  type="date"
-                  v-model="selectedDate"
-                  class="w-full p-2 rounded-lg bg-white/10 border border-white/20"
-                />
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium mb-1">Час</label>
-                <input
-                  type="time"
-                  v-model="selectedTime"
-                  class="w-full p-2 rounded-lg bg-white/10 border border-white/20"
-                />
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium mb-1">Нотатка</label>
-                <textarea
-                  v-model="selectedNote"
-                  class="w-full p-2 rounded-lg bg-white/10 border border-white/20"
-                  rows="3"
-                  placeholder="Додайте нотатку..."
-                ></textarea>
-              </div>
-            </div>
-
-            <div class="flex justify-end gap-3 mt-6">
-              <button
-                @click="closeMoodModal"
-                class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-              >
-                Скасувати
-              </button>
-              <button
-                @click="applyMoodChanges"
-                class="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 transition-colors"
-                :disabled="isSubmitting"
-              >
-                {{ isSubmitting ? 'Збереження...' : 'Застосувати зміни' }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { listenToData, pushData } from '../firebase/database-service'
 
@@ -180,12 +106,6 @@ const authStore = useAuthStore()
 const moodNote = ref('')
 const currentMood = ref(null)
 const moodHistory = ref([])
-const selectedMood = ref(null)
-const showMoodModal = ref(false)
-const selectedDate = ref(new Date().toISOString().split('T')[0])
-const selectedTime = ref(new Date().toTimeString().slice(0, 5))
-const selectedNote = ref('')
-const isSubmitting = ref(false)
 
 const moods = [
   { value: 1, emoji: '😢', label: 'Дуже погано' },
@@ -263,74 +183,13 @@ const saveMood = async () => {
 const getMoodCount = (value) => {
   return moodHistory.value.filter(entry => entry.value === value).length
 }
-
-const openMoodModal = () => {
-  selectedMood.value = null
-  selectedDate.value = new Date().toISOString().split('T')[0]
-  selectedTime.value = new Date().toTimeString().slice(0, 5)
-  selectedNote.value = ''
-  showMoodModal.value = true
-}
-
-const closeMoodModal = () => {
-  showMoodModal.value = false
-  selectedMood.value = null
-  selectedDate.value = new Date().toISOString().split('T')[0]
-  selectedTime.value = new Date().toTimeString().slice(0, 5)
-  selectedNote.value = ''
-}
-
-const applyMoodChanges = async () => {
-  if (!selectedMood.value) {
-    alert('Будь ласка, оберіть настрій')
-    return
-  }
-
-  isSubmitting.value = true
-  try {
-    const timestamp = new Date(`${selectedDate.value}T${selectedTime.value}`).getTime()
-    const moodData = {
-      value: selectedMood.value,
-      emoji: moods.find(m => m.value === selectedMood.value)?.emoji,
-      note: selectedNote.value.trim(),
-      createdAt: timestamp,
-      userId: authStore.user.uid,
-      userEmail: authStore.user.email
-    }
-
-    await pushData(`moodmain/${authStore.user.uid}`, moodData)
-    closeMoodModal()
-  } catch (error) {
-    console.error('Error saving mood:', error)
-    alert('Помилка при збереженні настрою')
-  } finally {
-    isSubmitting.value = false
-  }
-}
 </script>
+
 <style scoped>
 .btn {
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  outline: none;
-}
-.btn:focus {
-  outline: none;
-  --tw-ring-offset-width: 2px;
-  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
-  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
-  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+  @apply px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2;
 }
 .btn-primary {
-  background-color: rgb(79 70 229);
-  color: white;
-}
-.btn-primary:hover {
-  background-color: rgb(67 56 202);
-}
-.btn-primary:focus {
-  --tw-ring-color: rgb(99 102 241);
+  @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
 }
 </style>
