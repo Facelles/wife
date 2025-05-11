@@ -137,7 +137,7 @@ onMounted(() => {
               ...mood,
               id,
               userType: 'me',
-              createdAt: new Date(mood.createdAt || mood.timestamp)
+              createdAt: mood.createdAt || mood.timestamp ? new Date(mood.createdAt || mood.timestamp) : new Date(0)
             }))
         )
       }
@@ -150,7 +150,7 @@ onMounted(() => {
               ...mood,
               id,
               userType: 'partner',
-              createdAt: new Date(mood.createdAt || mood.timestamp)
+              createdAt: mood.createdAt || mood.timestamp ? new Date(mood.createdAt || mood.timestamp) : new Date(0)
             }))
         )
       }
@@ -161,7 +161,12 @@ onMounted(() => {
       .sort((a, b) => b.createdAt - a.createdAt)
     // Встановлюємо поточний настрій (останній мій)
     const myMoods = moodHistory.value.filter(m => m.userType === 'me')
-    currentMood.value = myMoods.length ? moods.find(m => m.emoji === myMoods[0].emoji) || null : null
+    if (myMoods.length) {
+      const found = moods.find(m => m.value === myMoods[0].value)
+      currentMood.value = found || null
+    } else {
+      currentMood.value = null
+    }
   })
 })
 
