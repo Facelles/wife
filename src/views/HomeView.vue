@@ -164,6 +164,27 @@
         </button>
       </div>
     </div>
+
+    <!-- Add Points Modal -->
+    <div v-if="showAddPointsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl p-4 md:p-6 w-full max-w-md mx-auto transform transition-all">
+        <h3 class="text-xl font-medium text-gray-900 mb-4 text-center">Додати бали</h3>
+        <form @submit.prevent="handleAddPoints" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Кількість</label>
+            <input type="number" v-model="addPointsAmount" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" min="1" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Опис</label>
+            <input type="text" v-model="addPointsDescription" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" required>
+          </div>
+          <div class="flex justify-end space-x-3">
+            <button type="button" @click="showAddPointsModal = false" class="btn btn-secondary">Скасувати</button>
+            <button type="submit" class="btn btn-primary">Додати бали</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -172,9 +193,11 @@ import { ref, computed, onMounted } from 'vue'
 import { useDevice } from '../composables/useDevice'
 import { useAuthStore } from '../stores/auth'
 import { listenToData, pushData } from '../firebase/database-service'
+import { useRouter } from 'vue-router'
 
 const { isMobile, isDesktop } = useDevice()
 const authStore = useAuthStore()
+const router = useRouter()
 
 const points = ref(0)
 const currentMood = ref(null)
@@ -183,6 +206,7 @@ const currentSleep = ref(null)
 const partnerSleep = ref(null)
 const showMoodSelector = ref(false)
 const showSleepSelector = ref(false)
+const showAddPointsModal = ref(false)
 
 const myEmail = computed(() => authStore.user?.email)
 const partnerEmail = computed(() =>
@@ -301,45 +325,40 @@ const selectSleep = async (sleep) => {
 
 // Дії
 const actions = [
-  { 
-    to: '#', 
-    icon: 'add_circle', 
+  {
+    icon: 'add_circle',
     text: 'Додати бали',
-    action: () => {
-      // TODO: Додати логіку для балів
-    }
+    action: () => showAddPointsModal.value = true
   },
-  { 
-    to: '#', 
-    icon: 'mood', 
+  {
+    icon: 'mood',
     text: 'Настрій',
     action: () => showMoodSelector.value = true
   },
-  { 
-    to: '#', 
-    icon: 'bedtime', 
+  {
+    icon: 'bedtime',
     text: 'Сон',
     action: () => showSleepSelector.value = true
   },
-  { 
-    to: '/tasks', 
-    icon: 'assignment', 
-    text: 'Завдання'
+  {
+    icon: 'assignment',
+    text: 'Завдання',
+    action: () => router.push('/tasks')
   },
-  { 
-    to: '/chat', 
-    icon: 'chat', 
-    text: 'Повідомлення'
+  {
+    icon: 'chat',
+    text: 'Повідомлення',
+    action: () => router.push('/chat')
   },
-  { 
-    to: '/photos', 
-    icon: 'photo_camera', 
-    text: 'Світлини'
+  {
+    icon: 'photo_camera',
+    text: 'Світлини',
+    action: () => router.push('/photos')
   },
-  { 
-    to: '/stats', 
-    icon: 'bar_chart', 
-    text: 'Статистика'
+  {
+    icon: 'bar_chart',
+    text: 'Статистика',
+    action: () => router.push('/stats')
   }
 ]
 
@@ -349,6 +368,19 @@ const desktopFeatures = [
   { icon: 'playlist_add_check', text: 'Розширені завдання' },
   { icon: 'analytics', text: 'Детальна аналітика' }
 ]
+
+// Додаємо логіку для додавання балів
+const addPointsAmount = ref(1)
+const addPointsDescription = ref('')
+const handleAddPoints = () => {
+  // Тут має бути логіка додавання балів до бази або стану
+  // Наприклад:
+  // points.value += addPointsAmount.value
+  // або викликати відповідний метод з PointsStore
+  showAddPointsModal.value = false
+  addPointsAmount.value = 1
+  addPointsDescription.value = ''
+}
 </script>
 
 <style scoped>
