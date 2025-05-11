@@ -209,12 +209,12 @@ onMounted(() => {
   listenToData('moods', (data) => {
     if (data) {
       // mood поточного користувача
-      const myMood = Object.values(data).filter(m => m.userEmail === myEmail.value)
-        .sort((a, b) => b.timestamp - a.timestamp)[0]
+      const myMoods = Object.values(data).filter(m => m.userEmail === myEmail.value)
+      const myMood = myMoods.sort((a, b) => b.timestamp - a.timestamp)[0]
       currentMood.value = myMood?.emoji || null
       // mood партнера
-      const partnerMoodObj = Object.values(data).filter(m => m.userEmail === partnerEmail.value)
-        .sort((a, b) => b.timestamp - a.timestamp)[0]
+      const partnerMoods = Object.values(data).filter(m => m.userEmail === partnerEmail.value)
+      const partnerMoodObj = partnerMoods.sort((a, b) => b.timestamp - a.timestamp)[0]
       partnerMood.value = partnerMoodObj?.emoji || null
     }
   })
