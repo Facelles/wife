@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 max-w-2xl mx-auto px-4 py-8">
     <!-- Today's mood -->
     <div class="bg-white overflow-hidden shadow rounded-lg">
       <div class="px-4 py-5 sm:p-6">
@@ -20,7 +20,6 @@
             <span class="text-sm font-medium text-gray-700">{{ mood.label }}</span>
           </button>
         </div>
-        
         <!-- Mood note -->
         <div class="mt-6">
           <label class="block text-sm font-medium text-gray-700">Додайте нотатку про свій день</label>
@@ -99,7 +98,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { listenToData, pushData } from '../firebase/database-service'
 
@@ -116,20 +115,11 @@ const moods = [
   { value: 5, emoji: '😄', label: 'Чудово' }
 ]
 
-const myEmail = computed(() => authStore.user?.email)
-const partnerEmail = computed(() =>
-  myEmail.value === 'facellesit@gmail.com'
-    ? 'martadaniluk4@gmail.com'
-    : 'facellesit@gmail.com'
-)
-
 onMounted(() => {
   if (!authStore.user) return
-
   listenToData('moodmain', (data) => {
     let allMoods = []
     if (data) {
-      // Додаємо історію для поточного користувача
       if (data[authStore.user.uid]) {
         allMoods = allMoods.concat(
           Object.entries(data[authStore.user.uid])
@@ -141,7 +131,6 @@ onMounted(() => {
             }))
         )
       }
-      // Додаємо історію для партнера
       const partnerUid = Object.keys(data).find(uid => uid !== authStore.user.uid)
       if (partnerUid && data[partnerUid]) {
         allMoods = allMoods.concat(
@@ -155,11 +144,9 @@ onMounted(() => {
         )
       }
     }
-    // Сортуємо за датою
     moodHistory.value = allMoods
-      .filter(m => m.value) // тільки валідні
+      .filter(m => m.value)
       .sort((a, b) => b.createdAt - a.createdAt)
-    // Встановлюємо поточний настрій (останній мій)
     const myMoods = moodHistory.value.filter(m => m.userType === 'me')
     if (myMoods.length) {
       const found = moods.find(m => m.value === myMoods[0].value)
@@ -176,7 +163,6 @@ const selectMood = (mood) => {
 
 const saveMood = async () => {
   if (!currentMood.value || !authStore.user) return
-
   try {
     await pushData(`moodmain/${authStore.user.uid}`, {
       value: currentMood.value.value,
@@ -186,7 +172,6 @@ const saveMood = async () => {
       userId: authStore.user.uid,
       userEmail: authStore.user.email
     })
-
     moodNote.value = ''
     currentMood.value = null
   } catch (error) {
@@ -198,4 +183,13 @@ const saveMood = async () => {
 const getMoodCount = (value) => {
   return moodHistory.value.filter(entry => entry.value === value).length
 }
-</script> 
+</script>
+
+<style scoped>
+.btn {
+  @apply px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+.btn-primary {
+  @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+}
+</style> 
