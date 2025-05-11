@@ -124,11 +124,10 @@
                   Edit
                 </button>
                 <button
-                  v-if="note.userId === currentUser.value?.uid"
                   @click="deleteNote(note.id)"
                   class="text-red-600 hover:text-red-800"
                 >
-                  Delete
+                  Видалити
                 </button>
               </div>
             </div>

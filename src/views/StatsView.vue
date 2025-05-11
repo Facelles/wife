@@ -149,57 +149,109 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
+import { listenToData } from '../firebase/database-service'
 
 const authStore = useAuthStore()
 const selectedRange = ref('week')
 
-// Моки даних для прикладу
-const moodStats = ref([
-  { value: 1, emoji: '😢', label: 'Дуже погано', count: 2, percentage: 10 },
-  { value: 2, emoji: '😕', label: 'Погано', count: 3, percentage: 15 },
-  { value: 3, emoji: '😐', label: 'Нормально', count: 5, percentage: 25 },
-  { value: 4, emoji: '🙂', label: 'Добре', count: 6, percentage: 30 },
-  { value: 5, emoji: '😄', label: 'Чудово', count: 4, percentage: 20 }
-])
+// Реальні дані
+const moods = ref([])
+const tasks = ref([])
+const pointsHistory = ref([])
 
-const completedTasks = ref(15)
-const pendingTasks = ref(5)
+// Завантаження даних з бази
+onMounted(() => {
+  // Настрої
+  listenToData('moods', (data) => {
+    if (data) {
+      moods.value = Object.entries(data).map(([id, mood]) => ({ id, ...mood }))
+    }
+  })
+  // Завдання
+  listenToData('tasks', (data) => {
+    if (data) {
+      tasks.value = Object.entries(data).map(([id, task]) => ({ id, ...task }))
+    }
+  })
+})
+
+// Статистика настрою
+const moodStats = computed(() => {
+  const stats = [
+    { value: 'terrible', emoji: '😢', label: 'Дуже погано', count: 0 },
+    { value: 'bad', emoji: '😕', label: 'Погано', count: 0 },
+    { value: 'neutral', emoji: '😐', label: 'Нормально', count: 0 },
+    { value: 'good', emoji: '🙂', label: 'Добре', count: 0 },
+    { value: 'great', emoji: '😊', label: 'Чудово', count: 0 }
+  ]
+  moods.value.forEach(mood => {
+    const found = stats.find(s => s.value === mood.value)
+    if (found) found.count++
+  })
+  const total = stats.reduce((sum, s) => sum + s.count, 0)
+  stats.forEach(s => s.percentage = total ? Math.round((s.count / total) * 100) : 0)
+  return stats
+})
+
+// Завдання
+const completedTasks = computed(() => tasks.value.filter(t => t.status === 'completed').length)
+const pendingTasks = computed(() => tasks.value.filter(t => t.status === 'pending').length)
 const taskCompletionRate = computed(() => {
   const total = completedTasks.value + pendingTasks.value
   return total > 0 ? Math.round((completedTasks.value / total) * 100) : 0
 })
 
-const totalPoints = ref(1250)
-const recentPoints = ref([
-  { id: 1, description: 'Завершення завдання', value: 50, date: new Date() },
-  { id: 2, description: 'Щоденний настрій', value: 10, date: new Date() },
-  { id: 3, description: 'Пропущений день', value: -20, date: new Date() },
-  { id: 4, description: 'Бонус за серію', value: 100, date: new Date() }
-])
+// Бали (сума points у виконаних завданнях)
+const totalPoints = computed(() => {
+  return tasks.value.filter(t => t.status === 'completed').reduce((sum, t) => sum + (t.points || 0), 0)
+})
+const recentPoints = computed(() => {
+  return tasks.value
+    .filter(t => t.status === 'completed' && t.points)
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, 5)
+    .map(t => ({
+      id: t.id,
+      description: `Завершення завдання: ${t.title}`,
+      value: t.points,
+      date: new Date(t.createdAt)
+    }))
+})
 
-const activityTimeline = ref([
-  {
-    id: 1,
-    type: 'task',
-    icon: '✓',
-    description: 'Завершено завдання "Прибирання"',
-    date: new Date()
-  },
-  {
-    id: 2,
-    type: 'mood',
-    icon: '😄',
-    description: 'Відмічено чудовий настрій',
-    date: new Date()
-  },
-  {
-    id: 3,
-    type: 'points',
-    icon: '★',
-    description: 'Отримано 100 балів за серію',
-    date: new Date()
-  }
-])
+// Таймлайн активності (завершення завдань, зміна настрою, нарахування балів)
+const activityTimeline = computed(() => {
+  const activities = []
+  tasks.value.forEach(t => {
+    if (t.status === 'completed') {
+      activities.push({
+        id: 'task-' + t.id,
+        type: 'task',
+        icon: '✓',
+        description: `Завершено завдання "${t.title}"`,
+        date: new Date(t.createdAt)
+      })
+      if (t.points) {
+        activities.push({
+          id: 'points-' + t.id,
+          type: 'points',
+          icon: '★',
+          description: `Отримано ${t.points} балів за "${t.title}"`,
+          date: new Date(t.createdAt)
+        })
+      }
+    }
+  })
+  moods.value.forEach(mood => {
+    activities.push({
+      id: 'mood-' + mood.id,
+      type: 'mood',
+      icon: mood.emoji || '😐',
+      description: `Відмічено настрій: ${mood.emoji || mood.value}`,
+      date: new Date(mood.timestamp || mood.createdAt)
+    })
+  })
+  return activities.sort((a, b) => b.date - a.date).slice(0, 15)
+})
 
 const getActivityTypeClass = (type) => {
   switch (type) {
@@ -222,10 +274,6 @@ const formatDate = (date) => {
     month: '2-digit'
   }).format(date)
 }
-
-onMounted(() => {
-  // Тут можна додати завантаження реальних даних
-})
 </script>
 
 <style scoped>
