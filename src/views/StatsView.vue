@@ -143,6 +143,24 @@
         </div>
       </div>
     </div>
+
+    <!-- Mood comparison -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- mood поточного користувача -->
+      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up">
+        <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">
+          {{ authStore.user?.email === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня' }}
+        </h3>
+        <p class="text-4xl md:text-6xl">{{ currentMood || '😊' }}</p>
+      </div>
+      <!-- mood партнера -->
+      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up">
+        <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">
+          {{ authStore.user?.email === 'facellesit@gmail.com' ? 'Кицюня' : 'Зайчик' }}
+        </h3>
+        <p class="text-4xl md:text-6xl">{{ partnerMood || '😊' }}</p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -274,6 +292,10 @@ const formatDate = (date) => {
     month: '2-digit'
   }).format(date)
 }
+
+// Mood comparison
+const currentMood = ref(null)
+const partnerMood = ref(null)
 </script>
 
 <style scoped>
