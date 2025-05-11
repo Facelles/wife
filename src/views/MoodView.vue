@@ -106,7 +106,6 @@ const authStore = useAuthStore()
 const moodNote = ref('')
 const currentMood = ref(null)
 const moodHistory = ref([])
-const partnerUid = ref(null)
 
 const moods = [
   { value: 1, emoji: '😢', label: 'Дуже погано' },
@@ -121,8 +120,6 @@ onMounted(() => {
   listenToData('moodmain', (data) => {
     let allMoods = []
     if (data) {
-      // Визначаємо partnerUid ОДРАЗУ
-      partnerUid.value = Object.keys(data).find(uid => uid !== authStore.user.uid) || null
       if (data[authStore.user.uid]) {
         allMoods = allMoods.concat(
           Object.entries(data[authStore.user.uid])
@@ -134,9 +131,10 @@ onMounted(() => {
             }))
         )
       }
-      if (partnerUid.value && data[partnerUid.value]) {
+      const partnerUid = Object.keys(data).find(uid => uid !== authStore.user.uid)
+      if (partnerUid && data[partnerUid]) {
         allMoods = allMoods.concat(
-          Object.entries(data[partnerUid.value])
+          Object.entries(data[partnerUid])
             .map(([id, mood]) => ({
               ...mood,
               id,
@@ -164,12 +162,9 @@ const selectMood = (mood) => {
 }
 
 const saveMood = async () => {
-  if (!currentMood.value || !authStore.user || !partnerUid.value) {
-    alert('Партнер не знайдений!')
-    return
-  }
+  if (!currentMood.value || !authStore.user) return
   try {
-    await pushData(`moodmain/${partnerUid.value}`, {
+    await pushData(`moodmain/${authStore.user.uid}`, {
       value: currentMood.value.value,
       emoji: currentMood.value.emoji,
       note: moodNote.value.trim(),
