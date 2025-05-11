@@ -50,8 +50,8 @@
                   : 'bg-pink-100 text-gray-900'
               ]"
             >
-              <div>
-                <div class="break-words">{{ message.text }}</div>
+              <div class="w-full">
+                <div class="break-words whitespace-pre-wrap">{{ message.text }}</div>
                 <div 
                   :class="[
                     'text-xs mt-1',

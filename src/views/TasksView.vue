@@ -241,7 +241,6 @@ const loadTasks = async () => {
           id,
           ...task
         }))
-        .filter(task => task.userId === authStore.user.uid)
         .sort((a, b) => b.createdAt - a.createdAt)
     })
   } catch (error) {
@@ -254,10 +253,16 @@ const saveTasks = () => {
 }
 
 const filteredTasks = computed(() => {
-  if (currentFilter.value === 'all') {
-    return tasks.value
-  }
-  return tasks.value.filter(task => task.status === currentFilter.value)
+  const filtered = tasks.value.filter(task => {
+    if (currentFilter.value === 'all') return true
+    return task.status === currentFilter.value
+  })
+  
+  // Split tasks into user's tasks and partner's tasks
+  const userTasks = filtered.filter(task => task.userId === authStore.user.uid)
+  const partnerTasks = filtered.filter(task => task.userId !== authStore.user.uid)
+  
+  return [...userTasks, ...partnerTasks]
 })
 
 const getPriorityClass = (priority) => {
