@@ -117,17 +117,22 @@ const moods = [
 onMounted(() => {
   if (!authStore.user) return
 
-  // Підписуємось на зміни в настрої
-  listenToData('moods', (data) => {
-    if (data) {
-      moodHistory.value = Object.entries(data)
+  // Підписуємось на зміни в настрої (оновлено на moodmain)
+  listenToData('moodmain', (data) => {
+    if (data && data[authStore.user.uid]) {
+      const moodsArr = Object.entries(data[authStore.user.uid])
         .map(([id, mood]) => ({
           id,
           ...mood,
-          createdAt: new Date(mood.timestamp)
+          createdAt: new Date(mood.createdAt || mood.timestamp)
         }))
-        .filter(mood => mood.userId === authStore.user.uid)
-        .sort((a, b) => b.timestamp - a.timestamp)
+        .sort((a, b) => b.createdAt - a.createdAt)
+      moodHistory.value = moodsArr
+      // Встановлюємо поточний настрій (останній)
+      currentMood.value = moodsArr.length ? moods.find(m => m.emoji === moodsArr[0].emoji) || null : null
+    } else {
+      moodHistory.value = []
+      currentMood.value = null
     }
   })
 })
@@ -140,12 +145,13 @@ const saveMood = async () => {
   if (!currentMood.value || !authStore.user) return
 
   try {
-    await pushData('moods', {
-      userId: authStore.user.uid,
-      userEmail: authStore.user.email,
+    await pushData(`moodmain/${authStore.user.uid}`, {
       value: currentMood.value.value,
+      emoji: currentMood.value.emoji,
       note: moodNote.value.trim(),
-      timestamp: Date.now()
+      createdAt: Date.now(),
+      userId: authStore.user.uid,
+      userEmail: authStore.user.email
     })
 
     moodNote.value = ''
