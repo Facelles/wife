@@ -6,7 +6,7 @@
         Кицюня з зайчиком
       </h1>
       <p class="text-lg sm:text-xl md:text-2xl text-gray-500 hover:text-gray-700 transition-colors duration-300">
-        Ваші спільні моменти 💕
+         Наші спільні моменти 💕
       </p>
     </div>
 

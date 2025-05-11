@@ -98,7 +98,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { listenToData, pushData } from '../firebase/database-service'
 
@@ -106,6 +106,7 @@ const authStore = useAuthStore()
 const moodNote = ref('')
 const currentMood = ref(null)
 const moodHistory = ref([])
+const partnerUid = ref(null)
 
 const moods = [
   { value: 1, emoji: '😢', label: 'Дуже погано' },
@@ -120,6 +121,8 @@ onMounted(() => {
   listenToData('moodmain', (data) => {
     let allMoods = []
     if (data) {
+      // Визначаємо partnerUid ОДРАЗУ
+      partnerUid.value = Object.keys(data).find(uid => uid !== authStore.user.uid) || null
       if (data[authStore.user.uid]) {
         allMoods = allMoods.concat(
           Object.entries(data[authStore.user.uid])
@@ -131,10 +134,9 @@ onMounted(() => {
             }))
         )
       }
-      const partnerUid = Object.keys(data).find(uid => uid !== authStore.user.uid)
-      if (partnerUid && data[partnerUid]) {
+      if (partnerUid.value && data[partnerUid.value]) {
         allMoods = allMoods.concat(
-          Object.entries(data[partnerUid])
+          Object.entries(data[partnerUid.value])
             .map(([id, mood]) => ({
               ...mood,
               id,
@@ -162,21 +164,12 @@ const selectMood = (mood) => {
 }
 
 const saveMood = async () => {
-  if (!currentMood.value || !authStore.user) return
-  // Знаходимо partnerUid
-  let partnerUid = null
-  listenToData('moodmain', (data) => {
-    if (data) {
-      partnerUid = Object.keys(data).find(uid => uid !== authStore.user.uid)
-    }
-  })
-  // Якщо не знайшли партнера — не зберігаємо
-  if (!partnerUid) {
+  if (!currentMood.value || !authStore.user || !partnerUid.value) {
     alert('Партнер не знайдений!')
     return
   }
   try {
-    await pushData(`moodmain/${partnerUid}`, {
+    await pushData(`moodmain/${partnerUid.value}`, {
       value: currentMood.value.value,
       emoji: currentMood.value.emoji,
       note: moodNote.value.trim(),
