@@ -9,6 +9,7 @@ import ChatView from '../views/ChatView.vue'
 import StatsView from '../views/StatsView.vue'
 import LoginView from '../views/LoginView.vue'
 import GalleryView from '../views/GalleryView.vue'
+import ShopView from '../views/ShopView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -65,6 +66,12 @@ const router = createRouter({
       path: '/gallery',
       name: 'gallery',
       component: GalleryView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/shop',
+      name: 'shop',
+      component: ShopView,
       meta: { requiresAuth: true }
     }
   ]

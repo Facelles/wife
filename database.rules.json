@@ -44,6 +44,15 @@
         }
       }
     },
+    "sleepmain": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid === $uid",
+        "$sleepId": {
+          ".validate": "newData.hasChildren(['value', 'emoji', 'createdAt', 'userId', 'userEmail'])"
+        }
+      }
+    },
     "notes": {
       "$noteId": {
         ".validate": "newData.hasChildren(['userId', 'title', 'content', 'createdAt', 'userEmail'])"
@@ -51,12 +60,40 @@
     },
     "points": {
       "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null",
         ".validate": "newData.hasChildren(['current', 'updatedAt', 'userId', 'userEmail'])",
         "history": {
           "$historyId": {
             ".validate": "newData.hasChildren(['amount', 'reason', 'timestamp', 'userId', 'userEmail'])"
           }
         }
+      }
+    },
+    "folders": {
+      "$folderId": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        ".validate": "newData.hasChildren(['name', 'createdAt', 'userId', 'userEmail'])",
+        "photos": {
+          "$photoId": {
+            ".validate": "newData.hasChildren(['url', 'createdAt', 'userId', 'userEmail'])"
+          }
+        }
+      }
+    },
+    "shop": {
+      "$itemId": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        ".validate": "newData.hasChildren(['name', 'description', 'price', 'imageUrl', 'quantity', 'createdAt', 'userId', 'userEmail'])"
+      }
+    },
+    "points_transactions": {
+      "$transactionId": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        ".validate": "newData.hasChildren(['amount', 'reason', 'timestamp', 'userId', 'userEmail', 'type'])"
       }
     }
   }

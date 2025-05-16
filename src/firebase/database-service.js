@@ -1,5 +1,6 @@
 import { ref, onValue, set, update, remove, push, child, get } from 'firebase/database'
 import { database } from './index'
+import { auth } from './index'
 
 // Отримання даних у реальному часі
 export const listenToData = (path, callback) => {
@@ -151,4 +152,36 @@ export const sendMessage = async (userId, content) => {
 export const deleteData = async (path) => {
   const dataRef = ref(database, path)
   await remove(dataRef)
+}
+
+export const addPointsTransaction = async (userId, amount, reason, type = 'reward') => {
+  try {
+    // Отримуємо поточні бали користувача
+    const pointsRef = ref(database, `points/${userId}`)
+    const pointsSnapshot = await get(pointsRef)
+    const currentPoints = pointsSnapshot.exists() ? pointsSnapshot.val().current || 0 : 0
+
+    // Оновлюємо бали
+    await update(pointsRef, {
+      current: currentPoints + amount,
+      updatedAt: Date.now(),
+      userId,
+      userEmail: auth.currentUser.email
+    })
+
+    // Додаємо транзакцію
+    await push(ref(database, 'points_transactions'), {
+      amount,
+      reason,
+      timestamp: Date.now(),
+      userId,
+      userEmail: auth.currentUser.email,
+      type
+    })
+
+    return true
+  } catch (error) {
+    console.error('Error adding points transaction:', error)
+    throw error
+  }
 } 

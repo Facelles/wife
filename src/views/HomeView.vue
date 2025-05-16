@@ -105,11 +105,77 @@
     <!-- Stats Section -->
     <div class="space-y-4">
       <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Статистика</h2>
-      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 md:p-8 animate-slide-up flex justify-center">
-        <router-link to="/stats" class="flex items-center space-x-4 px-4 md:px-6 py-3 bg-primary-100 rounded-xl shadow hover:bg-primary-200 transition-colors">
-          <span class="material-icons text-2xl md:text-3xl text-primary-500">bar_chart</span>
-          <span class="font-light text-gray-700 text-base md:text-xl">Перейти до статистики</span>
-        </router-link>
+      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 md:p-8 animate-slide-up">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <!-- Mood Stats -->
+          <div class="bg-white/80 rounded-xl p-4">
+            <h3 class="text-sm font-medium text-gray-500 mb-2">Настрій</h3>
+            <div class="flex items-center justify-between">
+              <span class="text-2xl">{{ currentMood || '😐' }}</span>
+              <div class="text-right">
+                <div class="text-lg font-semibold text-primary-600">{{ moodPercentage }}%</div>
+                <div class="text-xs text-gray-500">позитивний</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Task Stats -->
+          <div class="bg-white/80 rounded-xl p-4">
+            <h3 class="text-sm font-medium text-gray-500 mb-2">Завдання</h3>
+            <div class="flex items-center justify-between">
+              <span class="text-2xl">📝</span>
+              <div class="text-right">
+                <div class="text-lg font-semibold text-primary-600">{{ taskCompletionRate }}%</div>
+                <div class="text-xs text-gray-500">виконано</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Points Stats -->
+          <div class="bg-white/80 rounded-xl p-4">
+            <h3 class="text-sm font-medium text-gray-500 mb-2">Бали</h3>
+            <div class="flex items-center justify-between">
+              <span class="text-2xl">⭐</span>
+              <div class="text-right">
+                <div class="text-lg font-semibold text-primary-600">{{ points }}</div>
+                <div class="text-xs text-gray-500">загалом</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-center">
+          <router-link to="/stats" class="flex items-center space-x-2 px-4 py-2 bg-primary-100 rounded-xl shadow hover:bg-primary-200 transition-colors">
+            <span class="material-icons text-primary-500">bar_chart</span>
+            <span class="text-gray-700">Детальна статистика</span>
+          </router-link>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gallery Section -->
+    <div class="space-y-4">
+      <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Галерея</h2>
+      <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 md:p-8 animate-slide-up">
+        <!-- Recent Photos Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div v-for="photo in recentPhotos" :key="photo.id" class="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+            <img
+              :src="photo.url"
+              class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+              alt=""
+              @click="openPhotoViewer(photo)"
+            >
+          </div>
+          <div v-if="recentPhotos.length < 4" class="aspect-square bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+            <span class="material-icons text-4xl text-gray-400">add_photo_alternate</span>
+          </div>
+        </div>
+        <div class="flex justify-center">
+          <router-link to="/gallery" class="flex items-center space-x-2 px-4 py-2 bg-primary-100 rounded-xl shadow hover:bg-primary-200 transition-colors">
+            <span class="material-icons text-primary-500">photo_library</span>
+            <span class="text-gray-700">Вся галерея</span>
+          </router-link>
+        </div>
       </div>
     </div>
 
@@ -185,6 +251,16 @@
         </form>
       </div>
     </div>
+
+    <!-- Photo Viewer -->
+    <PhotoViewer
+      v-if="showPhotoViewer"
+      :show="showPhotoViewer"
+      :photo="selectedPhoto"
+      :photos="allPhotos"
+      @close="showPhotoViewer = false"
+      @select="handlePhotoSelect"
+    />
   </div>
 </template>
 
@@ -192,14 +268,16 @@
 import { ref, computed, onMounted } from 'vue'
 import { useDevice } from '../composables/useDevice'
 import { useAuthStore } from '../stores/auth'
-import { listenToData, pushData } from '../firebase/database-service'
+import { listenToData, pushData, addPointsTransaction } from '../firebase/database-service'
 import { useRouter } from 'vue-router'
+import PhotoViewer from '../components/PhotoViewer.vue'
 
 const { isMobile, isDesktop } = useDevice()
 const authStore = useAuthStore()
 const router = useRouter()
 
 const points = ref(0)
+const partnerPoints = ref(0)
 const currentMood = ref(null)
 const partnerMood = ref(null)
 const currentSleep = ref(null)
@@ -207,6 +285,7 @@ const partnerSleep = ref(null)
 const showMoodSelector = ref(false)
 const showSleepSelector = ref(false)
 const showAddPointsModal = ref(false)
+const partnerUid = ref(null)
 
 const myEmail = computed(() => authStore.user?.email)
 const partnerEmail = computed(() =>
@@ -242,7 +321,46 @@ const sleepStates = {
   '🥱': { value: 'terrible', emoji: '🥱' }
 }
 
-onMounted(() => {
+const recentPhotos = ref([])
+const moodPercentage = ref(0)
+const taskCompletionRate = ref(0)
+const showPhotoViewer = ref(false)
+const selectedPhoto = ref(null)
+const allPhotos = ref([])
+
+// Визначаємо ID партнера
+const determinePartnerUid = async () => {
+  try {
+    const usersSnapshot = await getData('users')
+    if (usersSnapshot) {
+      const allUsers = Object.keys(usersSnapshot)
+      partnerUid.value = allUsers.find(uid => uid !== authStore.user.uid)
+    }
+  } catch (error) {
+    console.error('Error determining partner UID:', error)
+  }
+}
+
+onMounted(async () => {
+  // Визначаємо ID партнера при завантаженні
+  await determinePartnerUid()
+
+  // Підписка на бали поточного користувача
+  listenToData(`points/${authStore.user.uid}`, (data) => {
+    if (data) {
+      points.value = data.current || 0
+    }
+  })
+
+  // Підписка на бали партнера
+  if (partnerUid.value) {
+    listenToData(`points/${partnerUid.value}`, (data) => {
+      if (data) {
+        partnerPoints.value = data.current || 0
+      }
+    })
+  }
+
   // Підписка на всі настрої
   listenToData('moodmain', (data) => {
     if (data) {
@@ -279,6 +397,47 @@ onMounted(() => {
       } else {
         partnerSleep.value = null
       }
+    }
+  })
+
+  // Завантаження всіх фотографій
+  listenToData('folders', (data) => {
+    if (data) {
+      const photos = []
+      Object.entries(data).forEach(([folderId, folder]) => {
+        if (folder.photos) {
+          Object.entries(folder.photos).forEach(([photoId, photo]) => {
+            photos.push({
+              id: photoId,
+              folderId,
+              ...photo
+            })
+          })
+        }
+      })
+      allPhotos.value = photos.sort((a, b) => b.createdAt - a.createdAt)
+      recentPhotos.value = photos.slice(0, 4)
+    }
+  })
+
+  // Розрахунок статистики
+  listenToData('moodmain', (data) => {
+    if (data) {
+      const moods = Object.values(data[authStore.user.uid] || {})
+      const positiveMoods = moods.filter(mood => 
+        ['great', 'good'].includes(mood.value)
+      ).length
+      moodPercentage.value = moods.length ? 
+        Math.round((positiveMoods / moods.length) * 100) : 0
+    }
+  })
+
+  listenToData('tasks', (data) => {
+    if (data) {
+      const tasks = Object.values(data)
+      const completed = tasks.filter(task => task.status === 'completed').length
+      taskCompletionRate.value = tasks.length ? 
+        Math.round((completed / tasks.length) * 100) : 0
     }
   })
 })
@@ -331,6 +490,27 @@ const actions = [
     action: () => showAddPointsModal.value = true
   },
   {
+    icon: 'favorite',
+    text: 'Обійми',
+    action: async () => {
+      try {
+        if (!partnerUid.value) {
+          throw new Error('Партнер не знайдений')
+        }
+
+        await addPointsTransaction(
+          partnerUid.value,
+          200,
+          'Обійми 💝',
+          'hug'
+        )
+      } catch (error) {
+        console.error('Error adding points for hug:', error)
+        alert('Помилка при нарахуванні балів')
+      }
+    }
+  },
+  {
     icon: 'mood',
     text: 'Настрій',
     action: () => showMoodSelector.value = true
@@ -359,6 +539,11 @@ const actions = [
     icon: 'bar_chart',
     text: 'Статистика',
     action: () => router.push('/stats')
+  },
+  {
+    icon: 'shopping_bag',
+    text: 'Магазин',
+    action: () => router.push('/shop')
   }
 ]
 
@@ -369,17 +554,53 @@ const desktopFeatures = [
   { icon: 'analytics', text: 'Детальна аналітика' }
 ]
 
-// Додаємо логіку для додавання балів
+// Оновлюємо функцію додавання балів
 const addPointsAmount = ref(1)
 const addPointsDescription = ref('')
-const handleAddPoints = () => {
-  // Тут має бути логіка додавання балів до бази або стану
-  // Наприклад:
-  // points.value += addPointsAmount.value
-  // або викликати відповідний метод з PointsStore
-  showAddPointsModal.value = false
-  addPointsAmount.value = 1
-  addPointsDescription.value = ''
+const handleAddPoints = async () => {
+  try {
+    if (!partnerUid.value) {
+      throw new Error('Партнер не знайдений')
+    }
+
+    if (points.value < addPointsAmount.value) {
+      throw new Error('Недостатньо балів')
+    }
+
+    // Списуємо бали з поточного користувача
+    await addPointsTransaction(
+      authStore.user.uid,
+      -addPointsAmount.value,
+      `Передача балів: ${addPointsDescription.value}`,
+      'transfer'
+    )
+
+    // Нараховуємо бали партнеру
+    await addPointsTransaction(
+      partnerUid.value,
+      addPointsAmount.value,
+      `Отримано балів: ${addPointsDescription.value}`,
+      'transfer'
+    )
+
+    showAddPointsModal.value = false
+    addPointsAmount.value = 1
+    addPointsDescription.value = ''
+  } catch (error) {
+    console.error('Error transferring points:', error)
+    alert(error.message || 'Помилка при передачі балів')
+  }
+}
+
+// Відкриття переглядача фотографій
+const openPhotoViewer = (photo) => {
+  selectedPhoto.value = photo
+  showPhotoViewer.value = true
+}
+
+// Обробка вибору фотографії в переглядачі
+const handlePhotoSelect = (photo) => {
+  selectedPhoto.value = photo
 }
 </script>
 
