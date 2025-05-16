@@ -217,7 +217,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
-import { listenToData, pushData, updateData, deleteData } from '../firebase/database-service'
+import { listenToData, pushData, updateData, deleteData, addPointsTransaction } from '../firebase/database-service'
 
 const authStore = useAuthStore()
 const tasks = ref([])
@@ -317,15 +317,33 @@ const getStatusLabel = (status) => {
 }
 
 const toggleTaskStatus = async (task) => {
-  if (!authStore.user) return
-
   try {
+    const newStatus = task.status === 'completed' ? 'pending' : 'completed'
+    
+    // Оновлюємо статус завдання
     await updateData(`tasks/${task.id}`, {
-      status: task.status === 'completed' ? 'pending' : 'completed'
+      status: newStatus,
+      completedAt: newStatus === 'completed' ? Date.now() : null
     })
+
+    // Якщо завдання виконано і воно має бали, нараховуємо їх партнеру
+    if (newStatus === 'completed' && task.points > 0) {
+      const partnerUid = authStore.user.email === 'facellesit@gmail.com' ? 
+        Object.keys(data).find(uid => uid !== authStore.user.uid) : 
+        Object.keys(data).find(uid => uid !== authStore.user.uid)
+
+      if (partnerUid) {
+        await addPointsTransaction(
+          partnerUid,
+          task.points,
+          `Виконання завдання: ${task.title}`,
+          'task_completion'
+        )
+      }
+    }
   } catch (error) {
-    console.error('Помилка при зміні статусу завдання:', error)
-    alert('Помилка при зміні статусу завдання')
+    console.error('Error toggling task status:', error)
+    alert('Помилка при оновленні статусу завдання')
   }
 }
 
