@@ -47,7 +47,6 @@
           <div
             v-for="entry in moodHistory"
             :key="entry.id"
-            v-if="entry.value"
             class="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg"
           >
             <span class="text-2xl">
@@ -57,13 +56,13 @@
               <div class="flex items-center justify-between">
                 <span class="font-medium">
                   {{ moods.find(m => m.value === entry.value)?.label || '' }}
-                  <span v-if="entry.userType === 'partner'" class="ml-2 text-xs text-pink-500">(Партнер)</span>
+                  <span class="ml-2 text-xs text-pink-500">{{ getUserLabel(entry.userEmail) }}</span>
                 </span>
                 <span class="text-sm text-gray-500">
-                  {{ entry.createdAt ? entry.createdAt.toLocaleDateString() : '' }}
+                  {{ entry.createdAt ? formatDate(entry.createdAt) : '' }}
                 </span>
               </div>
-              <p v-if="entry.note" class="mt-1 text-sm text-gray-600">
+              <p v-if="entry.note && entry.note.trim()" class="mt-1 text-sm text-gray-600">
                 {{ entry.note }}
               </p>
             </div>
@@ -98,7 +97,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { listenToData, pushData } from '../firebase/database-service'
 
@@ -108,48 +107,29 @@ const currentMood = ref(null)
 const moodHistory = ref([])
 
 const moods = [
-  { value: 1, emoji: '😢', label: 'Дуже погано' },
-  { value: 2, emoji: '😕', label: 'Погано' },
-  { value: 3, emoji: '😐', label: 'Нормально' },
-  { value: 4, emoji: '🙂', label: 'Добре' },
-  { value: 5, emoji: '😄', label: 'Чудово' }
+  { value: 'bad', emoji: '😢', label: 'Дуже погано' },
+  { value: 'not_good', emoji: '😕', label: 'Погано' },
+  { value: 'normal', emoji: '😐', label: 'Нормально' },
+  { value: 'good', emoji: '🙂', label: 'Добре' },
+  { value: 'great', emoji: '😄', label: 'Чудово' }
 ]
 
 onMounted(() => {
   if (!authStore.user) return
-  listenToData('moodmain', (data) => {
+  listenToData(`moods/${authStore.user.uid}`, (data) => {
     let allMoods = []
     if (data) {
-      if (data[authStore.user.uid]) {
-        allMoods = allMoods.concat(
-          Object.entries(data[authStore.user.uid])
-            .map(([id, mood]) => ({
-              ...mood,
-              id,
-              userType: 'me',
-              createdAt: mood.createdAt || mood.timestamp ? new Date(mood.createdAt || mood.timestamp) : new Date(0)
-            }))
-        )
-      }
-      const partnerUid = Object.keys(data).find(uid => uid !== authStore.user.uid)
-      if (partnerUid && data[partnerUid]) {
-        allMoods = allMoods.concat(
-          Object.entries(data[partnerUid])
-            .map(([id, mood]) => ({
-              ...mood,
-              id,
-              userType: 'partner',
-              createdAt: mood.createdAt || mood.timestamp ? new Date(mood.createdAt || mood.timestamp) : new Date(0)
-            }))
-        )
-      }
+      allMoods = Object.values(data)
+        .map(mood => ({
+          ...mood,
+          createdAt: mood.createdAt || mood.timestamp || 0
+        }))
     }
     moodHistory.value = allMoods
       .filter(m => m.value)
       .sort((a, b) => b.createdAt - a.createdAt)
-    const myMoods = moodHistory.value.filter(m => m.userType === 'me')
-    if (myMoods.length) {
-      const found = moods.find(m => m.value === myMoods[0].value)
+    if (moodHistory.value.length) {
+      const found = moods.find(m => m.value === moodHistory.value[0].value)
       currentMood.value = found || null
     } else {
       currentMood.value = null
@@ -164,11 +144,12 @@ const selectMood = (mood) => {
 const saveMood = async () => {
   if (!currentMood.value || !authStore.user) return
   try {
-    await pushData(`moodmain/${authStore.user.uid}`, {
+    await pushData(`moods/${authStore.user.uid}`, {
       value: currentMood.value.value,
       emoji: currentMood.value.emoji,
       note: moodNote.value.trim(),
       createdAt: Date.now(),
+      timestamp: Date.now(),
       userId: authStore.user.uid,
       userEmail: authStore.user.email
     })
@@ -182,6 +163,18 @@ const saveMood = async () => {
 
 const getMoodCount = (value) => {
   return moodHistory.value.filter(entry => entry.value === value).length
+}
+
+const formatDate = (timestamp) => {
+  const date = new Date(timestamp)
+  return date.toLocaleDateString()
+}
+
+const getUserLabel = (email) => {
+  if (!email) return ''
+  if (email.includes('facellesit')) return 'Зайчик'
+  if (email.includes('martadaniluk4')) return 'Кицюня'
+  return email
 }
 </script>
 
