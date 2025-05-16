@@ -1,10 +1,11 @@
-import { ref, onValue, set, update, remove, push, child, get } from 'firebase/database'
-import { database } from './index'
+import { ref as dbRef, onValue, set, update, remove, push, child, get } from 'firebase/database'
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { database, storage } from './index'
 import { auth } from './index'
 
 // Отримання даних у реальному часі
 export const listenToData = (path, callback) => {
-  const dataRef = ref(database, path)
+  const dataRef = dbRef(database, path)
   const unsubscribe = onValue(dataRef, (snapshot) => {
     const data = snapshot.val()
     callback(data)
@@ -16,7 +17,7 @@ export const listenToData = (path, callback) => {
 // Отримання даних один раз
 export const getData = async (path) => {
   try {
-    const snapshot = await get(ref(database, path))
+    const snapshot = await get(dbRef(database, path))
     return snapshot.val()
   } catch (error) {
     console.error('Error getting data:', error)
@@ -27,7 +28,7 @@ export const getData = async (path) => {
 // Запис даних
 export const writeData = async (path, data) => {
   try {
-    await set(ref(database, path), {
+    await set(dbRef(database, path), {
       ...data,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -42,7 +43,7 @@ export const writeData = async (path, data) => {
 // Оновлення даних
 export const updateData = async (path, data) => {
   try {
-    await update(ref(database, path), {
+    await update(dbRef(database, path), {
       ...data,
       updatedAt: new Date().toISOString()
     })
@@ -56,7 +57,7 @@ export const updateData = async (path, data) => {
 // Видалення даних
 export const removeData = async (path) => {
   try {
-    await remove(ref(database, path))
+    await remove(dbRef(database, path))
     return true
   } catch (error) {
     console.error('Error removing data:', error)
@@ -68,7 +69,7 @@ export const removeData = async (path) => {
 export const pushData = async (path, data) => {
   try {
     console.log('Pushing data to path:', path, 'with data:', data)
-    const newRef = push(ref(database, path))
+    const newRef = push(dbRef(database, path))
     const dataToSave = {
       ...data,
       id: newRef.key,
@@ -88,7 +89,7 @@ export const pushData = async (path, data) => {
 // Отримання даних користувача
 export const getUserData = async (userId) => {
   try {
-    const snapshot = await get(ref(database, `users/${userId}`))
+    const snapshot = await get(dbRef(database, `users/${userId}`))
     return snapshot.val()
   } catch (error) {
     console.error('Error getting user data:', error)
@@ -99,7 +100,7 @@ export const getUserData = async (userId) => {
 // Оновлення даних користувача
 export const updateUserData = async (userId, data) => {
   try {
-    await update(ref(database, `users/${userId}`), {
+    await update(dbRef(database, `users/${userId}`), {
       ...data,
       updatedAt: new Date().toISOString()
     })
@@ -113,7 +114,7 @@ export const updateUserData = async (userId, data) => {
 // Отримання повідомлень
 export const getMessages = async (limit = 50) => {
   try {
-    const messagesRef = ref(database, 'messages')
+    const messagesRef = dbRef(database, 'messages')
     const snapshot = await get(messagesRef)
     const messages = []
     
@@ -134,7 +135,7 @@ export const getMessages = async (limit = 50) => {
 // Відправка повідомлення
 export const sendMessage = async (userId, content) => {
   try {
-    const newMessageRef = push(ref(database, 'messages'))
+    const newMessageRef = push(dbRef(database, 'messages'))
     await set(newMessageRef, {
       userId,
       content,
@@ -150,14 +151,14 @@ export const sendMessage = async (userId, content) => {
 
 // Функція для видалення даних
 export const deleteData = async (path) => {
-  const dataRef = ref(database, path)
+  const dataRef = dbRef(database, path)
   await remove(dataRef)
 }
 
 export const addPointsTransaction = async (userId, amount, reason, type = 'reward') => {
   try {
     // Отримуємо поточні бали користувача
-    const pointsRef = ref(database, `points/${userId}`)
+    const pointsRef = dbRef(database, `points/${userId}`)
     const pointsSnapshot = await get(pointsRef)
     const currentPoints = pointsSnapshot.exists() ? pointsSnapshot.val().current || 0 : 0
 
@@ -170,7 +171,7 @@ export const addPointsTransaction = async (userId, amount, reason, type = 'rewar
     })
 
     // Додаємо транзакцію
-    await push(ref(database, 'points_transactions'), {
+    await push(dbRef(database, 'points_transactions'), {
       amount,
       reason,
       timestamp: Date.now(),
@@ -182,6 +183,18 @@ export const addPointsTransaction = async (userId, amount, reason, type = 'rewar
     return true
   } catch (error) {
     console.error('Error adding points transaction:', error)
+    throw error
+  }
+}
+
+export const uploadFile = async (file, path) => {
+  try {
+    const fileRef = storageRef(storage, path)
+    await uploadBytes(fileRef, file)
+    const downloadURL = await getDownloadURL(fileRef)
+    return downloadURL
+  } catch (error) {
+    console.error('Error uploading file:', error)
     throw error
   }
 } 

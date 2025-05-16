@@ -331,11 +331,12 @@ const allPhotos = ref([])
 // Визначаємо ID партнера
 const determinePartnerUid = async () => {
   try {
-    const usersSnapshot = await getData('users')
-    if (usersSnapshot) {
-      const allUsers = Object.keys(usersSnapshot)
-      partnerUid.value = allUsers.find(uid => uid !== authStore.user.uid)
-    }
+    const data = await listenToData('users', (data) => {
+      if (data) {
+        const uids = Object.keys(data)
+        partnerUid.value = uids.find(uid => uid !== authStore.user.uid)
+      }
+    })
   } catch (error) {
     console.error('Error determining partner UID:', error)
   }

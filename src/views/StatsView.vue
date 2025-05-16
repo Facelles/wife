@@ -10,7 +10,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700">Період</label>
             <select
-              v-model="selectedRange"
+              v-model="selectedPeriod"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
             >
               <option value="week">Тиждень</option>
@@ -29,20 +29,34 @@
         <div class="px-4 py-5 sm:p-6">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Настрій</h3>
           <div class="space-y-4">
-            <div v-for="mood in moodStats" :key="mood.value" class="flex items-center justify-between">
-              <div class="flex items-center">
-                <span class="text-2xl mr-2">{{ mood.emoji }}</span>
-                <span class="text-sm text-gray-500">{{ mood.label }}</span>
-              </div>
-              <div class="flex items-center">
-                <div class="w-32 bg-gray-200 rounded-full h-2 mr-2">
-                  <div
-                    class="bg-primary-600 h-2 rounded-full"
-                    :style="{ width: `${mood.percentage}%` }"
-                  ></div>
+            <!-- Зайчик -->
+            <div class="mb-6">
+              <h4 class="text-sm font-medium text-gray-700 mb-2">Зайчик</h4>
+              <div v-if="moodStats.user.length" class="space-y-2">
+                <div v-for="stat in moodStats.user" :key="stat.mood" class="flex items-center justify-between">
+                  <span class="text-gray-600">{{ stat.mood }}</span>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-sm text-gray-500">{{ stat.count }} разів</span>
+                    <span class="text-sm font-medium text-primary-600">{{ stat.percentage }}%</span>
+                  </div>
                 </div>
-                <span class="text-sm text-gray-500">{{ mood.count }}</span>
               </div>
+              <div v-else class="text-center text-gray-400 py-2">Немає даних</div>
+            </div>
+
+            <!-- Кицюня -->
+            <div>
+              <h4 class="text-sm font-medium text-gray-700 mb-2">Кицюня</h4>
+              <div v-if="moodStats.partner.length" class="space-y-2">
+                <div v-for="stat in moodStats.partner" :key="stat.mood" class="flex items-center justify-between">
+                  <span class="text-gray-600">{{ stat.mood }}</span>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-sm text-gray-500">{{ stat.count }} разів</span>
+                    <span class="text-sm font-medium text-primary-600">{{ stat.percentage }}%</span>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="text-center text-gray-400 py-2">Немає даних</div>
             </div>
           </div>
         </div>
@@ -131,6 +145,9 @@
                       <p class="text-sm text-gray-500">
                         {{ activity.description }}
                       </p>
+                      <p class="text-xs text-gray-400 mt-1">
+                        Автор: {{ activity.author }}
+                      </p>
                     </div>
                     <div class="whitespace-nowrap text-right text-sm text-gray-500">
                       {{ formatDate(activity.date) }}
@@ -164,6 +181,44 @@
         <p class="text-4xl md:text-6xl">{{ partnerMood || '😊' }}</p>
       </div>
     </div>
+
+    <!-- Статистика балів -->
+    <div class="bg-white rounded-xl shadow p-6">
+      <h3 class="text-lg font-medium mb-4">Статистика балів</h3>
+      <div class="grid grid-cols-2 gap-4">
+        <!-- Бали користувачів -->
+        <div class="space-y-4">
+          <div class="text-center p-4 bg-gray-50 rounded-lg">
+            <div class="text-sm text-gray-500 mb-1">Зайчик</div>
+            <div class="text-3xl font-bold text-primary-600">{{ pointsStats.user }}</div>
+            <div class="text-sm text-gray-500">балів</div>
+          </div>
+          <div class="text-center p-4 bg-gray-50 rounded-lg">
+            <div class="text-sm text-gray-500 mb-1">Кицюня</div>
+            <div class="text-3xl font-bold text-primary-600">{{ pointsStats.partner }}</div>
+            <div class="text-sm text-gray-500">балів</div>
+          </div>
+        </div>
+
+        <!-- Бали, які додали -->
+        <div class="space-y-4">
+          <div class="text-center p-4 bg-green-50 rounded-lg">
+            <div class="text-sm text-gray-500 mb-1">
+              {{ authStore.user.email === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня' }} додав(ла)
+            </div>
+            <div class="text-3xl font-bold text-green-600">+{{ pointsStats.givenByUser }}</div>
+            <div class="text-sm text-gray-500">балів</div>
+          </div>
+          <div class="text-center p-4 bg-green-50 rounded-lg">
+            <div class="text-sm text-gray-500 mb-1">
+              {{ authStore.user.email === 'facellesit@gmail.com' ? 'Кицюня' : 'Зайчик' }} додав(ла)
+            </div>
+            <div class="text-3xl font-bold text-green-600">+{{ pointsStats.givenByPartner }}</div>
+            <div class="text-sm text-gray-500">балів</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -173,104 +228,298 @@ import { useAuthStore } from '../stores/auth'
 import { listenToData } from '../firebase/database-service'
 
 const authStore = useAuthStore()
-const selectedRange = ref('week')
+const selectedPeriod = ref('week')
+
+// Функція для отримання початку періоду
+const getPeriodStart = (period) => {
+  const now = Date.now()
+  const periodMs = {
+    week: 7 * 24 * 60 * 60 * 1000,
+    month: 30 * 24 * 60 * 60 * 1000,
+    year: 365 * 24 * 60 * 60 * 1000
+  }[period]
+  return new Date(now - periodMs)
+}
 
 // Реальні дані
 const moods = ref([])
 const tasks = ref([])
 const pointsHistory = ref([])
+const photos = ref([])
+const currentMood = ref(null)
+const partnerMood = ref(null)
 
 // Завантаження даних з бази
 onMounted(() => {
   // Настрої
-  listenToData('moods', (data) => {
+  listenToData('moodmain', (data) => {
     if (data) {
-      moods.value = Object.entries(data).map(([id, mood]) => ({ id, ...mood }))
+      // Конвертуємо об'єкт в масив
+      const allMoods = []
+      Object.entries(data).forEach(([userId, userMoods]) => {
+        Object.entries(userMoods).forEach(([moodId, mood]) => {
+          allMoods.push({
+            id: moodId,
+            userId,
+            ...mood
+          })
+        })
+      })
+      moods.value = allMoods
+
+      // mood поточного користувача
+      const myMoodArr = allMoods
+        .filter(m => m.userId === authStore.user.uid)
+        .sort((a, b) => b.createdAt - a.createdAt)
+      currentMood.value = myMoodArr.length ? myMoodArr[0].emoji || myMoodArr[0].mood || null : null
+      
+      // mood партнера
+      const partnerUid = authStore.user.email === 'facellesit@gmail.com' ? 
+        Object.keys(data).find(uid => uid !== authStore.user.uid) : 
+        Object.keys(data).find(uid => uid !== authStore.user.uid)
+      if (partnerUid) {
+        const partnerMoodArr = allMoods
+          .filter(m => m.userId === partnerUid)
+          .sort((a, b) => b.createdAt - a.createdAt)
+        partnerMood.value = partnerMoodArr.length ? partnerMoodArr[0].emoji || partnerMoodArr[0].mood || null : null
+      }
     }
   })
+
   // Завдання
   listenToData('tasks', (data) => {
     if (data) {
       tasks.value = Object.entries(data).map(([id, task]) => ({ id, ...task }))
     }
   })
+
+  // Бали
+  listenToData('points_transactions', (data) => {
+    if (data) {
+      pointsHistory.value = Object.entries(data).map(([id, transaction]) => ({ id, ...transaction }))
+    }
+  })
+
+  // Фотографії
+  listenToData('photos', (data) => {
+    if (data) {
+      photos.value = Object.entries(data).map(([id, photo]) => ({ id, ...photo }))
+    }
+  })
 })
 
 // Статистика настрою
 const moodStats = computed(() => {
-  const stats = [
-    { value: 'terrible', emoji: '😢', label: 'Дуже погано', count: 0 },
-    { value: 'bad', emoji: '😕', label: 'Погано', count: 0 },
-    { value: 'neutral', emoji: '😐', label: 'Нормально', count: 0 },
-    { value: 'good', emoji: '🙂', label: 'Добре', count: 0 },
-    { value: 'great', emoji: '😊', label: 'Чудово', count: 0 }
-  ]
-  moods.value.forEach(mood => {
-    const found = stats.find(s => s.value === mood.value)
-    if (found) found.count++
-  })
-  const total = stats.reduce((sum, s) => sum + s.count, 0)
-  stats.forEach(s => s.percentage = total ? Math.round((s.count / total) * 100) : 0)
-  return stats
+  if (!moods.value || !moods.value.length) return { user: [], partner: [] }
+  
+  const periodStart = getPeriodStart(selectedPeriod.value)
+  const filteredMoods = moods.value.filter(mood => 
+    new Date(mood.createdAt) >= periodStart
+  )
+
+  // Розділяємо настрій по користувачах
+  const userMoods = filteredMoods.filter(m => m.userId === 'facellesit@gmail.com')
+  const partnerMoods = filteredMoods.filter(m => m.userId === 'martadaniluk4@gmail.com')
+
+  // Рахуємо статистику для кожного користувача
+  const calculateMoodStats = (moods) => {
+    const total = moods.length
+    if (total === 0) return []
+
+    const stats = {}
+    moods.forEach(mood => {
+      const moodValue = mood.emoji || mood.mood
+      if (!stats[moodValue]) {
+        stats[moodValue] = { count: 0, percentage: 0 }
+      }
+      stats[moodValue].count++
+    })
+
+    return Object.entries(stats).map(([mood, data]) => ({
+      mood,
+      count: data.count,
+      percentage: Math.round((data.count / total) * 100)
+    }))
+  }
+
+  return {
+    user: calculateMoodStats(userMoods),
+    partner: calculateMoodStats(partnerMoods)
+  }
+})
+
+// Додаємо статистику по балах
+const pointsStats = computed(() => {
+  if (!pointsHistory.value) return { 
+    user: 0, 
+    partner: 0,
+    givenByUser: 0,
+    givenByPartner: 0
+  }
+  
+  const periodStart = getPeriodStart(selectedPeriod.value)
+  const filteredPoints = pointsHistory.value.filter(point => 
+    new Date(point.timestamp) >= periodStart
+  )
+
+  // Розділяємо бали по користувачах
+  const userPoints = filteredPoints
+    .filter(p => p.userId === 'facellesit@gmail.com')
+    .reduce((sum, p) => sum + p.amount, 0)
+  
+  const partnerPoints = filteredPoints
+    .filter(p => p.userId === 'martadaniluk4@gmail.com')
+    .reduce((sum, p) => sum + p.amount, 0)
+
+  // Рахуємо скільки балів додав кожен
+  const givenByUser = filteredPoints
+    .filter(p => p.userEmail === 'facellesit@gmail.com' && p.userId !== 'facellesit@gmail.com')
+    .reduce((sum, p) => sum + p.amount, 0)
+
+  const givenByPartner = filteredPoints
+    .filter(p => p.userEmail === 'martadaniluk4@gmail.com' && p.userId !== 'martadaniluk4@gmail.com')
+    .reduce((sum, p) => sum + p.amount, 0)
+
+  return {
+    user: userPoints,
+    partner: partnerPoints,
+    givenByUser,
+    givenByPartner
+  }
 })
 
 // Завдання
-const completedTasks = computed(() => tasks.value.filter(t => t.status === 'completed').length)
-const pendingTasks = computed(() => tasks.value.filter(t => t.status === 'pending').length)
+const completedTasks = computed(() => {
+  const now = Date.now()
+  const periodMs = {
+    week: 7 * 24 * 60 * 60 * 1000,
+    month: 30 * 24 * 60 * 60 * 1000,
+    year: 365 * 24 * 60 * 60 * 1000
+  }[selectedPeriod.value]
+
+  return tasks.value.filter(t => 
+    t.status === 'completed' && 
+    t.createdAt && 
+    (now - t.createdAt) <= periodMs
+  ).length
+})
+
+const pendingTasks = computed(() => {
+  const now = Date.now()
+  const periodMs = {
+    week: 7 * 24 * 60 * 60 * 1000,
+    month: 30 * 24 * 60 * 60 * 1000,
+    year: 365 * 24 * 60 * 60 * 1000
+  }[selectedPeriod.value]
+
+  return tasks.value.filter(t => 
+    t.status === 'pending' && 
+    t.createdAt && 
+    (now - t.createdAt) <= periodMs
+  ).length
+})
+
 const taskCompletionRate = computed(() => {
   const total = completedTasks.value + pendingTasks.value
   return total > 0 ? Math.round((completedTasks.value / total) * 100) : 0
 })
 
-// Бали (сума points у виконаних завданнях)
+// Бали
 const totalPoints = computed(() => {
-  return tasks.value.filter(t => t.status === 'completed').reduce((sum, t) => sum + (t.points || 0), 0)
+  const now = Date.now()
+  const periodMs = {
+    week: 7 * 24 * 60 * 60 * 1000,
+    month: 30 * 24 * 60 * 60 * 1000,
+    year: 365 * 24 * 60 * 60 * 1000
+  }[selectedPeriod.value]
+
+  return pointsHistory.value
+    .filter(p => p.timestamp && (now - p.timestamp) <= periodMs)
+    .reduce((sum, p) => sum + p.amount, 0)
 })
+
 const recentPoints = computed(() => {
-  return tasks.value
-    .filter(t => t.status === 'completed' && t.points)
-    .sort((a, b) => b.createdAt - a.createdAt)
+  return pointsHistory.value
+    .sort((a, b) => b.timestamp - a.timestamp)
     .slice(0, 5)
-    .map(t => ({
-      id: t.id,
-      description: `Завершення завдання: ${t.title}`,
-      value: t.points,
-      date: new Date(t.createdAt)
+    .map(p => ({
+      id: p.id,
+      description: p.reason,
+      value: p.amount,
+      date: new Date(p.timestamp)
     }))
 })
 
-// Таймлайн активності (завершення завдань, зміна настрою, нарахування балів)
+// Таймлайн активності
 const activityTimeline = computed(() => {
+  const now = Date.now()
+  const periodMs = {
+    week: 7 * 24 * 60 * 60 * 1000,
+    month: 30 * 24 * 60 * 60 * 1000,
+    year: 365 * 24 * 60 * 60 * 1000
+  }[selectedPeriod.value]
+
   const activities = []
-  tasks.value.forEach(t => {
-    if (t.status === 'completed') {
+
+  // Додаємо активності з завдань
+  tasks.value
+    .filter(t => t.createdAt && (now - t.createdAt) <= periodMs)
+    .forEach(t => {
       activities.push({
         id: 'task-' + t.id,
         type: 'task',
         icon: '✓',
         description: `Завершено завдання "${t.title}"`,
-        date: new Date(t.createdAt)
+        date: new Date(t.createdAt),
+        author: t.userEmail === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня'
       })
-      if (t.points) {
-        activities.push({
-          id: 'points-' + t.id,
-          type: 'points',
-          icon: '★',
-          description: `Отримано ${t.points} балів за "${t.title}"`,
-          date: new Date(t.createdAt)
-        })
-      }
-    }
-  })
-  moods.value.forEach(mood => {
-    activities.push({
-      id: 'mood-' + mood.id,
-      type: 'mood',
-      icon: mood.emoji || '😐',
-      description: `Відмічено настрій: ${mood.emoji || mood.value}`,
-      date: new Date(mood.timestamp || mood.createdAt)
     })
-  })
+
+  // Додаємо активності з настроїв
+  moods.value
+    .filter(m => m.createdAt && (now - m.createdAt) <= periodMs)
+    .forEach(mood => {
+      activities.push({
+        id: 'mood-' + mood.id,
+        type: 'mood',
+        icon: mood.emoji || '😐',
+        description: `Відмічено настрій: ${mood.emoji || mood.mood}`,
+        date: new Date(mood.createdAt),
+        author: mood.userEmail === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня'
+      })
+    })
+
+  // Додаємо активності з балів
+  pointsHistory.value
+    .filter(p => p.timestamp && (now - p.timestamp) <= periodMs)
+    .forEach(point => {
+      // Визначаємо автора на основі того, хто додав бали
+      const author = point.userEmail === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня'
+
+      activities.push({
+        id: 'points-' + point.id,
+        type: 'points',
+        icon: '★',
+        description: `${point.amount > 0 ? 'Отримано' : 'Списано'} ${Math.abs(point.amount)} балів: ${point.reason}`,
+        date: new Date(point.timestamp),
+        author
+      })
+    })
+
+  // Додаємо активності з фотографій
+  photos.value
+    .filter(p => p.createdAt && (now - p.createdAt) <= periodMs)
+    .forEach(photo => {
+      activities.push({
+        id: 'photo-' + photo.id,
+        type: 'photo',
+        icon: '📸',
+        description: `Додано фото: ${photo.description || 'Без опису'}`,
+        date: new Date(photo.createdAt),
+        author: photo.userEmail === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня'
+      })
+    })
+
   return activities.sort((a, b) => b.date - a.date).slice(0, 15)
 })
 
@@ -282,6 +531,8 @@ const getActivityTypeClass = (type) => {
       return 'bg-blue-500 text-white'
     case 'points':
       return 'bg-yellow-500 text-white'
+    case 'photo':
+      return 'bg-purple-500 text-white'
     default:
       return 'bg-gray-500 text-white'
   }
@@ -297,9 +548,6 @@ const formatDate = (date) => {
 }
 
 // Mood comparison
-const currentMood = ref(null)
-const partnerMood = ref(null)
-
 const showMoodSelector = ref(false)
 </script>
 

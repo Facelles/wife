@@ -62,42 +62,62 @@ const pointsHistory = ref([])
 const partnerPoints = ref(0)
 
 const myUid = computed(() => authStore.user?.uid)
-const partnerUid = ref(null)
+const partnerUid = computed(() => {
+  if (!authStore.user) return null
+  return authStore.user.email === 'facellesit@gmail.com' ? 
+    'martadaniluk4@gmail.com' : 
+    'facellesit@gmail.com'
+})
 
 onMounted(() => {
   if (!authStore.user) return
-  listenToData('points', (data) => {
+  
+  // Підписуємось на зміни в транзакціях балів
+  listenToData('points_transactions', (data) => {
     if (!data) return
-    // Знаходимо partnerUid (перший uid, який не мій)
-    partnerUid.value = Object.keys(data).find(uid => uid !== myUid.value)
-    // Показуємо бали партнера
-    if (partnerUid.value && data[partnerUid.value]) {
-      const arr = Object.entries(data[partnerUid.value]).map(([id, entry]) => ({ id, ...entry }))
-      partnerPoints.value = arr.reduce((sum, e) => sum + (e.amount || 0), 0)
-      pointsHistory.value = arr.sort((a, b) => b.createdAt - a.createdAt)
-    } else {
-      partnerPoints.value = 0
-      pointsHistory.value = []
-    }
+    
+    // Фільтруємо транзакції для партнера
+    const partnerTransactions = Object.entries(data)
+      .filter(([_, transaction]) => transaction.userEmail === partnerUid.value)
+      .map(([id, transaction]) => ({ id, ...transaction }))
+      .sort((a, b) => b.timestamp - a.timestamp)
+    
+    // Рахуємо загальну кількість балів партнера
+    partnerPoints.value = partnerTransactions.reduce((sum, t) => sum + t.amount, 0)
+    pointsHistory.value = partnerTransactions
   })
 })
 
 const handleAddPoints = async () => {
-  if (!addPointsAmount.value || !addPointsDescription.value.trim() || !partnerUid.value) {
-    alert('Введіть кількість балів і опис')
+  if (!addPointsAmount.value || addPointsAmount.value <= 0) {
+    alert('Введіть коректну кількість балів')
     return
   }
+  if (!addPointsDescription.value || addPointsDescription.value.trim() === '') {
+    alert('Введіть опис')
+    return
+  }
+  if (!partnerUid.value) {
+    alert('Помилка: не знайдено партнера')
+    return
+  }
+
   try {
-    await pushData(`points/${partnerUid.value}`, {
-      amount: addPointsAmount.value,
-      description: addPointsDescription.value,
-      from: myUid.value,
-      createdAt: Date.now()
+    // Додаємо транзакцію балів
+    await pushData('points_transactions', {
+      amount: Number(addPointsAmount.value),
+      reason: addPointsDescription.value.trim(),
+      timestamp: Date.now(),
+      userId: partnerUid.value,
+      userEmail: partnerUid.value,
+      type: 'reward'
     })
+    
     showAddPointsModal.value = false
     addPointsAmount.value = 1
     addPointsDescription.value = ''
-  } catch (e) {
+  } catch (error) {
+    console.error('Помилка при додаванні балів:', error)
     alert('Помилка при додаванні балів')
   }
 }

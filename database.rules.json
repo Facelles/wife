@@ -9,7 +9,16 @@
     },
     "users": {
       "$uid": {
-        ".validate": "auth.uid == $uid"
+        ".validate": "auth.uid == $uid",
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid === $uid",
+        "points": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.uid === $uid",
+          "$pointId": {
+            ".validate": "newData.hasChildren(['amount', 'description', 'createdAt'])"
+          }
+        }
       }
     },
     "tasks": {
@@ -94,6 +103,16 @@
         ".read": "auth != null",
         ".write": "auth != null",
         ".validate": "newData.hasChildren(['amount', 'reason', 'timestamp', 'userId', 'userEmail', 'type'])"
+      }
+    },
+    "photos": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$photoId": {
+        ".validate": "newData.hasChildren(['url', 'userId', 'createdAt'])",
+        "userId": {
+          ".validate": "newData.val() === auth.uid"
+        }
       }
     }
   }
