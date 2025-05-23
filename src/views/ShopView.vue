@@ -31,6 +31,8 @@
         <div class="aspect-square bg-gray-100 rounded-xl overflow-hidden mb-4 shadow-inner">
           <img
             :src="item.imageUrl"
+            width="200"
+            height="200"
             class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
             alt=""
           >

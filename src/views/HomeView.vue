@@ -88,7 +88,7 @@
             <h3 class="text-sm md:text-base font-light text-gray-400">{{ authStore.user?.email === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня' }}</h3>
             <p class="text-3xl md:text-5xl font-bold text-primary-600">{{ points }}</p>
           </div>
-          <div class="flex gap-2">
+          <div class="flex flex-col sm:flex-row gap-2">
             <button
               v-for="action in actions"
               :key="action.text"
@@ -110,7 +110,7 @@
           <!-- Mood Stats -->
           <div class="bg-white/80 rounded-xl p-4">
             <h3 class="text-sm font-medium text-gray-500 mb-2">Настрій</h3>
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between flex-wrap">
               <span class="text-2xl">{{ currentMood || '😐' }}</span>
               <div class="text-right">
                 <div class="text-lg font-semibold text-primary-600">{{ moodPercentage }}%</div>
@@ -122,7 +122,7 @@
           <!-- Task Stats -->
           <div class="bg-white/80 rounded-xl p-4">
             <h3 class="text-sm font-medium text-gray-500 mb-2">Завдання</h3>
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between flex-wrap">
               <span class="text-2xl">📝</span>
               <div class="text-right">
                 <div class="text-lg font-semibold text-primary-600">{{ taskCompletionRate }}%</div>
@@ -134,7 +134,7 @@
           <!-- Points Stats -->
           <div class="bg-white/80 rounded-xl p-4">
             <h3 class="text-sm font-medium text-gray-500 mb-2">Бали</h3>
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between flex-wrap">
               <span class="text-2xl">⭐</span>
               <div class="text-right">
                 <div class="text-lg font-semibold text-primary-600">{{ points }}</div>
@@ -157,7 +157,7 @@
       <h2 class="text-2xl md:text-4xl font-light text-gray-700 text-center animate-fade-in">Галерея</h2>
       <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 md:p-8 animate-slide-up">
         <!-- Recent Photos Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 min-h-[210px]">
           <div v-for="photo in recentPhotos" :key="photo.id" class="aspect-square bg-gray-100 rounded-lg overflow-hidden">
             <img
               :src="photo.url"
@@ -183,7 +183,7 @@
     <div v-if="showMoodSelector" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-2xl p-4 md:p-6 w-full max-w-sm mx-auto transform transition-all">
         <h3 class="text-xl font-medium text-gray-900 mb-4 text-center">Виберіть настрій</h3>
-        <div class="grid grid-cols-5 gap-3 mb-6">
+        <div class="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-6">
           <button
             v-for="mood in moods"
             :key="mood.value"

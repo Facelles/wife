@@ -36,6 +36,8 @@
            class="relative group bg-white rounded-xl shadow overflow-hidden">
         <img :src="photo.url" 
              :alt="photo.description || 'Зображення'" 
+             width="192"
+             height="192"
              class="w-full h-48 object-cover cursor-pointer"
              @click="openPhotoViewer(photo)">
         <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-200">
