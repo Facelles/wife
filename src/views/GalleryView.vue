@@ -70,8 +70,9 @@
         </h3>
         <form @submit.prevent="handleFolderSubmit" class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Назва папки</label>
+            <label for="folderName" class="block text-sm font-medium text-gray-700">Назва папки</label>
             <input
+              id="folderName"
               v-model="folderForm.name"
               type="text"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
@@ -79,8 +80,9 @@
             >
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Опис</label>
+            <label for="folderDescription" class="block text-sm font-medium text-gray-700">Опис</label>
             <textarea
+              id="folderDescription"
               v-model="folderForm.description"
               rows="3"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"

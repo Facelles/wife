@@ -22,8 +22,9 @@
         </div>
         <!-- Mood note -->
         <div class="mt-6">
-          <label class="block text-sm font-medium text-gray-700">Додайте нотатку про свій день</label>
+          <label for="moodNote" class="block text-sm font-medium text-gray-700">Додайте нотатку про свій день</label>
           <textarea
+            id="moodNote"
             v-model="moodNote"
             rows="3"
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"

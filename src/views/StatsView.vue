@@ -8,8 +8,9 @@
         <!-- Date range selector -->
         <div class="mt-4 flex items-center space-x-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Період</label>
+            <label for="periodSelect" class="block text-sm font-medium text-gray-700">Період</label>
             <select
+              id="periodSelect"
               v-model="selectedPeriod"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
             >
@@ -274,9 +275,7 @@ onMounted(() => {
       currentMood.value = myMoodArr.length ? myMoodArr[0].emoji || myMoodArr[0].mood || null : null
       
       // mood партнера
-      const partnerUid = authStore.user.email === 'facellesit@gmail.com' ? 
-        Object.keys(data).find(uid => uid !== authStore.user.uid) : 
-        Object.keys(data).find(uid => uid !== authStore.user.uid)
+      const partnerUid = Object.keys(data).find(uid => uid !== authStore.user.uid)
       if (partnerUid) {
         const partnerMoodArr = allMoods
           .filter(m => m.userId === partnerUid)

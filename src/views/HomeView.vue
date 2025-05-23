@@ -237,12 +237,25 @@
         <h3 class="text-xl font-medium text-gray-900 mb-4 text-center">Додати бали</h3>
         <form @submit.prevent="handleAddPoints" class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Кількість</label>
-            <input type="number" v-model="addPointsAmount" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" min="1" required>
+            <label for="pointsAmount" class="block text-sm font-medium text-gray-700">Кількість</label>
+            <input 
+              id="pointsAmount"
+              type="number" 
+              v-model="addPointsAmount" 
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" 
+              min="1" 
+              required
+            >
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Опис</label>
-            <input type="text" v-model="addPointsDescription" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" required>
+            <label for="pointsDescription" class="block text-sm font-medium text-gray-700">Опис</label>
+            <input 
+              id="pointsDescription"
+              type="text" 
+              v-model="addPointsDescription" 
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" 
+              required
+            >
           </div>
           <div class="flex justify-end space-x-3">
             <button type="button" @click="showAddPointsModal = false" class="btn btn-secondary">Скасувати</button>

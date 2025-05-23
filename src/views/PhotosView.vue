@@ -35,7 +35,7 @@
       <div v-for="photo in filteredPhotos" :key="photo.id" 
            class="relative group bg-white rounded-xl shadow overflow-hidden">
         <img :src="photo.url" 
-             :alt="photo.description || 'Фото'" 
+             :alt="photo.description || 'Зображення'" 
              class="w-full h-48 object-cover cursor-pointer"
              @click="openPhotoViewer(photo)">
         <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-200">
@@ -60,18 +60,22 @@
         <h3 class="text-xl font-medium text-gray-900 mb-4">Завантажити фото</h3>
         <form @submit.prevent="handleUpload" class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Фото</label>
-            <input type="file" 
-                   @change="handleFileSelect" 
-                   accept="image/*"
-                   class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100" />
+            <label for="photoFile" class="block text-sm font-medium text-gray-700 mb-1">Фото</label>
+            <input 
+              id="photoFile"
+              type="file" 
+              @change="handleFileSelect" 
+              accept="image/*"
+              class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Опис</label>
-            <input type="text" 
-                   v-model="uploadDescription" 
-                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                   placeholder="Опишіть фото...">
+            <label for="photoDescription" class="block text-sm font-medium text-gray-700 mb-1">Опис</label>
+            <input 
+              id="photoDescription"
+              type="text" 
+              v-model="uploadDescription" 
+              class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+              placeholder="Опишіть фото...">
           </div>
           <div class="flex justify-end space-x-3">
             <button type="button" 
@@ -99,7 +103,7 @@
           </svg>
         </button>
         <img :src="selectedPhoto.url" 
-             :alt="selectedPhoto.description || 'Фото'" 
+             :alt="selectedPhoto.description || 'Зображення'" 
              class="max-h-[80vh] w-full object-contain">
         <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent">
           <p class="text-white text-lg">{{ selectedPhoto.description || 'Без опису' }}</p>

@@ -79,8 +79,9 @@
         <h3 class="text-2xl font-medium text-gray-900 mb-6 text-center">Додати товар</h3>
         <form @submit.prevent="handleAddItem" class="space-y-6">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Назва</label>
+            <label for="itemName" class="block text-sm font-medium text-gray-700 mb-2">Назва</label>
             <input
+              id="itemName"
               v-model="newItem.name"
               type="text"
               class="w-full px-4 py-2 rounded-xl border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-colors"
@@ -88,8 +89,9 @@
             >
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Опис</label>
+            <label for="itemDescription" class="block text-sm font-medium text-gray-700 mb-2">Опис</label>
             <textarea
+              id="itemDescription"
               v-model="newItem.description"
               rows="3"
               class="w-full px-4 py-2 rounded-xl border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-colors"
@@ -98,8 +100,9 @@
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Ціна (балів)</label>
+              <label for="itemPrice" class="block text-sm font-medium text-gray-700 mb-2">Ціна (балів)</label>
               <input
+                id="itemPrice"
                 v-model.number="newItem.price"
                 type="number"
                 min="1"
@@ -108,8 +111,9 @@
               >
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Кількість</label>
+              <label for="itemQuantity" class="block text-sm font-medium text-gray-700 mb-2">Кількість</label>
               <input
+                id="itemQuantity"
                 v-model.number="newItem.quantity"
                 type="number"
                 min="1"
@@ -119,13 +123,14 @@
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Зображення</label>
+            <label for="itemImage" class="block text-sm font-medium text-gray-700 mb-2">Зображення</label>
             <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-primary-500 transition-colors">
               <div class="space-y-1 text-center">
                 <div class="flex text-sm text-gray-600">
                   <label class="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none">
                     <span>Завантажити файл</span>
                     <input
+                      id="itemImage"
                       type="file"
                       accept="image/*"
                       @change="handleImageUpload"

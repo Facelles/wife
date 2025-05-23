@@ -130,8 +130,9 @@
         
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Назва</label>
+            <label for="taskTitle" class="block text-sm font-medium text-gray-700">Назва</label>
             <input
+              id="taskTitle"
               v-model="taskForm.title"
               type="text"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
@@ -139,8 +140,9 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700">Опис</label>
+            <label for="taskDescription" class="block text-sm font-medium text-gray-700">Опис</label>
             <textarea
+              id="taskDescription"
               v-model="taskForm.description"
               rows="3"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
@@ -148,8 +150,9 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700">Термін</label>
+            <label for="taskDueDate" class="block text-sm font-medium text-gray-700">Термін</label>
             <input
+              id="taskDueDate"
               v-model="taskForm.dueDate"
               type="date"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
@@ -157,8 +160,9 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700">Пріоритет</label>
+            <label for="taskPriority" class="block text-sm font-medium text-gray-700">Пріоритет</label>
             <select
+              id="taskPriority"
               v-model="taskForm.priority"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
             >
@@ -169,8 +173,9 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700">Категорія</label>
+            <label for="taskCategory" class="block text-sm font-medium text-gray-700">Категорія</label>
             <input
+              id="taskCategory"
               v-model="taskForm.category"
               type="text"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
@@ -178,8 +183,9 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700">Бали</label>
+            <label for="taskPoints" class="block text-sm font-medium text-gray-700">Бали</label>
             <input
+              id="taskPoints"
               v-model.number="taskForm.points"
               type="number"
               min="0"
@@ -328,9 +334,8 @@ const toggleTaskStatus = async (task) => {
 
     // Якщо завдання виконано і воно має бали, нараховуємо їх партнеру
     if (newStatus === 'completed' && task.points > 0) {
-      const partnerUid = authStore.user.email === 'facellesit@gmail.com' ? 
-        Object.keys(data).find(uid => uid !== authStore.user.uid) : 
-        Object.keys(data).find(uid => uid !== authStore.user.uid)
+      // Determine partner UID
+      const partnerUid = tasks.value.find(t => t.userId !== authStore.user.uid)?.userId
 
       if (partnerUid) {
         await addPointsTransaction(

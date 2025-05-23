@@ -148,8 +148,9 @@
         </h3>
         <form @submit.prevent="handleNoteSubmit" class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Title</label>
+            <label for="noteTitle" class="block text-sm font-medium text-gray-700">Title</label>
             <input
+              id="noteTitle"
               type="text"
               v-model="noteForm.title"
               class="input mt-1"
@@ -157,8 +158,9 @@
             >
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Content</label>
+            <label for="noteContent" class="block text-sm font-medium text-gray-700">Content</label>
             <textarea
+              id="noteContent"
               v-model="noteForm.content"
               rows="4"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"

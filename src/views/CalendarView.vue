@@ -97,8 +97,9 @@
         
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Назва</label>
+            <label for="eventTitle" class="block text-sm font-medium text-gray-700">Назва</label>
             <input
+              id="eventTitle"
               v-model="eventForm.title"
               type="text"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
@@ -106,8 +107,9 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700">Дата</label>
+            <label for="eventDate" class="block text-sm font-medium text-gray-700">Дата</label>
             <input
+              id="eventDate"
               v-model="eventForm.date"
               type="date"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
@@ -115,8 +117,9 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700">Тип</label>
+            <label for="eventType" class="block text-sm font-medium text-gray-700">Тип</label>
             <select
+              id="eventType"
               v-model="eventForm.type"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
             >
@@ -127,8 +130,9 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700">Опис</label>
+            <label for="eventDescription" class="block text-sm font-medium text-gray-700">Опис</label>
             <textarea
+              id="eventDescription"
               v-model="eventForm.description"
               rows="3"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"

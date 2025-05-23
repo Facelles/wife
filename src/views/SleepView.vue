@@ -6,18 +6,24 @@
         <h2 class="text-2xl font-bold text-gray-900 mb-4">Sleep Overview</h2>
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
           <div>
-            <dt class="text-sm font-medium text-gray-500">Average Sleep Hours</dt>
-            <dd class="mt-1 text-3xl font-semibold text-primary-600">{{ sleep.averageSleepHours }}h</dd>
+            <dl>
+              <dt class="text-sm font-medium text-gray-500">Average Sleep Hours</dt>
+              <dd class="mt-1 text-3xl font-semibold text-primary-600">{{ sleep.averageSleepHours }}h</dd>
+            </dl>
           </div>
           <div>
-            <dt class="text-sm font-medium text-gray-500">Sleep Quality</dt>
-            <dd class="mt-1 text-3xl font-semibold text-primary-600">{{ sleep.sleepQuality }}%</dd>
+            <dl>
+              <dt class="text-sm font-medium text-gray-500">Sleep Quality</dt>
+              <dd class="mt-1 text-3xl font-semibold text-primary-600">{{ sleep.sleepQuality }}%</dd>
+            </dl>
           </div>
           <div>
-            <dt class="text-sm font-medium text-gray-500">Today's Sleep</dt>
-            <dd class="mt-1 text-3xl font-semibold text-primary-600">
-              {{ sleep.todaySleep?.hours || '0' }}h
-            </dd>
+            <dl>
+              <dt class="text-sm font-medium text-gray-500">Today's Sleep</dt>
+              <dd class="mt-1 text-3xl font-semibold text-primary-600">
+                {{ sleep.todaySleep?.hours || '0' }}h
+              </dd>
+            </dl>
           </div>
         </div>
       </div>
@@ -29,8 +35,9 @@
         <h3 class="text-lg font-medium text-gray-900 mb-4">Record Today's Sleep</h3>
         <form @submit.prevent="handleAddSleep" class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Hours of Sleep</label>
+            <label for="sleepHours" class="block text-sm font-medium text-gray-700">Hours of Sleep</label>
             <input
+              id="sleepHours"
               type="number"
               v-model="newSleep.hours"
               step="0.5"
@@ -41,8 +48,9 @@
             >
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Sleep Quality (1-10)</label>
+            <label for="sleepQuality" class="block text-sm font-medium text-gray-700">Sleep Quality (1-10)</label>
             <input
+              id="sleepQuality"
               type="number"
               v-model="newSleep.quality"
               min="1"
@@ -52,8 +60,9 @@
             >
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Notes</label>
+            <label for="sleepNotes" class="block text-sm font-medium text-gray-700">Notes</label>
             <textarea
+              id="sleepNotes"
               v-model="newSleep.notes"
               rows="3"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
@@ -118,8 +127,9 @@
         <form @submit.prevent="updateGoals" class="space-y-4">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label class="block text-sm font-medium text-gray-700">Minimum Hours</label>
+              <label for="minHours" class="block text-sm font-medium text-gray-700">Minimum Hours</label>
               <input
+                id="minHours"
                 type="number"
                 v-model="goals.minHours"
                 min="0"
@@ -129,8 +139,9 @@
               >
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700">Maximum Hours</label>
+              <label for="maxHours" class="block text-sm font-medium text-gray-700">Maximum Hours</label>
               <input
+                id="maxHours"
                 type="number"
                 v-model="goals.maxHours"
                 min="0"
@@ -140,8 +151,9 @@
               >
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700">Target Bedtime</label>
+              <label for="targetBedtime" class="block text-sm font-medium text-gray-700">Target Bedtime</label>
               <input
+                id="targetBedtime"
                 type="time"
                 v-model="goals.targetBedtime"
                 class="input mt-1"
@@ -149,8 +161,9 @@
               >
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700">Target Wake-up</label>
+              <label for="targetWakeup" class="block text-sm font-medium text-gray-700">Target Wake-up</label>
               <input
+                id="targetWakeup"
                 type="time"
                 v-model="goals.targetWakeup"
                 class="input mt-1"

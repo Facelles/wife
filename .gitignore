@@ -40,3 +40,7 @@ coverage
 
 # Netlify
 .netlify
+
+# SonarQube
+.sonar/cache
+.scannerwork
