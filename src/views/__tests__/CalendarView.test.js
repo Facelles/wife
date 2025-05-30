@@ -23,19 +23,19 @@ describe('CalendarView', () => {
     // Mock localStorage
     const mockEvents = [
       {
-        id: '1',
-        title: 'Test Event 1',
-        description: 'Test description 1',
+            id: '1',
+            title: 'Test Event 1',
+            description: 'Test description 1',
         date: new Date().toISOString().split('T')[0], // Use today's date
         type: 'task'
-      },
+          },
       {
-        id: '2',
-        title: 'Test Event 2',
-        description: 'Test description 2',
+            id: '2',
+            title: 'Test Event 2',
+            description: 'Test description 2',
         date: new Date().toISOString().split('T')[0], // Use today's date
         type: 'reminder'
-      }
+          }
     ]
     localStorage.setItem(`calendar_events_${authStore.user.uid}`, JSON.stringify(mockEvents))
 

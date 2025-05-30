@@ -251,7 +251,7 @@ describe('ChatView', () => {
     await form.trigger('submit')
     await wrapper.vm.$nextTick()
     await new Promise(resolve => setTimeout(resolve, 0))
-    
+
     expect(mockPushData).not.toHaveBeenCalled()
   })
 

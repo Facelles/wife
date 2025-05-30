@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-8 max-w-6xl mx-auto px-4">
+  <div class="space-y-8 max-w-7xl mx-auto px-4 py-8">
     <!-- Header -->
     <div class="text-center animate-slide-down">
       <h1 class="text-4xl sm:text-5xl md:text-6xl font-light text-gray-900 mb-4">
@@ -8,13 +8,47 @@
       <p class="text-lg sm:text-xl md:text-2xl text-gray-500">
         Обміняй бали на подарунки 💝
       </p>
+      <div class="mt-4 flex items-center justify-center space-x-4">
+        <div class="flex items-center space-x-2 bg-primary-50 px-4 py-2 rounded-full">
+          <span class="material-icons text-primary-500">stars</span>
+          <span class="text-primary-600 font-semibold">{{ currentUserPoints }} балів</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+      <div class="relative w-full sm:w-96">
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Пошук товарів..."
+          class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-colors"
+        >
+        <span class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">search</span>
+      </div>
+      <div class="flex space-x-2">
+        <button
+          v-for="category in categories"
+          :key="category"
+          @click="selectedCategory = category"
+          :class="[
+            'px-4 py-2 rounded-xl transition-colors',
+            selectedCategory === category
+              ? 'bg-primary-500 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          ]"
+        >
+          {{ category }}
+        </button>
+      </div>
     </div>
 
     <!-- Add Item Button -->
     <div class="flex justify-end">
       <button
         @click="showAddItemModal = true"
-        class="flex items-center space-x-2 px-6 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors shadow-lg hover:shadow-xl"
+        class="flex items-center space-x-2 px-6 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
       >
         <span class="material-icons">add</span>
         <span>Додати товар</span>
@@ -24,37 +58,38 @@
     <!-- Items Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       <div
-        v-for="item in shopItems"
+        v-for="item in filteredItems"
         :key="item.id"
-        class="bg-white/50 backdrop-blur-sm rounded-2xl p-6 animate-slide-up shadow-lg hover:shadow-xl transition-shadow"
+        class="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
       >
-        <div class="aspect-square bg-gray-100 rounded-xl overflow-hidden mb-4 shadow-inner">
+        <div class="relative aspect-square overflow-hidden">
           <img
             :src="item.imageUrl"
-            width="200"
-            height="200"
-            class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-            alt=""
+            :alt="item.name"
+            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           >
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div class="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <p class="text-sm line-clamp-2">{{ item.description }}</p>
+          </div>
         </div>
-        <div class="space-y-4">
+        
+        <div class="p-6 space-y-4">
           <div>
             <h3 class="text-xl font-medium text-gray-900 mb-2 line-clamp-2">{{ item.name }}</h3>
-            <p class="text-gray-500 line-clamp-3">{{ item.description }}</p>
-          </div>
-          
-          <div class="flex items-center justify-between text-sm text-gray-500">
-            <div class="flex items-center space-x-2">
-              <span class="material-icons text-base">person</span>
-              <span class="truncate">{{ item.userEmail }}</span>
-            </div>
-            <div class="flex items-center space-x-2">
-              <span class="material-icons text-base">schedule</span>
-              <span>{{ formatDate(item.createdAt) }}</span>
+            <div class="flex items-center justify-between text-sm text-gray-500">
+              <div class="flex items-center space-x-2">
+                <span class="material-icons text-base">person</span>
+                <span class="truncate">{{ item.userEmail }}</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="material-icons text-base">schedule</span>
+                <span>{{ formatDate(item.createdAt) }}</span>
+              </div>
             </div>
           </div>
 
-          <div class="flex items-center justify-between pt-2 border-t border-gray-200">
+          <div class="flex items-center justify-between pt-4 border-t border-gray-100">
             <div class="flex items-center space-x-2">
               <span class="material-icons text-primary-500">stars</span>
               <span class="text-primary-600 font-semibold">{{ item.price }} балів</span>
@@ -65,9 +100,9 @@
           </div>
 
           <button
-            @click="buyItem(item)"
+            @click="confirmPurchase(item)"
             :disabled="item.quantity <= 0 || currentUserPoints < item.price"
-            class="w-full px-4 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+            class="w-full px-4 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
           >
             {{ item.quantity <= 0 ? 'Закінчився' : 'Купити' }}
           </button>
@@ -76,9 +111,14 @@
     </div>
 
     <!-- Add Item Modal -->
-    <div v-if="showAddItemModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-auto shadow-2xl">
-        <h3 class="text-2xl font-medium text-gray-900 mb-6 text-center">Додати товар</h3>
+    <div v-if="showAddItemModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+      <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-auto shadow-2xl transform transition-all duration-300 scale-100">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-2xl font-medium text-gray-900">Додати товар</h3>
+          <button @click="showAddItemModal = false" class="text-gray-400 hover:text-gray-500">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
         <form @submit.prevent="handleAddItem" class="space-y-6">
           <div>
             <label for="itemName" class="block text-sm font-medium text-gray-700 mb-2">Назва</label>
@@ -125,6 +165,19 @@
             </div>
           </div>
           <div>
+            <label for="itemCategory" class="block text-sm font-medium text-gray-700 mb-2">Категорія</label>
+            <select
+              id="itemCategory"
+              v-model="newItem.category"
+              class="w-full px-4 py-2 rounded-xl border border-gray-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-colors"
+              required
+            >
+              <option v-for="category in categories" :key="category" :value="category">
+                {{ category }}
+              </option>
+            </select>
+          </div>
+          <div>
             <label for="itemImage" class="block text-sm font-medium text-gray-700 mb-2">Зображення</label>
             <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-primary-500 transition-colors">
               <div class="space-y-1 text-center">
@@ -163,25 +216,77 @@
         </form>
       </div>
     </div>
+
+    <!-- Purchase Confirmation Modal -->
+    <div v-if="showPurchaseModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+      <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-auto shadow-2xl">
+        <h3 class="text-2xl font-medium text-gray-900 mb-4 text-center">Підтвердження покупки</h3>
+        <div class="text-center space-y-4">
+          <p class="text-gray-600">Ви дійсно хочете купити "{{ selectedItem?.name }}" за {{ selectedItem?.price }} балів?</p>
+          <div class="flex justify-center space-x-4">
+            <button
+              @click="showPurchaseModal = false"
+              class="px-6 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors"
+            >
+              Скасувати
+            </button>
+            <button
+              @click="buyItem(selectedItem)"
+              class="px-6 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors"
+            >
+              Підтвердити
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { listenToData, pushData, updateData } from '../firebase/database-service'
 
 const authStore = useAuthStore()
 const shopItems = ref([])
 const showAddItemModal = ref(false)
+const showPurchaseModal = ref(false)
 const currentUserPoints = ref(0)
+const searchQuery = ref('')
+const selectedCategory = ref('Всі')
+const selectedItem = ref(null)
+
+const categories = ['Всі', 'Подарунки', 'Розваги', 'Спорт', 'Інше']
 
 const newItem = ref({
   name: '',
   description: '',
   price: 1,
   quantity: 1,
-  imageUrl: ''
+  imageUrl: '',
+  category: 'Подарунки'
+})
+
+// Фільтрація товарів
+const filteredItems = computed(() => {
+  let items = shopItems.value
+
+  // Фільтрація за категорією
+  if (selectedCategory.value !== 'Всі') {
+    items = items.filter(item => item.category === selectedCategory.value)
+  }
+
+  // Фільтрація за пошуковим запитом
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    items = items.filter(item =>
+      item.name.toLowerCase().includes(query) ||
+      item.description.toLowerCase().includes(query)
+    )
+  }
+
+  return items
 })
 
 // Форматування дати
@@ -247,7 +352,8 @@ const handleAddItem = async () => {
       description: '',
       price: 1,
       quantity: 1,
-      imageUrl: ''
+      imageUrl: '',
+      category: 'Подарунки'
     }
   } catch (error) {
     console.error('Error adding item:', error)
@@ -255,35 +361,27 @@ const handleAddItem = async () => {
   }
 }
 
+const confirmPurchase = (item) => {
+  selectedItem.value = item
+  showPurchaseModal.value = true
+}
+
 const buyItem = async (item) => {
-  if (currentUserPoints.value < item.price || item.quantity <= 0) return
+  if (!item || item.quantity <= 0 || currentUserPoints.value < item.price) return
 
   try {
-    // Оновлюємо кількість товару
+    // Оновлення кількості товару
     await updateData(`shop/${item.id}`, {
       quantity: item.quantity - 1
     })
 
-    // Створюємо транзакцію
-    const transaction = {
-      amount: -item.price,
-      reason: `Купівля: ${item.name}`,
-      type: 'purchase',
-      userId: authStore.user.uid,
-      userEmail: authStore.user.email,
-      timestamp: Date.now()
-    }
-
-    // Додаємо транзакцію до історії
-    await pushData('points_transactions', transaction)
-
-    // Оновлюємо бали користувача
+    // Оновлення балів користувача
     await updateData(`points/${authStore.user.uid}`, {
-      current: currentUserPoints.value - item.price,
-      updatedAt: Date.now()
+      current: currentUserPoints.value - item.price
     })
 
-    currentUserPoints.value -= item.price
+    showPurchaseModal.value = false
+    selectedItem.value = null
   } catch (error) {
     console.error('Error buying item:', error)
     alert('Помилка при покупці товару')
@@ -297,8 +395,7 @@ const buyItem = async (item) => {
 }
 
 .animate-slide-up {
-  animation: slideUp 0.5s ease-out forwards;
-  opacity: 0;
+  animation: slideUp 0.5s ease-out;
 }
 
 @keyframes slideDown {
@@ -321,26 +418,5 @@ const buyItem = async (item) => {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* Додаємо стилі для обмеження тексту */
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 </style> 

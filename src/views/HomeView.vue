@@ -181,7 +181,7 @@
     </div>
 
     <!-- Mood Selector Modal -->
-    <div v-if="showMoodSelector" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div v-if="showMoodSelector" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
       <div class="bg-white rounded-2xl p-4 md:p-6 w-full max-w-sm mx-auto transform transition-all">
         <h3 class="text-xl font-medium text-gray-900 mb-4 text-center">Виберіть настрій</h3>
         <div class="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-6">
@@ -207,7 +207,7 @@
     </div>
 
     <!-- Sleep Selector Modal -->
-    <div v-if="showSleepSelector" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div v-if="showSleepSelector" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
       <div class="bg-white rounded-2xl p-4 md:p-6 w-full max-w-sm mx-auto transform transition-all">
         <h3 class="text-xl font-medium text-gray-900 mb-4 text-center">Оцініть якість сну</h3>
         <div class="grid grid-cols-5 gap-3 mb-6">
@@ -233,7 +233,7 @@
     </div>
 
     <!-- Add Points Modal -->
-    <div v-if="showAddPointsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div v-if="showAddPointsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
       <div class="bg-white rounded-2xl p-4 md:p-6 w-full max-w-md mx-auto transform transition-all">
         <h3 class="text-xl font-medium text-gray-900 mb-4 text-center">Додати бали</h3>
         <form @submit.prevent="handleAddPoints" class="space-y-4">
