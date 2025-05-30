@@ -240,4 +240,83 @@ export const updateUserPoints = async (userId, amount) => {
     console.error('Error updating user points:', error)
     throw error
   }
-} 
+}
+
+// Функція для додавання запису сну
+export const addSleepRecordRTDB = async (userId, record) => {
+  try {
+    const newRecordRef = push(dbRef(database, `sleepmain/${userId}`));
+    const recordToSave = {
+      ...record,
+      id: newRecordRef.key,
+      userId: userId,
+      timestamp: Date.now(),
+      createdAt: Date.now(), // Додаємо createdAt
+      updatedAt: Date.now(), // Додаємо updatedAt
+    };
+    await set(newRecordRef, recordToSave);
+    return newRecordRef.key;
+  } catch (error) {
+    console.error('Error adding sleep record to RTDB:', error);
+    throw error;
+  }
+};
+
+// Функція для отримання записів сну для користувача
+// Realtime Database має обмежені можливості фільтрації/сортування порівняно з Firestore.
+// Для простих випадків, як тут (отримання всіх записів для користувача), можна слухати вузол.
+export const listenToUserSleepRecordsRTDB = (userId, callback) => {
+  if (!userId) {
+    console.warn('listenToUserSleepRecordsRTDB: userId is null or undefined.');
+    return () => {}; // Повертаємо порожню функцію для відписки
+  }
+  const recordsRef = dbRef(database, `sleepmain/${userId}`);
+  const unsubscribe = onValue(recordsRef, (snapshot) => {
+    const data = snapshot.val();
+    const records = data ? Object.values(data).sort((a, b) => b.timestamp - a.timestamp) : [];
+    callback(records);
+  });
+  return unsubscribe;
+};
+
+// Функція для оновлення/створення цілей сну для користувача
+export const updateSleepGoalsRTDB = async (userId, goals) => {
+  try {
+    const goalsRef = dbRef(database, `sleepmainGoals/${userId}`);
+    await set(goalsRef, {
+      ...goals,
+      userId: userId,
+      updatedAt: Date.now(), // Додаємо updatedAt
+    });
+    return true;
+  } catch (error) {
+    console.error('Error updating sleep goals in RTDB:', error);
+    throw error;
+  }
+};
+
+// Функція для отримання цілей сну для користувача
+export const listenToUserSleepGoalsRTDB = (userId, callback) => {
+    if (!userId) {
+        console.warn('listenToUserSleepGoalsRTDB: userId is null or undefined.');
+        return () => {};
+    }
+    const goalsRef = dbRef(database, `sleepmainGoals/${userId}`);
+    const unsubscribe = onValue(goalsRef, (snapshot) => {
+        const data = snapshot.val();
+        callback(data);
+    });
+    return unsubscribe;
+};
+
+// Функція для видалення запису сну
+export const deleteSleepRecordRTDB = async (userId, recordId) => {
+  try {
+    const recordRef = dbRef(database, `sleepmain/${userId}/${recordId}`);
+    await remove(recordRef);
+    return true;
+  } catch (error) {
+    console.error('Error deleting sleep record from RTDB:', error);
+    throw error;
+  }
+}; 

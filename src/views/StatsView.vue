@@ -186,37 +186,18 @@
     <!-- Статистика балів -->
     <div class="bg-white rounded-xl shadow p-6">
       <h3 class="text-lg font-medium mb-4">Статистика балів</h3>
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Бали користувачів -->
-        <div class="space-y-4">
-          <div class="text-center p-4 bg-gray-50 rounded-lg">
-            <div class="text-sm text-gray-500 mb-1">{{ currentUserLabel }}</div>
-            <div class="text-3xl font-bold text-primary-600">{{ pointsStats.user }}</div>
-            <div class="text-sm text-gray-500">балів</div>
-          </div>
-          <div class="text-center p-4 bg-gray-50 rounded-lg">
-            <div class="text-sm text-gray-500 mb-1">{{ partnerLabel }}</div>
-            <div class="text-3xl font-bold text-primary-600">{{ pointsStats.partner }}</div>
-            <div class="text-sm text-gray-500">балів</div>
-          </div>
+        <div class="text-center p-4 bg-gray-50 rounded-lg">
+          <div class="text-sm text-gray-500 mb-1">{{ currentUserLabel }}</div>
+          <div class="text-3xl font-bold text-primary-600">{{ pointsStats.user }}</div>
+          <div class="text-sm text-gray-500">балів</div>
         </div>
-
-        <!-- Бали, які додали -->
-        <div class="space-y-4">
-          <div class="text-center p-4 bg-green-50 rounded-lg">
-            <div class="text-sm text-gray-500 mb-1">
-              {{ currentUserLabel }} додав(ла)
-            </div>
-            <div class="text-3xl font-bold text-green-600">+{{ pointsStats.givenByUser }}</div>
-            <div class="text-sm text-gray-500">балів</div>
-          </div>
-          <div class="text-center p-4 bg-green-50 rounded-lg">
-            <div class="text-sm text-gray-500 mb-1">
-              {{ partnerLabel }} додав(ла)
-            </div>
-            <div class="text-3xl font-bold text-green-600">+{{ pointsStats.givenByPartner }}</div>
-            <div class="text-sm text-gray-500">балів</div>
-          </div>
+        
+        <div class="text-center p-4 bg-gray-50 rounded-lg">
+          <div class="text-sm text-gray-500 mb-1">{{ partnerLabel }}</div>
+          <div class="text-3xl font-bold text-primary-600">{{ pointsStats.partner }}</div>
+          <div class="text-sm text-gray-500">балів</div>
         </div>
       </div>
     </div>
