@@ -63,7 +63,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
-import { listenToData, pushData } from '../firebase/database-service'
+import { listenToData, pushData, addPointsTransaction, updateUserPoints } from '../firebase/database-service'
 import { useRouter } from 'vue-router'
 
 const authStore = useAuthStore()
@@ -73,33 +73,80 @@ const addPointsAmount = ref(1)
 const addPointsDescription = ref('')
 const pointsHistory = ref([])
 const partnerPoints = ref(0)
+const currentUserPoints = ref(0)
+const partnerCurrentPoints = ref(0)
+const partnerUid = ref(null)
 
 const myUid = computed(() => authStore.user?.uid)
-const partnerUid = computed(() => {
-  if (!authStore.user) return null
-  return authStore.user.email === 'facellesit@gmail.com' ? 
-    'martadaniluk4@gmail.com' : 
-    'facellesit@gmail.com'
-})
+const partnerEmail = computed(() =>
+  authStore.user?.email === 'facellesit@gmail.com'
+    ? 'martadaniluk4@gmail.com'
+    : 'facellesit@gmail.com'
+)
 
-onMounted(() => {
+const determinePartnerUid = async () => {
+  try {
+    if (!authStore.user) {
+      console.warn('authStore.user not available yet in PointsView.')
+      return
+    }
+
+    listenToData('users', (data) => {
+      if (data) {
+        const uids = Object.keys(data)
+        const foundPartnerUid = uids.find(uid => data[uid].email === partnerEmail.value)
+        if (foundPartnerUid) {
+           partnerUid.value = foundPartnerUid
+           console.log('PointsView: Partner UID determined:', partnerUid.value)
+           listenToData(`points/${partnerUid.value}`, (data) => {
+              if(data) {
+                  partnerCurrentPoints.value = data.current || 0
+              }
+          })
+        }
+      } else {
+        console.warn('PointsView: No user data received from Firebase.')
+      }
+    })
+  } catch (error) {
+    console.error('Error determining partner UID in PointsView:', error)
+  }
+}
+
+onMounted(async () => {
   if (!authStore.user) return
   
-  // Підписуємось на зміни в транзакціях балів
+  await determinePartnerUid()
+
+  if (authStore.user.uid) {
+    listenToData(`points/${authStore.user.uid}`, (data) => {
+      if (data) {
+        currentUserPoints.value = data.current || 0
+      }
+    })
+  }
+
   listenToData('points_transactions', (data) => {
     if (!data) return
     
-    // Фільтруємо транзакції для партнера
     const partnerTransactions = Object.entries(data)
-      .filter(([_, transaction]) => transaction.userEmail === partnerUid.value)
-      .map(([id, transaction]) => ({ id, ...transaction }))
+      .filter(([_, transaction]) => transaction.userId === partnerUid.value)
+      .map(([id, transaction]) => ({
+        id,
+        ...transaction,
+        description: transaction.reason || 
+                     (transaction.type === 'reward' ? `Отримано ${transaction.amount} балів` : 
+                      transaction.type === 'transfer' ? `Передача ${transaction.amount} балів` : 
+                      transaction.type === 'purchase' ? `Купівля на ${Math.abs(transaction.amount)} балів` : 
+                      'Транзакція')
+      }))
       .sort((a, b) => b.timestamp - a.timestamp)
     
-    // Рахуємо загальну кількість балів партнера
-    partnerPoints.value = partnerTransactions.reduce((sum, t) => sum + t.amount, 0)
     pointsHistory.value = partnerTransactions
   })
 })
+
+partnerPoints.value = partnerCurrentPoints.value
 
 const handleAddPoints = async () => {
   if (!addPointsAmount.value || addPointsAmount.value <= 0) {
@@ -116,22 +163,28 @@ const handleAddPoints = async () => {
   }
 
   try {
-    // Додаємо транзакцію балів
-    await pushData('points_transactions', {
+    const transaction = {
       amount: Number(addPointsAmount.value),
       reason: addPointsDescription.value.trim(),
-      timestamp: Date.now(),
+      type: 'reward',
       userId: partnerUid.value,
-      userEmail: partnerUid.value,
-      type: 'reward'
-    })
+      userEmail: partnerEmail.value,
+      timestamp: Date.now()
+    }
+
+    await pushData('points_transactions', transaction)
+
+    await updateUserPoints(partnerUid.value, Number(addPointsAmount.value))
     
-    showAddPointsModal.value = false
     addPointsAmount.value = 1
     addPointsDescription.value = ''
+    
+    showAddPointsModal.value = false
+
   } catch (error) {
     console.error('Помилка при додаванні балів:', error)
     alert('Помилка при додаванні балів')
+    showAddPointsModal.value = false
   }
 }
 
@@ -142,7 +195,14 @@ const goToShop = () => {
 const formatDate = (ts) => {
   if (!ts) return ''
   const d = new Date(ts)
-  return d.toLocaleDateString()
+  const date = typeof ts === 'number' ? new Date(ts) : ts
+  return new Intl.DateTimeFormat('uk-UA', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(date)
 }
 </script>
 

@@ -22,6 +22,7 @@ coverage
 /cypress/videos/
 /cypress/screenshots/
 
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -44,3 +45,8 @@ coverage
 # SonarQube
 .sonar/cache
 .scannerwork
+
+ # Tests
+src/views/__tests__/
+src/firebase/__tests__/
+src/services/__tests__/

@@ -250,7 +250,11 @@ const loadEvents = () => {
 }
 
 const saveEvents = () => {
-  localStorage.setItem(`calendar_events_${authStore.user?.uid}`, JSON.stringify(events.value))
+  try {
+    localStorage.setItem(`calendar_events_${authStore.user?.uid}`, JSON.stringify(events.value))
+  } catch (error) {
+    console.error('Помилка при збереженні подій:', error)
+  }
 }
 
 const getEventsForDay = (date) => {

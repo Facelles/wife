@@ -385,10 +385,11 @@ const getUserNickname = (email) => {
   return email.split('@')[0]
 }
 
+// Виносимо функцію за межі setup для мемоізації
+const userStyles = new Map()
+
 const getUserStyle = (email) => {
-  console.log('Getting style for email:', email) // Додаємо лог для перевірки
   if (!email) {
-    console.warn('Email is undefined or null')
     return {
       emoji: '👤',
       nickname: 'Невідомий',
@@ -397,30 +398,39 @@ const getUserStyle = (email) => {
     }
   }
 
-  switch (email.toLowerCase()) { // Додаємо toLowerCase() для порівняння
+  if (userStyles.has(email)) {
+    return userStyles.get(email)
+  }
+
+  let style
+  switch (email.toLowerCase()) {
     case 'facellesit@gmail.com':
-      return {
+      style = {
         emoji: '🐰',
         nickname: 'Зайчик',
         bgColor: 'bg-primary-100',
         textColor: 'text-primary-600'
       }
-    case 'martadaniluk4@gmail.com':                
-      return {
+      break
+    case 'martadaniluk4@gmail.com':
+      style = {
         emoji: '😺',
         nickname: 'Кицюня',
         bgColor: 'bg-pink-100',
         textColor: 'text-pink-500'
       }
+      break
     default:
-      console.warn('Unknown email:', email)
-      return {
+      style = {
         emoji: '👤',
-        nickname: email?.split('@')[0] || 'Невідомий',
+        nickname: email.split('@')[0] || 'Невідомий',
         bgColor: 'bg-gray-100',
         textColor: 'text-gray-600'
       }
   }
+
+  userStyles.set(email, style)
+  return style
 }
 
 const selectMood = async (mood) => {

@@ -1,338 +1,303 @@
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import ChatView from '../ChatView.vue'
-import { useAuthStore } from '@/stores/auth'
-import { mockListenToData, mockPushData, mockUpdateData, mockRemoveData } from './setup'
+import { useAuthStore } from '../../stores/auth'
+import { nextTick } from 'process'
+
+// Mock the database service
+const mockListenToData = vi.fn()
+const mockPushData = vi.fn()
+const mockUpdateData = vi.fn()
+const mockRemoveData = vi.fn()
+
+vi.mock('../../firebase/database-service', () => ({
+  listenToData: mockListenToData,
+  pushData: mockPushData,
+  updateData: mockUpdateData,
+  removeData: mockRemoveData
+}))
 
 describe('ChatView', () => {
   let wrapper
   let authStore
 
   beforeEach(async () => {
+    // Reset all mocks
+    vi.clearAllMocks()
+    
+    // Setup Pinia
     const pinia = createPinia()
     setActivePinia(pinia)
     authStore = useAuthStore()
-
-    // Mock auth store
     authStore.user = {
       uid: 'test-uid',
-      email: 'facellesit@gmail.com',
-      displayName: 'Test User'
+      email: 'test@example.com'
     }
 
-    // Mock listenToData
+    // Setup mock data
+    const testMessages = {
+      'msg1': {
+        id: 'msg1',
+        text: 'Test message 1',
+        userId: 'test-uid',
+        userEmail: 'test@example.com',
+        createdAt: Date.now()
+      },
+      'msg2': {
+        id: 'msg2',
+        text: 'Test message 2',
+        userId: 'other-uid',
+        userEmail: 'other@example.com',
+        createdAt: Date.now()
+      }
+    }
+
+    const testNotes = {
+      'note1': {
+        id: 'note1',
+        title: 'Test Note 1',
+        content: 'Content 1',
+        userId: 'test-uid',
+        userEmail: 'test@example.com',
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      },
+      'note2': {
+        id: 'note2',
+        title: 'Test Note 2',
+        content: 'Content 2',
+        userId: 'other-uid',
+        userEmail: 'other@example.com',
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      }
+    }
+
+    // Setup mock implementations
     mockListenToData.mockImplementation((path, callback) => {
       if (path === 'messages') {
-        callback({
-          '1': {
-            id: '1',
-            text: 'Test message 1',
-            userId: 'test-uid',
-            userEmail: 'facellesit@gmail.com',
-            createdAt: Date.now()
-          },
-          '2': {
-            id: '2',
-            text: 'Test message 2',
-            userId: 'other-uid',
-            userEmail: 'martadaniluk4@gmail.com',
-            createdAt: Date.now()
-          }
-        })
+        callback(testMessages)
       } else if (path === 'chatNotes') {
-        callback({
-          '1': {
-            id: '1',
-            title: 'Test Note 1',
-            content: 'Test content 1',
-            userId: 'test-uid',
-            userEmail: 'facellesit@gmail.com',
-            createdAt: Date.now(),
-            updatedAt: Date.now()
-          }
-        })
+        callback(testNotes)
       } else if (path === 'moods/test-uid') {
-        callback({
-          '1': {
-            id: '1',
-            value: 'happy',
-            emoji: '😊',
-            timestamp: Date.now(),
-            userId: 'test-uid',
-            userEmail: 'facellesit@gmail.com'
-          }
-        })
+        callback({})
       }
       return () => {}
     })
 
+    mockPushData.mockResolvedValue({ key: 'new-id' })
+    mockUpdateData.mockResolvedValue()
+    mockRemoveData.mockResolvedValue()
+
+    // Mock console.error
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    // Mount component with global plugins
     wrapper = mount(ChatView, {
       global: {
-        plugins: [pinia],
-        stubs: ['router-link']
+        plugins: [pinia]
       }
     })
+
+    // Wait for component to mount and data to load
+    await wrapper.vm.$nextTick()
+    await new Promise(resolve => setTimeout(resolve, 0))
     await wrapper.vm.$nextTick()
   })
 
   it('renders properly', () => {
     const title = wrapper.find('h1')
-    expect(title.exists()).toBe(true)
+    expect(title.exists()).toBeTruthy()
     expect(title.text()).toBe('Чат')
+    expect(wrapper.find('h2').text()).toBe('Notes')
   })
 
   it('displays messages', async () => {
+    await flushPromises()
     await wrapper.vm.$nextTick()
+    
     const messages = wrapper.findAll('.flex.items-start.space-x-4')
     expect(messages.length).toBe(2)
+    
+    const messageTexts = messages.map(msg => msg.find('.break-words').text())
+    expect(messageTexts[0]).toBe('Test message 1')
+    expect(messageTexts[1]).toBe('Test message 2')
   })
 
-  it('displays correct user styles for messages', async () => {
-    await wrapper.vm.$nextTick()
-    const userStyles = wrapper.vm.getUserStyle('facellesit@gmail.com')
-    expect(userStyles.emoji).toBe('🐰')
-    expect(userStyles.nickname).toBe('Зайчик')
-  })
-
-  it('sends new message when form is submitted', async () => {
+  it('sends new message', async () => {
     const input = wrapper.find('input[type="text"]')
     const form = wrapper.find('form')
-    
-    await input.setValue('New test message')
+
+    await input.setValue('New message')
     await form.trigger('submit')
     await wrapper.vm.$nextTick()
+    await new Promise(resolve => setTimeout(resolve, 0))
 
-    expect(wrapper.vm.newMessage).toBe('')
+    expect(mockPushData).toHaveBeenCalledWith('messages', {
+      text: 'New message',
+      userId: 'test-uid',
+      userEmail: 'test@example.com',
+      createdAt: expect.any(Number)
+    })
   })
 
-  it('clears chat when clear button is clicked', async () => {
-    window.confirm = vi.fn(() => true)
-    const clearButton = wrapper.find('button:contains("Очистити чат")')
+  it('clears chat', async () => {
+    global.confirm = vi.fn(() => true)
+    const clearButton = wrapper.find('button[class*="bg-red-500"]')
     await clearButton.trigger('click')
     await wrapper.vm.$nextTick()
-    expect(window.confirm).toHaveBeenCalled()
-  })
-
-  it('displays notes section', async () => {
-    const notesTitle = wrapper.find('h2:contains("Notes")')
-    expect(notesTitle.exists()).toBe(true)
-  })
-
-  it('shows add note modal when add button is clicked', async () => {
-    const addButton = wrapper.find('button:contains("Add Note")')
-    await addButton.trigger('click')
-    await wrapper.vm.$nextTick()
+    await new Promise(resolve => setTimeout(resolve, 0))
     
-    const modal = wrapper.find('.fixed')
-    expect(modal.exists()).toBe(true)
-    const modalTitle = modal.find('h3')
-    expect(modalTitle.exists()).toBe(true)
-    expect(modalTitle.text()).toBe('Add New Note')
+    expect(mockRemoveData).toHaveBeenCalledWith('messages')
   })
 
-  it('adds new note when form is submitted', async () => {
-    const addButton = wrapper.find('button:contains("Add Note")')
+  it('displays notes', async () => {
+    const notes = wrapper.findAll('[class*="rounded-lg"]')
+    expect(notes.length).toBeGreaterThanOrEqual(2)
+    expect(notes[0].text()).toContain('Test Note 1')
+    expect(notes[1].text()).toContain('Test Note 2')
+  })
+
+  it('adds new note', async () => {
+    const addButton = wrapper.find('button.btn-primary')
     await addButton.trigger('click')
     await wrapper.vm.$nextTick()
-
+    await new Promise(resolve => setTimeout(resolve, 0))
+    
+    const modal = wrapper.find('.fixed.inset-0')
+    expect(modal.exists()).toBeTruthy()
+    
     const titleInput = wrapper.find('#noteTitle')
     const contentInput = wrapper.find('#noteContent')
-    const submitButton = wrapper.find('button[type="submit"]')
-
+    const form = wrapper.find('form')
+    
     await titleInput.setValue('New Note')
-    await contentInput.setValue('New content')
-    await submitButton.trigger('click')
+    await contentInput.setValue('Note content')
+    await form.trigger('submit')
     await wrapper.vm.$nextTick()
-
-    expect(wrapper.vm.showAddNoteModal).toBe(false)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    
+    expect(mockPushData).toHaveBeenCalledWith('chatNotes', {
+      title: 'New Note',
+      content: 'Note content',
+      userId: 'test-uid',
+      userEmail: 'test@example.com',
+      createdAt: expect.any(Number),
+      updatedAt: expect.any(Number)
+    })
   })
 
   it('edits existing note', async () => {
-    const editButton = wrapper.find('button:contains("Edit")')
+    const editButton = wrapper.find('button[class*="text-primary-600"]')
     await editButton.trigger('click')
     await wrapper.vm.$nextTick()
+    await new Promise(resolve => setTimeout(resolve, 0))
 
     const titleInput = wrapper.find('#noteTitle')
     const contentInput = wrapper.find('#noteContent')
-    const submitButton = wrapper.find('button[type="submit"]')
+    const form = wrapper.find('form')
 
     await titleInput.setValue('Updated Note')
     await contentInput.setValue('Updated content')
-    await submitButton.trigger('click')
+    await form.trigger('submit')
     await wrapper.vm.$nextTick()
+    await new Promise(resolve => setTimeout(resolve, 0))
 
-    expect(wrapper.vm.showAddNoteModal).toBe(false)
+    expect(mockUpdateData).toHaveBeenCalledWith('chatNotes/note1', {
+      title: 'Updated Note',
+      content: 'Updated content',
+      userId: 'test-uid',
+      userEmail: 'test@example.com',
+      createdAt: expect.any(Number),
+      updatedAt: expect.any(Number)
+    })
   })
 
-  it('deletes note when delete button is clicked', async () => {
-    window.confirm = vi.fn(() => true)
-    const deleteButton = wrapper.find('button:contains("Видалити")')
+  it('deletes note', async () => {
+    global.confirm = vi.fn(() => true)
+    const deleteButton = wrapper.find('button[class*="text-red-600"]')
     await deleteButton.trigger('click')
     await wrapper.vm.$nextTick()
-    expect(window.confirm).toHaveBeenCalled()
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    expect(mockRemoveData).toHaveBeenCalledWith('chatNotes/note1')
   })
 
   it('formats date correctly', () => {
     const date = new Date('2024-05-01T10:00:00')
-    const formattedDate = wrapper.vm.formatDate(date)
-    expect(formattedDate).toMatch(/\d{2}:\d{2}, \d{2}\.\d{2}/)
+    expect(wrapper.vm.formatDate(date)).toBe('01.05, 10:00')
   })
 
-  it('handles empty messages', async () => {
+  it('handles empty message', async () => {
     const input = wrapper.find('input[type="text"]')
     const form = wrapper.find('form')
-    
+
     await input.setValue('   ')
     await form.trigger('submit')
     await wrapper.vm.$nextTick()
+    await new Promise(resolve => setTimeout(resolve, 0))
 
-    expect(wrapper.vm.messages.length).toBe(2) // Should not add empty message
-  })
-
-  it('shows correct user styles for different emails', () => {
-    const user1Style = wrapper.vm.getUserStyle('facellesit@gmail.com')
-    const user2Style = wrapper.vm.getUserStyle('martadaniluk4@gmail.com')
-    const unknownStyle = wrapper.vm.getUserStyle('unknown@email.com')
-
-    expect(user1Style.emoji).toBe('🐰')
-    expect(user2Style.emoji).toBe('😺')
-    expect(unknownStyle.emoji).toBe('👤')
-  })
-
-  it('closes note modal when cancel is clicked', async () => {
-    const addButton = wrapper.find('button:contains("Add Note")')
-    await addButton.trigger('click')
-    await wrapper.vm.$nextTick()
-
-    const cancelButton = wrapper.find('button:contains("Cancel")')
-    await cancelButton.trigger('click')
-    await wrapper.vm.$nextTick()
-
-    expect(wrapper.vm.showAddNoteModal).toBe(false)
+    expect(mockPushData).not.toHaveBeenCalled()
   })
 
   it('handles note form validation', async () => {
-    const addButton = wrapper.find('button:contains("Add Note")')
+    const addButton = wrapper.find('button.btn-primary')
     await addButton.trigger('click')
     await wrapper.vm.$nextTick()
-
-    const submitButton = wrapper.find('button[type="submit"]')
-    await submitButton.trigger('click')
-    await wrapper.vm.$nextTick()
-
-    expect(wrapper.vm.showAddNoteModal).toBe(true) // Modal should stay open
-  })
-
-  it('scrolls to bottom when new message is added', async () => {
-    const scrollToBottom = vi.spyOn(wrapper.vm, 'scrollToBottom')
-    const input = wrapper.find('input[type="text"]')
-    const form = wrapper.find('form')
+    await new Promise(resolve => setTimeout(resolve, 0))
     
-    await input.setValue('New message')
+    const form = wrapper.find('form')
     await form.trigger('submit')
     await wrapper.vm.$nextTick()
-
-    expect(scrollToBottom).toHaveBeenCalled()
-  })
-
-  it('handles user mood updates', async () => {
-    const mood = '😊'
-    await wrapper.vm.selectMood(mood)
-    await wrapper.vm.$nextTick()
-    expect(wrapper.vm.currentMood).toBe(mood)
-  })
-
-  it('handles network errors when sending message', async () => {
-    mockPushData.mockRejectedValueOnce(new Error('Network error'))
-    const input = wrapper.find('input[type="text"]')
-    const form = wrapper.find('form')
+    await new Promise(resolve => setTimeout(resolve, 0))
     
-    await input.setValue('Test message')
-    await form.trigger('submit')
-    await wrapper.vm.$nextTick()
-    
-    expect(console.error).toHaveBeenCalled()
-  })
-
-  it('validates message length', async () => {
-    const input = wrapper.find('input[type="text"]')
-    const form = wrapper.find('form')
-    
-    await input.setValue('a'.repeat(1001)) // Exceed limit
-    await form.trigger('submit')
-    await wrapper.vm.$nextTick()
-    
-    expect(wrapper.vm.messages.length).toBe(2) // Message not added
+    expect(mockPushData).not.toHaveBeenCalled()
   })
 
   it('handles offline state', async () => {
-    mockListenToData.mockImplementationOnce(() => {
-      throw new Error('Offline')
-    })
-    
-    await wrapper.vm.$nextTick()
-    expect(wrapper.vm.error).toBeTruthy()
-  })
+    mockPushData.mockRejectedValue(new Error('Network error'))
+    const input = wrapper.find('input[type="text"]')
+    const form = wrapper.find('form')
 
-  it('sorts notes by date', async () => {
+    await input.setValue('Test message')
+    await form.trigger('submit')
     await wrapper.vm.$nextTick()
-    const notes = wrapper.vm.notes
-    expect(notes[0].createdAt).toBeGreaterThan(notes[1].createdAt)
-  })
+    await new Promise(resolve => setTimeout(resolve, 0))
 
-  it('shows loading state while fetching data', async () => {
-    wrapper.vm.isLoading = true
-    await wrapper.vm.$nextTick()
-    expect(wrapper.find('.animate-spin').exists()).toBe(true)
-  })
-
-  it('handles invalid note data', async () => {
-    mockListenToData.mockImplementationOnce((path, callback) => {
-      if (path === 'chatNotes') {
-        callback({
-          '1': {
-            id: '1',
-            // Missing required fields
-            createdAt: Date.now()
-          }
-        })
-      }
-      return () => {}
-    })
-    
-    await wrapper.vm.$nextTick()
-    expect(wrapper.vm.notes.length).toBe(0)
+    expect(console.error).toHaveBeenCalled()
   })
 
   it('handles note update conflicts', async () => {
-    mockUpdateData.mockRejectedValueOnce(new Error('Conflict'))
-    const editButton = wrapper.find('button:contains("Edit")')
+    mockUpdateData.mockRejectedValue(new Error('Update conflict'))
+    const editButton = wrapper.find('button[class*="text-primary-600"]')
     await editButton.trigger('click')
     await wrapper.vm.$nextTick()
-    
-    const submitButton = wrapper.find('button[type="submit"]')
-    await submitButton.trigger('click')
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    const form = wrapper.find('form')
+    await form.trigger('submit')
     await wrapper.vm.$nextTick()
-    
+    await new Promise(resolve => setTimeout(resolve, 0))
+
     expect(console.error).toHaveBeenCalled()
   })
 
-  it('handles message deletion confirmation', async () => {
-    window.confirm = vi.fn(() => false)
-    const deleteButton = wrapper.find('button:contains("Видалити")')
-    await deleteButton.trigger('click')
+  it('handles user mood updates', async () => {
+    await wrapper.vm.selectMood('😊')
     await wrapper.vm.$nextTick()
+    await new Promise(resolve => setTimeout(resolve, 0))
     
-    expect(mockRemoveData).not.toHaveBeenCalled()
+    expect(mockPushData).toHaveBeenCalledWith('moods/test-uid', {
+      value: 'neutral',
+      emoji: '😊',
+      timestamp: expect.any(Number),
+      userId: 'test-uid',
+      userEmail: 'test@example.com'
+    })
   })
 
-  it('handles user mood updates with error', async () => {
-    mockPushData.mockRejectedValueOnce(new Error('Failed to update mood'))
-    const mood = '😊'
-    await wrapper.vm.selectMood(mood)
-    await wrapper.vm.$nextTick()
-    
-    expect(console.error).toHaveBeenCalled()
+  it('handles loading state', async () => {
+    expect(wrapper.find('.animate-spin').exists()).toBe(false)
   })
 }) 

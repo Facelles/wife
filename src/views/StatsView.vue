@@ -170,14 +170,14 @@
         @click="showMoodSelector = true"
       >
         <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">
-          {{ authStore.user?.email === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня' }}
+          {{ currentUserLabel }}
         </h3>
         <p class="text-4xl md:text-6xl">{{ currentMood || '😊' }}</p>
       </div>
       <!-- mood партнера -->
       <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up">
         <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">
-          {{ authStore.user?.email === 'facellesit@gmail.com' ? 'Кицюня' : 'Зайчик' }}
+          {{ partnerLabel }}
         </h3>
         <p class="text-4xl md:text-6xl">{{ partnerMood || '😊' }}</p>
       </div>
@@ -190,12 +190,12 @@
         <!-- Бали користувачів -->
         <div class="space-y-4">
           <div class="text-center p-4 bg-gray-50 rounded-lg">
-            <div class="text-sm text-gray-500 mb-1">Зайчик</div>
+            <div class="text-sm text-gray-500 mb-1">{{ currentUserLabel }}</div>
             <div class="text-3xl font-bold text-primary-600">{{ pointsStats.user }}</div>
             <div class="text-sm text-gray-500">балів</div>
           </div>
           <div class="text-center p-4 bg-gray-50 rounded-lg">
-            <div class="text-sm text-gray-500 mb-1">Кицюня</div>
+            <div class="text-sm text-gray-500 mb-1">{{ partnerLabel }}</div>
             <div class="text-3xl font-bold text-primary-600">{{ pointsStats.partner }}</div>
             <div class="text-sm text-gray-500">балів</div>
           </div>
@@ -205,14 +205,14 @@
         <div class="space-y-4">
           <div class="text-center p-4 bg-green-50 rounded-lg">
             <div class="text-sm text-gray-500 mb-1">
-              {{ authStore.user.email === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня' }} додав(ла)
+              {{ currentUserLabel }} додав(ла)
             </div>
             <div class="text-3xl font-bold text-green-600">+{{ pointsStats.givenByUser }}</div>
             <div class="text-sm text-gray-500">балів</div>
           </div>
           <div class="text-center p-4 bg-green-50 rounded-lg">
             <div class="text-sm text-gray-500 mb-1">
-              {{ authStore.user.email === 'facellesit@gmail.com' ? 'Кицюня' : 'Зайчик' }} додав(ла)
+              {{ partnerLabel }} додав(ла)
             </div>
             <div class="text-3xl font-bold text-green-600">+{{ pointsStats.givenByPartner }}</div>
             <div class="text-sm text-gray-500">балів</div>
@@ -261,10 +261,22 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
-import { listenToData } from '../firebase/database-service'
+import { listenToData, initializeUserPoints } from '../firebase/database-service'
 
 const authStore = useAuthStore()
 const selectedPeriod = ref('week')
+
+const myUid = computed(() => authStore.user?.uid)
+const partnerUid = ref(null)
+const partnerEmail = computed(() =>
+  authStore.user?.email === 'facellesit@gmail.com'
+    ? 'martadaniluk4@gmail.com'
+    : 'facellesit@gmail.com'
+)
+
+// Додаємо refs для зберігання поточних балів з вузлів /points/$uid
+const currentUserPoints = ref(0)
+const partnerCurrentPoints = ref(0)
 
 // Функція для отримання початку періоду
 const getPeriodStart = (period) => {
@@ -285,8 +297,67 @@ const photos = ref([])
 const currentMood = ref(null)
 const partnerMood = ref(null)
 
+// Визначаємо ID партнера
+const determinePartnerUid = async () => {
+  try {
+    // Перевіряємо, чи authStore.user вже доступний
+    if (!authStore.user) {
+      // Можливо, потрібно дочекатися ініціалізації authStore, 
+      // але поки що просто вийдемо, якщо user немає
+      console.warn('authStore.user not available yet in StatsView.')
+      return
+    }
+
+    listenToData('users', (data) => {
+      if (data) {
+        const uids = Object.keys(data)
+        partnerUid.value = uids.find(uid => uid !== authStore.user.uid)
+        console.log('Partner UID determined:', partnerUid.value)
+      } else {
+        console.warn('No user data received from Firebase.')
+      }
+    })
+  } catch (error) {
+    console.error('Error determining partner UID in StatsView:', error)
+  }
+}
+
 // Завантаження даних з бази
-onMounted(() => {
+onMounted(async () => {
+  // Визначаємо ID партнера при завантаженні
+  await determinePartnerUid()
+
+  // Ініціалізуємо бали поточного користувача, якщо їх немає
+  if (authStore.user?.uid) {
+    await initializeUserPoints(authStore.user.uid);
+  }
+
+  // Підписуємось на поточні бали поточного користувача
+  console.log('StatsView: Attempting to subscribe to current user points for UID:', authStore.user?.uid);
+  if (authStore.user?.uid) {
+    listenToData(`points/${authStore.user.uid}`, (data) => {
+      if (data) {
+        currentUserPoints.value = data.current || 0
+        console.log(`StatsView: Received current user points (${authStore.user.uid}):`, currentUserPoints.value)
+      } else {
+        currentUserPoints.value = 0; // Reset if data is empty
+        console.log(`StatsView: No current user points data received for ${authStore.user.uid}. Setting to 0.`);
+      }
+    })
+  } else {
+    console.warn('StatsView: Cannot subscribe to current user points, authStore.user.uid is not available during onMounted.');
+  }
+
+  // Підписуємось на поточні бали партнера після визначення partnerUid
+  if (partnerUid.value) {
+    listenToData(`points/${partnerUid.value}`, (data) => {
+      if (data) {
+        partnerCurrentPoints.value = data.current || 0
+        console.log(`StatsView: Received partner current points (${partnerUid.value}):`, partnerCurrentPoints.value)
+      }
+    })
+  }
+
   // Настрої
   listenToData('moodmain', (data) => {
     if (data) {
@@ -327,10 +398,12 @@ onMounted(() => {
     }
   })
 
-  // Бали
+  // Бали (історія транзакцій)
   listenToData('points_transactions', (data) => {
     if (data) {
       pointsHistory.value = Object.entries(data).map(([id, transaction]) => ({ id, ...transaction }))
+    } else {
+      pointsHistory.value = []
     }
   })
 
@@ -344,16 +417,17 @@ onMounted(() => {
 
 // Статистика настрою
 const moodStats = computed(() => {
-  if (!moods.value || !moods.value.length) return { user: [], partner: [] }
+  // Додано перевірки на authStore.user та partnerUid.value
+  if (!moods.value || !moods.value.length || !authStore.user || !partnerUid.value) return { user: [], partner: [] }
   
   const periodStart = getPeriodStart(selectedPeriod.value)
   const filteredMoods = moods.value.filter(mood => 
     new Date(mood.createdAt) >= periodStart
   )
 
-  // Розділяємо настрій по користувачах
-  const userMoods = filteredMoods.filter(m => m.userId === 'facellesit@gmail.com')
-  const partnerMoods = filteredMoods.filter(m => m.userId === 'martadaniluk4@gmail.com')
+  // Розділяємо настрій по користувачах за UID
+  const userMoods = filteredMoods.filter(m => m.userId === authStore.user.uid)
+  const partnerMoods = filteredMoods.filter(m => m.userId === partnerUid.value)
 
   // Рахуємо статистику для кожного користувача
   const calculateMoodStats = (moods) => {
@@ -382,11 +456,15 @@ const moodStats = computed(() => {
   }
 })
 
-// Додаємо статистику по балах
+// Оновлюємо computed властивість pointsStats
 const pointsStats = computed(() => {
-  if (!pointsHistory.value) return { 
-    user: 0, 
-    partner: 0,
+  // Використовуємо currentUserPoints та partnerCurrentPoints для загального балансу
+  const userPoints = currentUserPoints.value
+  const partnerPoints = partnerCurrentPoints.value
+
+  if (!pointsHistory.value || !authStore.user || !partnerUid.value) return { 
+    user: userPoints, 
+    partner: partnerPoints,
     givenByUser: 0,
     givenByPartner: 0
   }
@@ -396,22 +474,15 @@ const pointsStats = computed(() => {
     new Date(point.timestamp) >= periodStart
   )
 
-  // Розділяємо бали по користувачах
-  const userPoints = filteredPoints
-    .filter(p => p.userId === 'facellesit@gmail.com')
-    .reduce((sum, p) => sum + p.amount, 0)
-  
-  const partnerPoints = filteredPoints
-    .filter(p => p.userId === 'martadaniluk4@gmail.com')
-    .reduce((sum, p) => sum + p.amount, 0)
-
-  // Рахуємо скільки балів додав кожен
+  // Рахуємо скільки балів додав кожен з транзакцій
   const givenByUser = filteredPoints
-    .filter(p => p.userEmail === 'facellesit@gmail.com' && p.userId !== 'facellesit@gmail.com')
+    // Знаходимо транзакції, ініційовані поточним користувачем для партнера
+    .filter(p => p.userEmail === authStore.user.email && p.userId === partnerUid.value && p.amount > 0) // Додаємо перевірку amount > 0
     .reduce((sum, p) => sum + p.amount, 0)
 
   const givenByPartner = filteredPoints
-    .filter(p => p.userEmail === 'martadaniluk4@gmail.com' && p.userId !== 'martadaniluk4@gmail.com')
+    // Знаходимо транзакції, ініційовані партнером для поточного користувача
+    .filter(p => p.userEmail === partnerEmail.value && p.userId === authStore.user.uid && p.amount > 0) // Додаємо перевірку amount > 0
     .reduce((sum, p) => sum + p.amount, 0)
 
   return {
@@ -431,6 +502,7 @@ const completedTasks = computed(() => {
     year: 365 * 24 * 60 * 60 * 1000
   }[selectedPeriod.value]
 
+  // Фільтруємо завдання за періодом та статусом
   return tasks.value.filter(t => 
     t.status === 'completed' && 
     t.createdAt && 
@@ -446,6 +518,7 @@ const pendingTasks = computed(() => {
     year: 365 * 24 * 60 * 60 * 1000
   }[selectedPeriod.value]
 
+  // Фільтруємо завдання за періодом та статусом
   return tasks.value.filter(t => 
     t.status === 'pending' && 
     t.createdAt && 
@@ -458,8 +531,11 @@ const taskCompletionRate = computed(() => {
   return total > 0 ? Math.round((completedTasks.value / total) * 100) : 0
 })
 
-// Бали
-const totalPoints = computed(() => {
+// Загальна кількість балів (беремо з currentUserPoints)
+const totalPoints = computed(() => currentUserPoints.value)
+
+const recentPoints = computed(() => {
+  // Фільтруємо транзакції балів за періодом та форматуємо для відображення
   const now = Date.now()
   const periodMs = {
     week: 7 * 24 * 60 * 60 * 1000,
@@ -467,18 +543,17 @@ const totalPoints = computed(() => {
     year: 365 * 24 * 60 * 60 * 1000
   }[selectedPeriod.value]
 
-  return pointsHistory.value
+   return pointsHistory.value
     .filter(p => p.timestamp && (now - p.timestamp) <= periodMs)
-    .reduce((sum, p) => sum + p.amount, 0)
-})
-
-const recentPoints = computed(() => {
-  return pointsHistory.value
     .sort((a, b) => b.timestamp - a.timestamp)
-    .slice(0, 5)
+    .slice(0, 5) // Обмежуємо до 5 останніх транзакцій
     .map(p => ({
       id: p.id,
-      description: p.reason,
+      description: p.reason || 
+                   (p.type === 'reward' ? `Отримано ${p.amount} балів` : 
+                    p.type === 'transfer' ? `Передача ${p.amount} балів` : 
+                    p.type === 'purchase' ? `Купівля на ${Math.abs(p.amount)} балів` : 
+                    'Транзакція'), // Використовуємо reason або генеруємо з type
       value: p.amount,
       date: new Date(p.timestamp)
     }))
@@ -503,9 +578,12 @@ const activityTimeline = computed(() => {
         id: 'task-' + t.id,
         type: 'task',
         icon: '✓',
-        description: `Завершено завдання "${t.title}"`,
+        description: `Завершено завдання "${t.title}"`, // Використовуємо task.title
         date: new Date(t.createdAt),
-        author: t.userEmail === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня'
+        // Визначаємо автора за userId завдання
+        author: t.userId === authStore.user.uid ? 
+                (authStore.user.email === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня') : 
+                (partnerEmail.value === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня')
       })
     })
 
@@ -517,9 +595,12 @@ const activityTimeline = computed(() => {
         id: 'mood-' + mood.id,
         type: 'mood',
         icon: mood.emoji || '😐',
-        description: `Відмічено настрій: ${mood.emoji || mood.mood}`,
+        description: `Відмічено настрій: ${mood.emoji || mood.mood}`, // Використовуємо mood.emoji/mood
         date: new Date(mood.createdAt),
-        author: mood.userEmail === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня'
+        // Визначаємо автора за userId настрою
+        author: mood.userId === authStore.user.uid ? 
+                (authStore.user.email === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня') : 
+                (partnerEmail.value === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня')
       })
     })
 
@@ -527,14 +608,17 @@ const activityTimeline = computed(() => {
   pointsHistory.value
     .filter(p => p.timestamp && (now - p.timestamp) <= periodMs)
     .forEach(point => {
-      // Визначаємо автора на основі того, хто додав бали
-      const author = point.userEmail === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня'
+      // Визначаємо автора на основі того, кого стосується транзакція (userId)
+      const authorUid = point.userId
+      const author = authorUid === authStore.user.uid ? 
+        (authStore.user.email === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня') : 
+        (partnerEmail.value === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня') // Логіка визначення Зайчик/Кицюня
 
       activities.push({
         id: 'points-' + point.id,
         type: 'points',
         icon: '★',
-        description: `${point.amount > 0 ? 'Отримано' : 'Списано'} ${Math.abs(point.amount)} балів: ${point.reason}`,
+        description: `${point.amount > 0 ? 'Отримано' : 'Списано'} ${Math.abs(point.amount)} балів: ${point.reason || 'Транзакція'}`,
         date: new Date(point.timestamp),
         author
       })
@@ -550,7 +634,10 @@ const activityTimeline = computed(() => {
         icon: '📸',
         description: `Додано фото: ${photo.description || 'Без опису'}`,
         date: new Date(photo.createdAt),
-        author: photo.userEmail === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня'
+        // Визначаємо автора за userId фото
+        author: photo.userId === authStore.user.uid ? 
+                (authStore.user.email === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня') : 
+                (partnerEmail.value === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня')
       })
     })
 
@@ -583,6 +670,13 @@ const formatDate = (date) => {
 
 // Mood comparison
 const showMoodSelector = ref(false)
+
+// Додаємо computed властивості для визначення, хто є Зайчик, а хто - Кицюня
+const isCurrentUserBunny = computed(() => authStore.user?.email === 'facellesit@gmail.com')
+const isPartnerBunny = computed(() => partnerEmail.value === 'facellesit@gmail.com')
+
+const currentUserLabel = computed(() => isCurrentUserBunny.value ? 'Зайчик' : 'Кицюня')
+const partnerLabel = computed(() => isPartnerBunny.value ? 'Зайчик' : 'Кицюня')
 </script>
 
 <style scoped>

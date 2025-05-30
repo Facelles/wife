@@ -86,13 +86,14 @@
         <div class="flex flex-col md:flex-row items-center justify-between gap-4">
           <div class="text-center md:text-left">
             <h3 class="text-sm md:text-base font-light text-gray-400">{{ authStore.user?.email === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня' }}</h3>
-            <p class="text-3xl md:text-5xl font-bold text-primary-600">{{ points }}</p>
+            <p class="text-3xl md:text-5xl font-bold text-primary-600">{{ currentUserPoints }}</p>
           </div>
           <div class="flex flex-col sm:flex-row gap-2">
             <button
               v-for="action in actions"
               :key="action.text"
               @click="action.action"
+              :aria-label="action.text"
               class="p-2 md:p-3 bg-white rounded-xl shadow hover:shadow-md transition-shadow"
             >
               <i class="material-icons text-primary-500">{{ action.icon }}</i>
@@ -137,7 +138,7 @@
             <div class="flex items-center justify-between flex-wrap">
               <span class="text-2xl">⭐</span>
               <div class="text-right">
-                <div class="text-lg font-semibold text-primary-600">{{ points }}</div>
+                <div class="text-lg font-semibold text-primary-600">{{ currentUserPoints }}</div>
                 <div class="text-xs text-gray-500">загалом</div>
               </div>
             </div>
@@ -241,18 +242,18 @@
             <input 
               id="pointsAmount"
               type="number" 
-              v-model="addPointsAmount" 
+              v-model="pointsAmount" 
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" 
               min="1" 
               required
             >
           </div>
           <div>
-            <label for="pointsDescription" class="block text-sm font-medium text-gray-700">Опис</label>
+            <label for="pointsReason" class="block text-sm font-medium text-gray-700">Опис</label>
             <input 
-              id="pointsDescription"
+              id="pointsReason"
               type="text" 
-              v-model="addPointsDescription" 
+              v-model="pointsReason" 
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" 
               required
             >
@@ -281,7 +282,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useDevice } from '../composables/useDevice'
 import { useAuthStore } from '../stores/auth'
-import { listenToData, pushData, addPointsTransaction } from '../firebase/database-service'
+import { listenToData, pushData, addPointsTransaction, updateUserPoints } from '../firebase/database-service'
 import { useRouter } from 'vue-router'
 import PhotoViewer from '../components/PhotoViewer.vue'
 
@@ -341,6 +342,10 @@ const showPhotoViewer = ref(false)
 const selectedPhoto = ref(null)
 const allPhotos = ref([])
 
+// Додаємо refs для зберігання поточних балів
+const currentUserPoints = ref(0)
+const partnerCurrentPoints = ref(0)
+
 // Визначаємо ID партнера
 const determinePartnerUid = async () => {
   try {
@@ -360,17 +365,19 @@ onMounted(async () => {
   await determinePartnerUid()
 
   // Підписка на бали поточного користувача
-  listenToData(`points/${authStore.user.uid}`, (data) => {
-    if (data) {
-      points.value = data.current || 0
-    }
-  })
+  if (authStore.user?.uid) {
+    listenToData(`points/${authStore.user.uid}`, (data) => {
+      if (data) {
+        currentUserPoints.value = data.current || 0
+      }
+    })
+  }
 
   // Підписка на бали партнера
   if (partnerUid.value) {
     listenToData(`points/${partnerUid.value}`, (data) => {
       if (data) {
-        partnerPoints.value = data.current || 0
+        partnerCurrentPoints.value = data.current || 0
       }
     })
   }
@@ -569,40 +576,49 @@ const desktopFeatures = [
 ]
 
 // Оновлюємо функцію додавання балів
-const addPointsAmount = ref(1)
-const addPointsDescription = ref('')
+const pointsAmount = ref('')
+const pointsReason = ref('')
 const handleAddPoints = async () => {
+  if (!authStore.user || !pointsAmount.value) return
+
   try {
-    if (!partnerUid.value) {
-      throw new Error('Партнер не знайдений')
+    const amount = parseInt(pointsAmount.value)
+    if (isNaN(amount) || amount <= 0) {
+      alert('Будь ласка, введіть коректну кількість балів')
+      return
     }
 
-    if (points.value < addPointsAmount.value) {
-      throw new Error('Недостатньо балів')
+    // Перевіряємо, чи достатньо балів для передачі
+    if (amount > currentUserPoints.value) {
+      alert('У вас недостатньо балів для передачі')
+      return
     }
 
-    // Списуємо бали з поточного користувача
-    await addPointsTransaction(
-      authStore.user.uid,
-      -addPointsAmount.value,
-      `Передача балів: ${addPointsDescription.value}`,
-      'transfer'
-    )
+    // Створюємо транзакцію
+    const transaction = {
+      amount: -amount, // Віднімаємо бали у відправника
+      reason: pointsReason.value || 'Передача балів',
+      type: 'transfer',
+      userId: authStore.user.uid,
+      userEmail: authStore.user.email,
+      timestamp: Date.now()
+    }
 
-    // Нараховуємо бали партнеру
-    await addPointsTransaction(
-      partnerUid.value,
-      addPointsAmount.value,
-      `Отримано балів: ${addPointsDescription.value}`,
-      'transfer'
-    )
+    // Додаємо транзакцію до історії
+    await pushData('points_transactions', transaction)
 
-    showAddPointsModal.value = false
-    addPointsAmount.value = 1
-    addPointsDescription.value = ''
+    // Оновлюємо бали відправника
+    await updateUserPoints(authStore.user.uid, -amount)
+
+    // Оновлюємо бали отримувача
+    await updateUserPoints(partnerUid.value, amount)
+
+    // Очищаємо форму
+    pointsAmount.value = ''
+    pointsReason.value = ''
   } catch (error) {
     console.error('Error transferring points:', error)
-    alert(error.message || 'Помилка при передачі балів')
+    alert('Помилка при передачі балів: ' + error.message)
   }
 }
 

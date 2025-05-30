@@ -66,7 +66,7 @@
 
           <button
             @click="buyItem(item)"
-            :disabled="item.quantity <= 0 || points < item.price"
+            :disabled="item.quantity <= 0 || currentUserPoints < item.price"
             class="w-full px-4 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
           >
             {{ item.quantity <= 0 ? 'Закінчився' : 'Купити' }}
@@ -174,7 +174,7 @@ import { listenToData, pushData, updateData } from '../firebase/database-service
 const authStore = useAuthStore()
 const shopItems = ref([])
 const showAddItemModal = ref(false)
-const points = ref(0)
+const currentUserPoints = ref(0)
 
 const newItem = ref({
   name: '',
@@ -210,11 +210,13 @@ onMounted(() => {
   })
 
   // Завантаження балів користувача
-  listenToData(`points/${authStore.user.uid}`, (data) => {
-    if (data) {
-      points.value = data.current || 0
-    }
-  })
+  if (authStore.user?.uid) {
+    listenToData(`points/${authStore.user.uid}`, (data) => {
+      if (data) {
+        currentUserPoints.value = data.current || 0
+      }
+    })
+  }
 })
 
 const handleImageUpload = async (event) => {
@@ -254,7 +256,7 @@ const handleAddItem = async () => {
 }
 
 const buyItem = async (item) => {
-  if (points.value < item.price || item.quantity <= 0) return
+  if (currentUserPoints.value < item.price || item.quantity <= 0) return
 
   try {
     // Оновлюємо кількість товару
@@ -262,23 +264,26 @@ const buyItem = async (item) => {
       quantity: item.quantity - 1
     })
 
-    // Віднімаємо бали
+    // Створюємо транзакцію
+    const transaction = {
+      amount: -item.price,
+      reason: `Купівля: ${item.name}`,
+      type: 'purchase',
+      userId: authStore.user.uid,
+      userEmail: authStore.user.email,
+      timestamp: Date.now()
+    }
+
+    // Додаємо транзакцію до історії
+    await pushData('points_transactions', transaction)
+
+    // Оновлюємо бали користувача
     await updateData(`points/${authStore.user.uid}`, {
-      current: points.value - item.price,
+      current: currentUserPoints.value - item.price,
       updatedAt: Date.now()
     })
 
-    // Додаємо транзакцію
-    await pushData('points_transactions', {
-      amount: -item.price,
-      reason: `Купівля: ${item.name}`,
-      timestamp: Date.now(),
-      userId: authStore.user.uid,
-      userEmail: authStore.user.email,
-      type: 'purchase'
-    })
-
-    points.value -= item.price
+    currentUserPoints.value -= item.price
   } catch (error) {
     console.error('Error buying item:', error)
     alert('Помилка при покупці товару')

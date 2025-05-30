@@ -197,4 +197,47 @@ export const uploadFile = async (file, path) => {
     console.error('Error uploading file:', error)
     throw error
   }
+}
+
+// Функція для ініціалізації початкових балів користувача
+export const initializeUserPoints = async (userId) => {
+  try {
+    const pointsRef = dbRef(database, `points/${userId}`)
+    const snapshot = await get(pointsRef)
+    
+    if (!snapshot.exists()) {
+      await set(pointsRef, {
+        current: 0,
+        lastUpdated: Date.now()
+      })
+    }
+  } catch (error) {
+    console.error('Error initializing user points:', error)
+    throw error
+  }
+}
+
+// Функція для оновлення балів користувача
+export const updateUserPoints = async (userId, amount) => {
+  try {
+    const pointsRef = dbRef(database, `points/${userId}`)
+    const snapshot = await get(pointsRef)
+    
+    if (!snapshot.exists()) {
+      await initializeUserPoints(userId)
+    }
+    
+    const currentPoints = snapshot.val()?.current || 0
+    const newPoints = currentPoints + amount
+    
+    await set(pointsRef, {
+      current: newPoints,
+      lastUpdated: Date.now()
+    })
+    
+    return newPoints
+  } catch (error) {
+    console.error('Error updating user points:', error)
+    throw error
+  }
 } 

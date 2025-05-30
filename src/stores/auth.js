@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { auth } from '@/firebase'
+import { auth, database } from '@/firebase'
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth'
+import { ref as dbRef, set } from 'firebase/database'
 import router from '@/router'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -24,6 +25,22 @@ export const useAuthStore = defineStore('auth', () => {
         name: firebaseUser.displayName || '',
         photoURL: firebaseUser.photoURL || ''
       }
+      
+      // Зберігаємо інформацію про користувача у вузол /users
+      const userRef = dbRef(database, 'users/' + firebaseUser.uid);
+      set(userRef, {
+        email: firebaseUser.email,
+        // Можливо, інші дані, які ви хочете зберігати в users
+        name: firebaseUser.displayName || '',
+        photoURL: firebaseUser.photoURL || ''
+      })
+      .then(() => {
+        console.log("Auth Store: User data saved to /users node");
+      })
+      .catch((error) => {
+        console.error("Auth Store: Error saving user data:", error);
+      });
+
       if (router.currentRoute.value.path === '/login') {
         router.push('/')
       }
@@ -58,12 +75,19 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Функція для виходу
   const logout = async () => {
+    console.log('Auth Store: Починаємо процес виходу...')
     try {
       error.value = null
+      loading.value = true
       await signOut(auth)
+      console.log('Auth Store: Успішний вихід')
+      return true
     } catch (err) {
-      console.error('Auth Store: Помилка при виході:', err)
-      error.value = 'Помилка при виході з системи'
+      console.error('Auth Store: Помилка при виході:', err.code, err.message)
+      error.value = 'Помилка при виході'
+      return false
+    } finally {
+      loading.value = false
     }
   }
 
