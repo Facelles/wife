@@ -332,14 +332,12 @@ const toggleTaskStatus = async (task) => {
       completedAt: newStatus === 'completed' ? Date.now() : null
     })
 
-    // Якщо завдання виконано і воно має бали, нараховуємо їх партнеру
+    // Якщо завдання виконано і воно має бали, нараховуємо їх поточному користувачеві
     if (newStatus === 'completed' && task.points > 0) {
-      // Determine partner UID
-      const partnerUid = tasks.value.find(t => t.userId !== authStore.user.uid)?.userId
-
-      if (partnerUid) {
+      // Нараховуємо бали поточному користувачеві
+      if (authStore.user?.uid) {
         await addPointsTransaction(
-          partnerUid,
+          authStore.user.uid,
           task.points,
           `Виконання завдання: ${task.title}`,
           'task_completion'
