@@ -30,11 +30,11 @@
           @click="showMoodSelector = true"
         >
           <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">{{ authStore.user?.email === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня' }}</h3>
-          <p class="text-4xl md:text-6xl">{{ currentMood || '😐' }}</p>
+          <p class="text-4xl md:text-6xl">{{ currentMood || '😡' }}</p>
         </div>
         <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up">
           <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">{{ authStore.user?.email === 'facellesit@gmail.com' ? 'Кицюня' : 'Зайчик' }}</h3>
-          <p class="text-4xl md:text-6xl">{{ partnerMood || '😐' }}</p>
+          <p class="text-4xl md:text-6xl">{{ partnerMood || '😡' }}</p>
         </div>
       </div>
     </div>
@@ -59,11 +59,11 @@
           @click="showSleepSelector = true"
         >
           <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">{{ authStore.user?.email === 'facellesit@gmail.com' ? 'Зайчик' : 'Кицюня' }}</h3>
-          <p class="text-4xl md:text-6xl">{{ currentSleep || '😴' }}</p>
+          <p class="text-4xl md:text-6xl">{{ currentSleep || '😡' }}</p>
         </div>
         <div class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-center animate-slide-up">
           <h3 class="text-sm md:text-base font-light text-gray-400 mb-2">{{ authStore.user?.email === 'facellesit@gmail.com' ? 'Кицюня' : 'Зайчик' }}</h3>
-          <p class="text-4xl md:text-6xl">{{ partnerSleep || '😴' }}</p>
+          <p class="text-4xl md:text-6xl">{{ partnerSleep || '😡' }}</p>
         </div>
       </div>
     </div>
@@ -388,14 +388,31 @@ onMounted(async () => {
       // mood поточного користувача
       const myMoodArr = Object.entries(data[authStore.user.uid] || {})
         .sort((a, b) => b[1].createdAt - a[1].createdAt)
-      currentMood.value = myMoodArr.length ? myMoodArr[0][1].emoji || myMoodArr[0][1].mood || null : null
+      
+      // Перевіряємо чи запис з сьогоднішньої дати
+      const today = new Date().setHours(0, 0, 0, 0)
+      const lastMoodDate = myMoodArr.length ? new Date(myMoodArr[0][1].createdAt).setHours(0, 0, 0, 0) : null
+      
+      currentMood.value = (lastMoodDate === today && myMoodArr.length) 
+        ? myMoodArr[0][1].emoji || myMoodArr[0][1].mood || null 
+        : null
       
       // mood партнера
-      const partnerUid = myEmail.value === 'facellesit@gmail.com' ? Object.keys(data).find(uid => uid !== authStore.user.uid) : Object.keys(data).find(uid => uid !== authStore.user.uid)
+      const partnerUid = myEmail.value === 'facellesit@gmail.com' 
+        ? Object.keys(data).find(uid => uid !== authStore.user.uid) 
+        : Object.keys(data).find(uid => uid !== authStore.user.uid)
+      
       if (partnerUid && data[partnerUid]) {
         const partnerMoodArr = Object.entries(data[partnerUid])
           .sort((a, b) => b[1].createdAt - a[1].createdAt)
-        partnerMood.value = partnerMoodArr.length ? partnerMoodArr[0][1].emoji || partnerMoodArr[0][1].mood || null : null
+        
+        const partnerLastMoodDate = partnerMoodArr.length 
+          ? new Date(partnerMoodArr[0][1].createdAt).setHours(0, 0, 0, 0) 
+          : null
+        
+        partnerMood.value = (partnerLastMoodDate === today && partnerMoodArr.length)
+          ? partnerMoodArr[0][1].emoji || partnerMoodArr[0][1].mood || null
+          : null
       } else {
         partnerMood.value = null
       }
@@ -408,13 +425,33 @@ onMounted(async () => {
       // sleep поточного користувача
       const mySleepArr = Object.entries(data[authStore.user.uid] || {})
         .sort((a, b) => b[1].createdAt - a[1].createdAt)
-      currentSleep.value = mySleepArr.length ? mySleepArr[0][1].emoji || mySleepArr[0][1].sleep || null : null
+      
+      // Перевіряємо чи запис з сьогоднішньої дати
+      const today = new Date().setHours(0, 0, 0, 0)
+      const lastSleepDate = mySleepArr.length 
+        ? new Date(mySleepArr[0][1].createdAt).setHours(0, 0, 0, 0) 
+        : null
+      
+      currentSleep.value = (lastSleepDate === today && mySleepArr.length)
+        ? mySleepArr[0][1].emoji || mySleepArr[0][1].sleep || null
+        : null
+      
       // sleep партнера
-      const partnerUid = myEmail.value === 'facellesit@gmail.com' ? Object.keys(data).find(uid => uid !== authStore.user.uid) : Object.keys(data).find(uid => uid !== authStore.user.uid)
+      const partnerUid = myEmail.value === 'facellesit@gmail.com'
+        ? Object.keys(data).find(uid => uid !== authStore.user.uid)
+        : Object.keys(data).find(uid => uid !== authStore.user.uid)
+      
       if (partnerUid && data[partnerUid]) {
         const partnerSleepArr = Object.entries(data[partnerUid])
           .sort((a, b) => b[1].createdAt - a[1].createdAt)
-        partnerSleep.value = partnerSleepArr.length ? partnerSleepArr[0][1].emoji || partnerSleepArr[0][1].sleep || null : null
+        
+        const partnerLastSleepDate = partnerSleepArr.length
+          ? new Date(partnerSleepArr[0][1].createdAt).setHours(0, 0, 0, 0)
+          : null
+        
+        partnerSleep.value = (partnerLastSleepDate === today && partnerSleepArr.length)
+          ? partnerSleepArr[0][1].emoji || partnerSleepArr[0][1].sleep || null
+          : null
       } else {
         partnerSleep.value = null
       }
