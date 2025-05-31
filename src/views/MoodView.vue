@@ -3,7 +3,7 @@
     <!-- Today's mood -->
     <div class="bg-white overflow-hidden shadow rounded-lg">
       <div class="px-4 py-5 sm:p-6">
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">Як ви почуваєтесь сьогодні?</h2>
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Як ти почуваєшся сьогодні?🥹💍</h2>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <button
             v-for="mood in moods"
@@ -22,13 +22,13 @@
         </div>
         <!-- Mood note -->
         <div class="mt-6">
-          <label for="moodNote" class="block text-sm font-medium text-gray-700">Додайте нотатку про свій день</label>
+          <label for="moodNote" class="block text-sm font-medium text-gray-700">Додай нотатку про свій день</label>
           <textarea
             id="moodNote"
             v-model="moodNote"
             rows="3"
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-            placeholder="Що у вас на думці?"
+            placeholder="Про що думаєш?"
           ></textarea>
           <button
             @click="saveMood"

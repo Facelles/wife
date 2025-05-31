@@ -73,7 +73,7 @@
             v-model="newMessage"
             type="text"
             class="flex-1 input"
-            placeholder="Напишіть повідомлення..."
+            placeholder=""
             required
           >
           <button type="submit" class="btn btn-primary">
@@ -87,7 +87,7 @@
     <div class="bg-white shadow rounded-lg">
       <div class="px-4 py-5 sm:p-6">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-2xl font-bold text-gray-900">Notes</h2>
+          <h2 class="text-2xl font-bold text-gray-900">Нотатки❤️‍🩹</h2>
           <button
             @click="showAddNoteModal = true"
             class="btn btn-primary"

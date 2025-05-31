@@ -4,7 +4,7 @@
     <div class="bg-white overflow-hidden shadow rounded-lg">
       <div class="px-4 py-4 sm:p-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Розширені завдання</h2>
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Завдання 🌌❤️‍🩹</h2>
           <button
             @click="openTaskModal()"
             class="btn btn-primary w-full sm:w-auto"
