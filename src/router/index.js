@@ -11,6 +11,7 @@ import LoginView from '../views/LoginView.vue'
 import GalleryView from '../views/GalleryView.vue'
 import ShopView from '../views/ShopView.vue'
 import PhotosView from '../views/PhotosView.vue'
+import MediaLibrary from '../components/MediaLibrary.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -80,6 +81,14 @@ const router = createRouter({
       name: 'photos',
       component: PhotosView,
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/media',
+      name: 'media',
+      component: MediaLibrary,
+      meta: {
+        requiresAuth: true
+      }
     }
   ]
 })
