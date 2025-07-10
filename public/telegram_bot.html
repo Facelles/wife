@@ -23,6 +23,7 @@
       max-width: 600px;
       margin: 0 auto;
       padding: 20px 8px 90px 8px;
+      transition: opacity 0.3s;
     }
     h1 {
       text-align: center;
@@ -162,9 +163,75 @@
     .view-order-btn:active {
       background: #7c3aed;
     }
+    .buy {
+      display: block;
+      margin: 32px auto 0 auto;
+      padding: 14px 44px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      background: #b266ff;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: background 0.18s, transform 0.18s;
+    }
+    .buy:active {
+      background: #7c3aed;
+      transform: scale(0.97);
+    }
+    /* --- ORDER FORM --- */
+    #form {
+      display: none;
+      max-width: 400px;
+      margin: 40px auto 0 auto;
+      background: var(--tg-theme-secondary-bg-color, #fffccfdd);
+      border-radius: 18px;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+      padding: 32px 24px 24px 24px;
+      animation: fadeIn 0.4s;
+    }
+    #form input[type="text"], #form input[type="email"] {
+      width: 100%;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      border: 1.5px solid var(--tg-theme-hint-color, #e0e0e0);
+      border-radius: 10px;
+      font-size: 1.08rem;
+      background: var(--tg-theme-bg-color, #f9f9f9);
+      color: var(--tg-theme-text-color, #222);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      outline: none;
+      transition: border 0.18s;
+    }
+    #form input[type="text"]:focus, #form input[type="email"]:focus {
+      border: 1.5px solid var(--tg-theme-link-color, #b266ff);
+    }
+    #form .order {
+      width: 100%;
+      padding: 14px 0;
+      font-size: 1.13rem;
+      font-weight: 700;
+      background: #b266ff;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      margin-top: 10px;
+      transition: background 0.18s, transform 0.18s;
+    }
+    #form .order:active {
+      background: #7c3aed;
+      transform: scale(0.97);
+    }
     @media (max-width: 500px) {
       .product-card { width: 98vw; max-width: 340px; }
       #main { padding: 12px 2vw 90px 2vw; }
+      #form { padding: 18px 6vw 18px 6vw; }
     }
   </style>
 </head>
@@ -179,23 +246,45 @@
     <input type="text" placeholder="Phone" id="user_phone">
     <input type="text" placeholder="Email" id="user_email">
     <input type="text" placeholder="Address" id="user_address">
-    <button class="order" id="Order">Buy</button>
+    <button class="order" id="order">Buy</button>
   </form>
 
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
-    let buy = getElementById('buy');
-    let order = getElementById('order');
+    let buy = document.getElementById('buy');
+    let order = document.getElementById('order');
+    let form = document.getElementById('form');
+    let main = document.getElementById('main');
+
+    form.style.display = 'none';
 
     buy.addEventListener('click', () => {
-        document.getElementById('main').style.display = 'none';
-        document.getElementById('form').style.display = 'block';
-        document.getElementById('user_name').value = tg.initDataUnsafe.user.first_name + ' ' + tg.initDataUnsafe.user.last_name;
+      main.style.opacity = 0;
+      setTimeout(() => {
+        main.style.display = 'none';
+        form.style.display = 'block';
+        form.style.opacity = 0;
+        setTimeout(() => { form.style.opacity = 1; }, 10);
+        // Якщо є дані користувача з Telegram, підставляємо
+        if (tg.initDataUnsafe.user) {
+          document.getElementById('user_name').value = (tg.initDataUnsafe.user.first_name || '') + ' ' + (tg.initDataUnsafe.user.last_name || '');
+        }
+      }, 300);
     });
 
-    order.addEventListener('click', () => {
-        tg.close();
+    order.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Тут можна зібрати дані форми і відправити через tg.sendData або tg.close
+      // Наприклад:
+      const data = {
+        name: document.getElementById('user_name').value,
+        phone: document.getElementById('user_phone').value,
+        email: document.getElementById('user_email').value,
+        address: document.getElementById('user_address').value
+      };
+      tg.sendData(JSON.stringify({ action: 'order_form', ...data }));
+      tg.close();
     });
 
   </script>
