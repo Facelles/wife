@@ -3,158 +3,295 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Shop</title>
+  <title>Car Shop</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
+    :root {
+      --radius: 16px;
+      --transition: 0.18s cubic-bezier(.4,2,.6,1);
+    }
     body {
-      font-family: sans-serif;
+      font-family: 'Inter', Arial, sans-serif;
       background: var(--tg-theme-bg-color, #f5f5f5);
       color: var(--tg-theme-text-color, #222);
       margin: 0;
       padding: 0;
+      min-height: 100vh;
+      box-sizing: border-box;
     }
     #main {
       max-width: 600px;
       margin: 0 auto;
-      padding: 20px;
+      padding: 20px 8px 90px 8px;
     }
     h1 {
       text-align: center;
       margin-bottom: 24px;
       color: var(--tg-theme-header-text-color, var(--tg-theme-text-color, #222));
+      font-size: 2rem;
+      letter-spacing: 0.01em;
     }
     .products {
       display: flex;
       flex-wrap: wrap;
-      gap: 20px;
+      gap: 18px;
       justify-content: center;
     }
     .product-card {
       background: var(--tg-theme-secondary-bg-color, #fff);
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-      padding: 16px;
-      width: 260px;
+      border-radius: var(--radius);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 18px 12px 16px 12px;
+      width: 160px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      transition: box-shadow 0.2s;
+      transition: box-shadow var(--transition);
       border: 1px solid var(--tg-theme-hint-color, #eee);
+      position: relative;
+      min-height: 260px;
     }
     .product-card:hover {
-      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.13);
     }
     .product-card img {
-      max-width: 100%;
-      border-radius: 8px;
-      margin-bottom: 12px;
+      width: 90px;
+      height: 70px;
+      object-fit: contain;
+      border-radius: 10px;
+      margin-bottom: 14px;
       background: var(--tg-theme-bg-color, #f5f5f5);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      transition: transform 0.18s cubic-bezier(.4,2,.6,1);
     }
     .product-title {
-      font-size: 20px;
+      font-size: 1.08rem;
       font-weight: 600;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       color: var(--tg-theme-text-color, #222);
-    }
-    .product-desc {
-      font-size: 15px;
-      color: var(--tg-theme-hint-color, #555);
-      margin-bottom: 10px;
       text-align: center;
     }
+    .product-desc {
+      font-size: 0.93rem;
+      color: var(--tg-theme-hint-color, #666);
+      margin-bottom: 10px;
+      text-align: center;
+      min-height: 36px;
+    }
     .product-price {
-      font-size: 18px;
+      font-size: 1.05rem;
       color: var(--tg-theme-link-color, #0088cc);
       font-weight: 700;
       margin-bottom: 12px;
     }
-    .buy {
-      padding: 10px 24px;
-      font-size: 16px;
-      background-color: var(--tg-theme-button-color, #0088cc);
-      color: var(--tg-theme-button-text-color, #fff);
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.2s;
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 2px;
+      min-height: 38px;
+      justify-content: center;
     }
-    .buy:hover {
-      background: var(--tg-theme-link-color, #005f88);
+    .add-btn, .plus-btn, .minus-btn {
+      border: none;
+      outline: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition), transform 0.13s;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+      padding: 8px 18px;
+      background: var(--tg-theme-button-color, #ffb300);
+      color: var(--tg-theme-button-text-color, #fff);
+      letter-spacing: 0.01em;
+    }
+    .add-btn {
+      width: 100%;
+      font-size: 1.01rem;
+      background: var(--tg-theme-button-color, #ffb300);
+      color: var(--tg-theme-button-text-color, #fff);
+    }
+    .plus-btn, .minus-btn {
+      padding: 8px 12px;
+      font-size: 1.1rem;
+      background: var(--tg-theme-link-color, #6c63ff);
+      color: #fff;
+    }
+    .minus-btn {
+      background: #ff5252;
+    }
+    .qty {
+      font-size: 1.1rem;
+      font-weight: 600;
+      min-width: 22px;
+      text-align: center;
+      color: var(--tg-theme-text-color, #222);
+      transition: color var(--transition);
+    }
+    .fade-in {
+      animation: fadeIn 0.3s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .view-order-bar {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      background: var(--tg-theme-secondary-bg-color, #fff);
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+      padding: 16px 12px 24px 12px;
+      display: flex;
+      justify-content: center;
+      z-index: 100;
+    }
+    .view-order-btn {
+      background: #b266ff;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      padding: 16px 38px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: background 0.18s;
+    }
+    .view-order-btn:active {
+      background: #7c3aed;
+    }
+    @media (max-width: 500px) {
+      .product-card { width: 98vw; max-width: 340px; }
+      #main { padding: 12px 2vw 90px 2vw; }
     }
   </style>
 </head>
 <body>
   <div id="main">
-    <h1>Online Shop</h1>
+    <h1>Car Shop</h1>
     <div class="products" id="products"></div>
   </div>
-
+  <div class="view-order-bar">
+    <button class="view-order-btn" id="viewOrderBtn">VIEW ORDER</button>
+  </div>
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // Масив товарів
+    // Масив машин (товарів)
     const products = [
       {
-        id: "product_1",
-        title: "Котяча іграшка",
-        desc: "М'яка іграшка для вашого улюбленця.",
-        price: 120,
-        img: "formoney/1.jpeg"
+        id: "car_1",
+        title: "Tesla Model 3",
+        desc: "Електрокар, 2023, 450км запас ходу.",
+        price: 39999,
+        img: "https://cdn.pixabay.com/photo/2017/01/06/19/15/auto-1957037_1280.jpg"
       },
       {
-        id: "product_2",
-        title: "Лежанка для кота",
-        desc: "Зручна лежанка для солодких снів.",
-        price: 350,
-        img: "formoney/2.jpeg"
+        id: "car_2",
+        title: "BMW i8",
+        desc: "Гібридний спорткар, 2020, 374 к.с.",
+        price: 79999,
+        img: "https://cdn.pixabay.com/photo/2016/11/29/09/32/bmw-1868726_1280.jpg"
       },
       {
-        id: "product_3",
-        title: "Корм преміум",
-        desc: "Смачний та корисний корм для котиків.",
-        price: 220,
-        img: "formoney/3.jpeg"
+        id: "car_3",
+        title: "Audi Q8",
+        desc: "Позашляховик, 2022, quattro.",
+        price: 68900,
+        img: "https://cdn.pixabay.com/photo/2017/03/27/14/56/audi-2179220_1280.jpg"
       },
       {
-        id: "product_4",
-        title: "Миска для їжі",
-        desc: "Стильна миска з нержавійки.",
-        price: 90,
-        img: "formoney/4.jpeg"
+        id: "car_4",
+        title: "Porsche 911",
+        desc: "Купе, 2021, 450 к.с.",
+        price: 119000,
+        img: "https://cdn.pixabay.com/photo/2017/01/06/19/15/auto-1957037_1280.jpg"
+      },
+      {
+        id: "car_5",
+        title: "Toyota Prius",
+        desc: "Гібрид, 2019, економний вибір.",
+        price: 19900,
+        img: "https://cdn.pixabay.com/photo/2012/05/29/00/43/toyota-49278_1280.jpg"
+      },
+      {
+        id: "car_6",
+        title: "Mercedes EQC",
+        desc: "Електро SUV, 2022, 408 к.с.",
+        price: 74900,
+        img: "https://cdn.pixabay.com/photo/2016/11/29/09/32/mercedes-1868727_1280.jpg"
       }
-      // Додавайте більше товарів за потреби
     ];
+
+    // Кількість кожного товару
+    const cart = {};
 
     // Рендер товарів
     const productsDiv = document.getElementById('products');
-    products.forEach(product => {
-      const card = document.createElement('div');
-      card.className = 'product-card';
-      card.innerHTML = `
-        <img src="${product.img}" alt="${product.title}">
-        <div class="product-title">${product.title}</div>
-        <div class="product-desc">${product.desc}</div>
-        <div class="product-price">${product.price} грн</div>
-        <button class="buy" data-id="${product.id}">Купити</button>
-      `;
-      productsDiv.appendChild(card);
-    });
+    function renderProducts() {
+      productsDiv.innerHTML = '';
+      products.forEach(product => {
+        const qty = cart[product.id] || 0;
+        const card = document.createElement('div');
+        card.className = 'product-card fade-in';
+        card.innerHTML = `
+          <img src="${product.img}" alt="${product.title}">
+          <div class="product-title">${product.title}</div>
+          <div class="product-desc">${product.desc}</div>
+          <div class="product-price">${product.price.toLocaleString()} $</div>
+          <div class="controls">
+            ${qty === 0 ? `<button class="add-btn" data-id="${product.id}">ADD</button>` : `
+              <button class="minus-btn" data-id="${product.id}">-</button>
+              <span class="qty">${qty}</span>
+              <button class="plus-btn" data-id="${product.id}">+</button>
+            `}
+          </div>
+        `;
+        productsDiv.appendChild(card);
+      });
+    }
+    renderProducts();
 
-    // Обробка покупки
+    // Анімація для кнопок
+    function animateButton(btn) {
+      btn.style.transform = 'scale(1.13)';
+      setTimeout(() => btn.style.transform = '', 160);
+    }
+
+    // Обробка кліків по кнопках
     productsDiv.addEventListener('click', function(e) {
-      if (e.target.classList.contains('buy')) {
-        const id = e.target.getAttribute('data-id');
-        const product = products.find(p => p.id === id);
-        if (product) {
-          tg.sendData(JSON.stringify({
-            action: "buy",
-            product_id: product.id,
-            title: product.title,
-            price: product.price
-          }));
+      const btn = e.target;
+      const id = btn.getAttribute('data-id');
+      if (!id) return;
+      if (btn.classList.contains('add-btn') || btn.classList.contains('plus-btn')) {
+        cart[id] = (cart[id] || 0) + 1;
+        animateButton(btn);
+        renderProducts();
+      } else if (btn.classList.contains('minus-btn')) {
+        if (cart[id] > 0) {
+          cart[id]--;
+          animateButton(btn);
+          if (cart[id] === 0) delete cart[id];
+          renderProducts();
         }
       }
+    });
+
+    // Кнопка VIEW ORDER
+    document.getElementById('viewOrderBtn').addEventListener('click', function() {
+      const order = products.filter(p => cart[p.id]).map(p => ({
+        id: p.id,
+        title: p.title,
+        qty: cart[p.id],
+        price: p.price
+      }));
+      tg.sendData(JSON.stringify({
+        action: "order",
+        order: order
+      }));
     });
   </script>
 </body>
