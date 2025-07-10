@@ -107,24 +107,26 @@
     /* --- ORDER FORM --- */
     #form {
       display: none;
-      max-width: 400px;
-      margin: 40px auto 0 auto;
+      max-width: 98vw;
+      min-width: 0;
+      margin: 24px auto 0 auto;
       background: var(--tg-theme-secondary-bg-color, #fffccfdd);
-      border-radius: 18px;
-      box-shadow: 0 4px 32px rgba(0,0,0,0.10);
-      padding: 32px 24px 24px 24px;
+      border-radius: 14px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.10);
+      padding: 18px 4vw 18px 4vw;
       animation: fadeIn 0.4s;
     }
     #form input[type="text"], #form input[type="email"] {
       width: 100%;
-      padding: 14px 16px;
-      margin-bottom: 18px;
-      border: 1.5px solid var(--tg-theme-hint-color, #e0e0e0);
-      border-radius: 10px;
-      font-size: 1.08rem;
+      min-width: 0;
+      padding: 12px 12px;
+      margin-bottom: 12px;
+      border: 1.2px solid var(--tg-theme-hint-color, #e0e0e0);
+      border-radius: 8px;
+      font-size: 1rem;
       background: var(--tg-theme-bg-color, #f9f9f9);
       color: var(--tg-theme-text-color, #222);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
       outline: none;
       transition: border 0.18s;
     }
@@ -133,17 +135,18 @@
     }
     #form .order {
       width: 100%;
-      padding: 14px 0;
-      font-size: 1.13rem;
+      min-width: 0;
+      padding: 12px 0;
+      font-size: 1.05rem;
       font-weight: 700;
       background: #b266ff;
       color: #fff;
       border: none;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
       cursor: pointer;
-      letter-spacing: 0.03em;
-      margin-top: 10px;
+      letter-spacing: 0.02em;
+      margin-top: 8px;
       transition: background 0.18s, transform 0.18s;
     }
     #form .order:active {
@@ -153,7 +156,22 @@
     @media (max-width: 500px) {
       .product-card { width: 98vw; max-width: 340px; }
       #main { padding: 12px 2vw 90px 2vw; }
-      #form { padding: 18px 6vw 18px 6vw; }
+      #form {
+        padding: 10px 2vw 10px 2vw;
+        margin: 12px auto 0 auto;
+        border-radius: 10px;
+      }
+      #form input[type="text"], #form input[type="email"] {
+        font-size: 0.98rem;
+        padding: 10px 8px;
+        margin-bottom: 10px;
+        border-radius: 7px;
+      }
+      #form .order {
+        font-size: 1rem;
+        padding: 10px 0;
+        border-radius: 7px;
+      }
     }
   </style>
 </head>
