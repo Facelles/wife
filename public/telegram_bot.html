@@ -170,130 +170,34 @@
 </head>
 <body>
   <div id="main">
-    <h1>Car Shop</h1>
+    <h1>Online Shop</h1>
     <div class="products" id="products"></div>
+    <button class="buy" id="buy">Buy</button>
   </div>
-  <div class="view-order-bar">
-    <button class="view-order-btn" id="viewOrderBtn">VIEW ORDER</button>
-  </div>
+  <form id="form">
+    <input type="text" placeholder="Name" id="user_name">
+    <input type="text" placeholder="Phone" id="user_phone">
+    <input type="text" placeholder="Email" id="user_email">
+    <input type="text" placeholder="Address" id="user_address">
+    <button class="order" id="Order">Buy</button>
+  </form>
+
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
     let buy = getElementById('buy');
     let order = getElementById('order');
-    // Масив машин (товарів)
-    const products = [
-      {
-        id: "car_1",
-        title: "Tesla Model 3",
-        desc: "Електрокар, 2023, 450км запас ходу.",
-        price: 39999,
-        img: "https://cdn.pixabay.com/photo/2017/01/06/19/15/auto-1957037_1280.jpg"
-      },
-      {
-        id: "car_2",
-        title: "BMW i8",
-        desc: "Гібридний спорткар, 2020, 374 к.с.",
-        price: 79999,
-        img: "https://cdn.pixabay.com/photo/2016/11/29/09/32/bmw-1868726_1280.jpg"
-      },
-      {
-        id: "car_3",
-        title: "Audi Q8",
-        desc: "Позашляховик, 2022, quattro.",
-        price: 68900,
-        img: "https://cdn.pixabay.com/photo/2017/03/27/14/56/audi-2179220_1280.jpg"
-      },
-      {
-        id: "car_4",
-        title: "Porsche 911",
-        desc: "Купе, 2021, 450 к.с.",
-        price: 119000,
-        img: "https://cdn.pixabay.com/photo/2017/01/06/19/15/auto-1957037_1280.jpg"
-      },
-      {
-        id: "car_5",
-        title: "Toyota Prius",
-        desc: "Гібрид, 2019, економний вибір.",
-        price: 19900,
-        img: "https://cdn.pixabay.com/photo/2012/05/29/00/43/toyota-49278_1280.jpg"
-      },
-      {
-        id: "car_6",
-        title: "Mercedes EQC",
-        desc: "Електро SUV, 2022, 408 к.с.",
-        price: 74900,
-        img: "https://cdn.pixabay.com/photo/2016/11/29/09/32/mercedes-1868727_1280.jpg"
-      }
-    ];
 
-    // Кількість кожного товару
-    const cart = {};
-
-    // Рендер товарів
-    const productsDiv = document.getElementById('products');
-    function renderProducts() {
-      productsDiv.innerHTML = '';
-      products.forEach(product => {
-        const qty = cart[product.id] || 0;
-        const card = document.createElement('div');
-        card.className = 'product-card fade-in';
-        card.innerHTML = `
-          <img src="${product.img}" alt="${product.title}">
-          <div class="product-title">${product.title}</div>
-          <div class="product-desc">${product.desc}</div>
-          <div class="product-price">${product.price.toLocaleString()} $</div>
-          <div class="controls">
-            ${qty === 0 ? `<button class="add-btn" data-id="${product.id}">ADD</button>` : `
-              <button class="minus-btn" data-id="${product.id}">-</button>
-              <span class="qty">${qty}</span>
-              <button class="plus-btn" data-id="${product.id}">+</button>
-            `}
-          </div>
-        `;
-        productsDiv.appendChild(card);
-      });
-    }
-    renderProducts();
-
-    // Анімація для кнопок
-    function animateButton(btn) {
-      btn.style.transform = 'scale(1.13)';
-      setTimeout(() => btn.style.transform = '', 160);
-    }
-
-    // Обробка кліків по кнопках
-    productsDiv.addEventListener('click', function(e) {
-      const btn = e.target;
-      const id = btn.getAttribute('data-id');
-      if (!id) return;
-      if (btn.classList.contains('add-btn') || btn.classList.contains('plus-btn')) {
-        cart[id] = (cart[id] || 0) + 1;
-        animateButton(btn);
-        renderProducts();
-      } else if (btn.classList.contains('minus-btn')) {
-        if (cart[id] > 0) {
-          cart[id]--;
-          animateButton(btn);
-          if (cart[id] === 0) delete cart[id];
-          renderProducts();
-        }
-      }
+    buy.addEventListener('click', () => {
+        document.getElementById('main').style.display = 'none';
+        document.getElementById('form').style.display = 'block';
+        document.getElementById('user_name').value = tg.initDataUnsafe.user.first_name + ' ' + tg.initDataUnsafe.user.last_name;
     });
 
-    // Кнопка VIEW ORDER
-    document.getElementById('viewOrderBtn').addEventListener('click', function() {
-      const order = products.filter(p => cart[p.id]).map(p => ({
-        id: p.id,
-        title: p.title,
-        qty: cart[p.id],
-        price: p.price
-      }));
-      tg.sendData(JSON.stringify({
-        action: "order",
-        order: order
-      }));
+    order.addEventListener('click', () => {
+        tg.close();
     });
+
   </script>
 </body>
 </html>
