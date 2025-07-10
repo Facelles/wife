@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://wife.facelles.com/sitemap.xml 
