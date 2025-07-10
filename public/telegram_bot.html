@@ -85,84 +85,6 @@
       font-weight: 700;
       margin-bottom: 12px;
     }
-    .controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 2px;
-      min-height: 38px;
-      justify-content: center;
-    }
-    .add-btn, .plus-btn, .minus-btn {
-      border: none;
-      outline: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background var(--transition), color var(--transition), transform 0.13s;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-      padding: 8px 18px;
-      background: var(--tg-theme-button-color, #ffb300);
-      color: var(--tg-theme-button-text-color, #fff);
-      letter-spacing: 0.01em;
-    }
-    .add-btn {
-      width: 100%;
-      font-size: 1.01rem;
-      background: var(--tg-theme-button-color, #ffb300);
-      color: var(--tg-theme-button-text-color, #fff);
-    }
-    .plus-btn, .minus-btn {
-      padding: 8px 12px;
-      font-size: 1.1rem;
-      background: var(--tg-theme-link-color, #6c63ff);
-      color: #fff;
-    }
-    .minus-btn {
-      background: #ff5252;
-    }
-    .qty {
-      font-size: 1.1rem;
-      font-weight: 600;
-      min-width: 22px;
-      text-align: center;
-      color: var(--tg-theme-text-color, #222);
-      transition: color var(--transition);
-    }
-    .fade-in {
-      animation: fadeIn 0.3s;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    .view-order-bar {
-      position: fixed;
-      left: 0; right: 0; bottom: 0;
-      background: var(--tg-theme-secondary-bg-color, #fff);
-      box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
-      padding: 16px 12px 24px 12px;
-      display: flex;
-      justify-content: center;
-      z-index: 100;
-    }
-    .view-order-btn {
-      background: #b266ff;
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      font-size: 1.15rem;
-      font-weight: 700;
-      padding: 16px 38px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-      cursor: pointer;
-      letter-spacing: 0.03em;
-      transition: background 0.18s;
-    }
-    .view-order-btn:active {
-      background: #7c3aed;
-    }
     .buy {
       display: block;
       margin: 32px auto 0 auto;
@@ -257,35 +179,17 @@
     let form = document.getElementById('form');
     let main = document.getElementById('main');
 
-    form.style.display = 'none';
-
     buy.addEventListener('click', () => {
-      main.style.opacity = 0;
-      setTimeout(() => {
-        main.style.display = 'none';
-        form.style.display = 'block';
-        form.style.opacity = 0;
-        setTimeout(() => { form.style.opacity = 1; }, 10);
-        // Якщо є дані користувача з Telegram, підставляємо
-        if (tg.initDataUnsafe.user) {
-          document.getElementById('user_name').value = (tg.initDataUnsafe.user.first_name || '') + ' ' + (tg.initDataUnsafe.user.last_name || '');
-        }
-      }, 300);
+        document.getElementById('main').style.display = 'none';
+        document.getElementById('form').style.display = 'block';
+        document.getElementById('user_name').value = tg.initDataUnsafe.user.first_name + " " + tg.initDataUnsafe.user.last_name;
     });
 
-    order.addEventListener('click', (e) => {
-      e.preventDefault();
-      // Тут можна зібрати дані форми і відправити через tg.sendData або tg.close
-      // Наприклад:
-      const data = {
-        name: document.getElementById('user_name').value,
-        phone: document.getElementById('user_phone').value,
-        email: document.getElementById('user_email').value,
-        address: document.getElementById('user_address').value
-      };
-      tg.sendData(JSON.stringify({ action: 'order_form', ...data }));
-      tg.close();
+    order.addEventListener('click', () => {
+        tg.close();
     });
+
+
 
   </script>
 </body>
