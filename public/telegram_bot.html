@@ -1,17 +1,52 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Shop</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Shop</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+    }
+    #main {
+      padding: 20px;
+    }
+    img {
+      max-width: 100%;
+      border-radius: 10px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #0088cc;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
-    <div id="main">
-        <h1>Online shop</h1>
-        <img src="/Users/facelles/freelanc_working/working_python/venv/_.jpeg">
-        <p>Lorem ipsum dolor sit a</p>
-        <button class="buy">Buy</button>
-        <script src="https://telegram.org/js/telegram-web-app.js?58"></script>
-    </div>
+  <div id="main">
+    <h1>Online shop</h1>
+    <img src="formoney/1.jpeg" alt="product">
+    <p>Lorem ipsum dolor sit amet</p>
+    <button class="buy">Buy</button>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand(); 
+
+    document.querySelector(".buy").addEventListener("click", () => {
+      tg.sendData(JSON.stringify({
+        action: "buy",
+        product: "product_id_123",
+        price: 99.99
+      }));
+    });
+  </script>
 </body>
 </html>
