@@ -8,44 +8,153 @@
   <style>
     body {
       font-family: sans-serif;
-      text-align: center;
+      background: var(--tg-theme-bg-color, #f5f5f5);
+      color: var(--tg-theme-text-color, #222);
+      margin: 0;
+      padding: 0;
     }
     #main {
+      max-width: 600px;
+      margin: 0 auto;
       padding: 20px;
     }
-    img {
-      max-width: 100%;
-      border-radius: 10px;
+    h1 {
+      text-align: center;
+      margin-bottom: 24px;
+      color: var(--tg-theme-header-text-color, var(--tg-theme-text-color, #222));
     }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
+    .products {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+    .product-card {
+      background: var(--tg-theme-secondary-bg-color, #fff);
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      padding: 16px;
+      width: 260px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: box-shadow 0.2s;
+      border: 1px solid var(--tg-theme-hint-color, #eee);
+    }
+    .product-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    .product-card img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      background: var(--tg-theme-bg-color, #f5f5f5);
+    }
+    .product-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--tg-theme-text-color, #222);
+    }
+    .product-desc {
+      font-size: 15px;
+      color: var(--tg-theme-hint-color, #555);
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .product-price {
       font-size: 18px;
-      background-color: #0088cc;
-      color: white;
+      color: var(--tg-theme-link-color, #0088cc);
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .buy {
+      padding: 10px 24px;
+      font-size: 16px;
+      background-color: var(--tg-theme-button-color, #0088cc);
+      color: var(--tg-theme-button-text-color, #fff);
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .buy:hover {
+      background: var(--tg-theme-link-color, #005f88);
     }
   </style>
 </head>
 <body>
   <div id="main">
-    <h1>Online shop</h1>
-    <img src="formoney/1.jpeg" alt="product">
-    <p>Lorem ipsum dolor sit amet</p>
-    <button class="buy">Buy</button>
+    <h1>Online Shop</h1>
+    <div class="products" id="products"></div>
   </div>
 
   <script>
     const tg = window.Telegram.WebApp;
-    tg.expand(); 
+    tg.expand();
 
-    document.querySelector(".buy").addEventListener("click", () => {
-      tg.sendData(JSON.stringify({
-        action: "buy",
-        product: "product_id_123",
-        price: 99.99
-      }));
+    // Масив товарів
+    const products = [
+      {
+        id: "product_1",
+        title: "Котяча іграшка",
+        desc: "М'яка іграшка для вашого улюбленця.",
+        price: 120,
+        img: "formoney/1.jpeg"
+      },
+      {
+        id: "product_2",
+        title: "Лежанка для кота",
+        desc: "Зручна лежанка для солодких снів.",
+        price: 350,
+        img: "formoney/2.jpeg"
+      },
+      {
+        id: "product_3",
+        title: "Корм преміум",
+        desc: "Смачний та корисний корм для котиків.",
+        price: 220,
+        img: "formoney/3.jpeg"
+      },
+      {
+        id: "product_4",
+        title: "Миска для їжі",
+        desc: "Стильна миска з нержавійки.",
+        price: 90,
+        img: "formoney/4.jpeg"
+      }
+      // Додавайте більше товарів за потреби
+    ];
+
+    // Рендер товарів
+    const productsDiv = document.getElementById('products');
+    products.forEach(product => {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.innerHTML = `
+        <img src="${product.img}" alt="${product.title}">
+        <div class="product-title">${product.title}</div>
+        <div class="product-desc">${product.desc}</div>
+        <div class="product-price">${product.price} грн</div>
+        <button class="buy" data-id="${product.id}">Купити</button>
+      `;
+      productsDiv.appendChild(card);
+    });
+
+    // Обробка покупки
+    productsDiv.addEventListener('click', function(e) {
+      if (e.target.classList.contains('buy')) {
+        const id = e.target.getAttribute('data-id');
+        const product = products.find(p => p.id === id);
+        if (product) {
+          tg.sendData(JSON.stringify({
+            action: "buy",
+            product_id: product.id,
+            title: product.title,
+            price: product.price
+          }));
+        }
+      }
     });
   </script>
 </body>
