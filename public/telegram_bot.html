@@ -174,10 +174,10 @@
       max-width: 275px;
       width: 84vw;
       margin: 0 auto;
-      background: var(--tg-theme-secondary-bg-color, rgba(255,255,255,0.98));
-      border-radius: 14px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      padding: 14px 8px 14px 8px;
+      background: var(--tg-theme-bg-color, #fff);
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      padding: 16px 10px 16px 10px;
       animation: fadeIn 0.4s;
       position: fixed;
       left: 0; right: 0; top: 0; bottom: 0;
@@ -195,28 +195,29 @@
       font-size: 1.08rem;
       font-weight: 700;
       color: var(--tg-theme-text-color, #222);
-      margin-bottom: 18px;
+      margin-bottom: 14px;
       letter-spacing: 0.01em;
     }
     #form input[type="text"], #form input[type="email"] {
       width: 100%;
       min-width: 0;
       display: block;
-      margin: 0 auto 14px auto;
-      padding: 10px 10px;
-      border: none;
-      border-radius: 9px;
-      font-size: 0.95rem;
-      background: var(--tg-theme-bg-color, #f7f7fa);
+      margin: 0 auto 12px auto;
+      padding: 10px 12px;
+      border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+      border-radius: 8px;
+      font-size: 0.97rem;
+      background: var(--tg-theme-secondary-bg-color, #f7f7fa);
       color: var(--tg-theme-text-color, #222);
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
       outline: none;
-      transition: box-shadow 0.18s, background 0.18s;
+      transition: border 0.18s, box-shadow 0.18s, background 0.18s;
       text-align: center;
     }
     #form input[type="text"]:focus, #form input[type="email"]:focus {
-      background: var(--tg-theme-secondary-bg-color, #fff);
-      box-shadow: 0 0 0 2px var(--tg-theme-link-color, #e15ee7);
+      background: #fff;
+      border: 1.5px solid var(--tg-theme-link-color, #339ee6);
+      box-shadow: 0 0 0 2px var(--tg-theme-link-color, #339ee6, #e15ee7);
     }
     #form input[type="text"]::placeholder, #form input[type="email"]::placeholder {
       color: var(--tg-theme-hint-color, #b0b6c3);
@@ -229,21 +230,20 @@
       min-width: 0;
       display: block;
       margin: 14px auto 0 auto;
-      padding: 10px 0;
-      font-size: 0.95rem;
+      padding: 11px 0;
+      font-size: 1.01rem;
       font-weight: 700;
-      background: var(--tg-theme-button-color, #e15ee7);
+      background: var(--tg-theme-button-color, #339ee6);
       color: var(--tg-theme-button-text-color, #fff);
-      border: none;
-      border-radius: 9px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      border-radius: 8px;
+      box-shadow: 0 1.5px 6px rgba(51,158,230,0.08);
       cursor: pointer;
       letter-spacing: 0.01em;
       transition: background 0.18s, transform 0.18s;
       text-align: center;
     }
     #form .order:active {
-      background: var(--tg-theme-link-color, #b266ff);
+      background: var(--tg-theme-link-color, #1976d2);
       transform: scale(0.97);
     }
     .form-img {
