@@ -188,7 +188,8 @@
       max-width: 320px;
       width: 92vw;
       margin: 0 auto;
-      background: #232323;
+      background: var(--tg-theme-bg-color, #fff);
+      color: var(--tg-theme-text-color, #222);
       border-radius: 16px;
       box-shadow: 0 4px 24px 0 rgba(0,0,0,0.13);
       padding: 24px 16px 20px 16px;
@@ -216,9 +217,10 @@
       text-align: center;
       font-size: 1.25rem;
       font-weight: 800;
-      color: #fff;
+      color: var(--tg-theme-text-color, #222);
       margin-bottom: 18px;
       letter-spacing: 0.01em;
+      padding-top: 24px;
     }
     #form input[type="text"], #form input[type="email"] {
       width: 100%;
@@ -280,18 +282,6 @@
       #form { max-width: 98vw; padding: 10px 4vw 10px 4vw; }
     }
   </style>
-  <div class="emoji-bg">
-    <span style="top:10%;left:5%;">🍔</span>
-    <span style="top:20%;left:80%;">🍟</span>
-    <span style="top:60%;left:10%;">🌭</span>
-    <span style="top:70%;left:70%;">🍕</span>
-    <span style="top:40%;left:50%;">🍩</span>
-    <span style="top:80%;left:30%;">🍦</span>
-    <span style="top:15%;left:60%;">🥤</span>
-    <span style="top:50%;left:80%;">🍰</span>
-    <span style="top:85%;left:80%;">🍿</span>
-    <span style="top:30%;left:30%;">🍪</span>
-  </div>
 </head>
 <body>
   <div id="main">
