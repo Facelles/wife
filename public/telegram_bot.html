@@ -12,7 +12,7 @@
     }
     body {
       font-family: 'Inter', Arial, sans-serif;
-      background: var(--tg-theme-bg-color, #fff);
+      background: linear-gradient(135deg, var(--tg-theme-bg-color, #f7fafc) 60%, var(--tg-theme-secondary-bg-color, #e3e8ee) 100%);
       color: var(--tg-theme-text-color, #222);
       margin: 0;
       padding: 0;
@@ -38,61 +38,75 @@
     }
     /* --- Products grid --- */
     #main {
-      max-width: 480px;
+      max-width: 500px;
       margin: 0 auto;
-      padding: 18px 0 100px 0;
+      padding: 24px 0 120px 0;
       position: relative;
       z-index: 1;
     }
     h1 {
       text-align: center;
-      margin-bottom: 18px;
-      font-size: 1.25rem;
-      font-weight: 700;
+      margin-bottom: 28px;
+      font-size: 1.45rem;
+      font-weight: 800;
       letter-spacing: 0.01em;
-      color: #222;
+      color: var(--tg-theme-text-color, #222);
+      text-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
     .products {
       display: flex;
       flex-wrap: wrap;
-      gap: 18px 10px;
+      gap: 22px 14px;
       justify-content: center;
     }
     .product-card {
-      background: none;
+      background: var(--tg-theme-secondary-bg-color, #fff);
       border-radius: 18px;
-      width: 110px;
+      width: 130px;
+      min-height: 180px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 0 0 8px 0;
+      padding: 18px 10px 14px 10px;
+      box-shadow: 0 4px 24px 0 rgba(51,158,230,0.07), 0 1.5px 6px 0 rgba(0,0,0,0.04);
+      transition: box-shadow 0.18s, transform 0.18s;
       position: relative;
       z-index: 1;
     }
+    .product-card:hover {
+      box-shadow: 0 8px 32px 0 rgba(51,158,230,0.13), 0 2px 8px 0 rgba(0,0,0,0.07);
+      transform: translateY(-2px) scale(1.03);
+    }
     .product-emoji {
-      font-size: 38px;
-      margin-bottom: 6px;
+      font-size: 44px;
+      margin-bottom: 10px;
       margin-top: 2px;
       filter: drop-shadow(0 1px 2px #eee);
+      transition: transform 0.18s;
+    }
+    .product-card:hover .product-emoji {
+      transform: scale(1.12) rotate(-6deg);
     }
     .product-title {
-      font-size: 1.01rem;
-      font-weight: 600;
-      margin-bottom: 2px;
-      color: #222;
+      font-size: 1.09rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--tg-theme-text-color, #222);
       text-align: center;
+      letter-spacing: 0.01em;
     }
     .product-price {
-      font-size: 0.98rem;
-      color: #222;
-      font-weight: 500;
-      margin-bottom: 7px;
+      font-size: 1.08rem;
+      color: var(--tg-theme-link-color, #339ee6);
+      font-weight: 700;
+      margin-bottom: 10px;
       text-align: center;
+      letter-spacing: 0.01em;
     }
     .controls {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       justify-content: center;
       min-height: 38px;
     }
@@ -100,84 +114,93 @@
       border: none;
       outline: none;
       border-radius: 999px;
-      font-size: 1rem;
+      font-size: 1.08rem;
       font-weight: 700;
       cursor: pointer;
-      transition: background 0.18s, color 0.18s, transform 0.13s;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      transition: background 0.18s, color 0.18s, transform 0.13s, box-shadow 0.18s;
+      box-shadow: 0 1.5px 6px rgba(51,158,230,0.08);
       padding: 0 0;
       width: 48px;
-      height: 36px;
+      height: 38px;
       display: flex;
       align-items: center;
       justify-content: center;
       margin: 0 auto;
+      background: var(--tg-theme-button-color, #ffb300);
+      color: var(--tg-theme-button-text-color, #fff);
     }
     .add-btn {
-      background: #ffb300;
-      color: #fff;
-      font-size: 1.01rem;
-      width: 70px;
-      height: 36px;
-      border-radius: 18px;
+      font-size: 1.09rem;
+      width: 80px;
+      height: 38px;
+      border-radius: 19px;
       letter-spacing: 0.01em;
+      background: linear-gradient(90deg, #ffd600 0%, #ffb300 100%);
+      color: #222;
+      font-weight: 800;
+      box-shadow: 0 2px 8px rgba(255,214,0,0.08);
+    }
+    .add-btn:active, .plus-btn:active, .minus-btn:active {
+      transform: scale(0.96);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.10);
     }
     .plus-btn {
-      background: #ffb300;
+      background: linear-gradient(90deg, #339ee6 0%, #6c63ff 100%);
       color: #fff;
-      font-size: 1.2rem;
+      font-size: 1.25rem;
     }
     .minus-btn {
-      background: #ff5252;
+      background: linear-gradient(90deg, #ff5252 0%, #ffb300 100%);
       color: #fff;
-      font-size: 1.2rem;
+      font-size: 1.25rem;
     }
     .qty {
-      font-size: 1.1rem;
-      font-weight: 600;
+      font-size: 1.13rem;
+      font-weight: 700;
       min-width: 22px;
       text-align: center;
-      color: #222;
+      color: var(--tg-theme-text-color, #222);
     }
     /* --- View Order Button --- */
     .view-order-bar {
       position: fixed;
       left: 0; right: 0; bottom: 0;
       background: none;
-      padding: 0 0 18px 0;
+      padding: 0 0 22px 0;
       display: flex;
       justify-content: center;
       z-index: 10;
     }
     .view-order-btn {
-      background: #e15ee7;
+      background: linear-gradient(90deg, #e15ee7 0%, #339ee6 100%);
       color: #fff;
       border: none;
-      border-radius: 16px;
-      font-size: 1.15rem;
-      font-weight: 700;
-      padding: 18px 0;
-      width: 92vw;
-      max-width: 420px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      border-radius: 18px;
+      font-size: 1.18rem;
+      font-weight: 800;
+      padding: 20px 0;
+      width: 96vw;
+      max-width: 440px;
+      box-shadow: 0 4px 24px 0 rgba(51,158,230,0.10);
       cursor: pointer;
       letter-spacing: 0.03em;
-      transition: background 0.18s;
+      transition: background 0.18s, transform 0.13s;
       text-align: center;
     }
     .view-order-btn:active {
-      background: #b266ff;
+      background: linear-gradient(90deg, #339ee6 0%, #e15ee7 100%);
+      transform: scale(0.98);
     }
     /* --- Registration Form --- */
     #form {
       display: none;
-      max-width: 275px;
-      width: 84vw;
+      max-width: 265px;
+      width: 82vw;
       margin: 0 auto;
       background: var(--tg-theme-bg-color, #fff);
-      border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-      padding: 16px 10px 16px 10px;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px 0 rgba(51,158,230,0.07), 0 1.5px 6px 0 rgba(0,0,0,0.04);
+      padding: 18px 10px 18px 10px;
       animation: fadeIn 0.4s;
       position: fixed;
       left: 0; right: 0; top: 0; bottom: 0;
@@ -188,24 +211,24 @@
       align-items: center;
       justify-content: center;
       height: fit-content;
-      min-height: 220px;
+      min-height: 200px;
     }
     #form-title {
       text-align: center;
-      font-size: 1.08rem;
-      font-weight: 700;
+      font-size: 1.13rem;
+      font-weight: 800;
       color: var(--tg-theme-text-color, #222);
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       letter-spacing: 0.01em;
     }
     #form input[type="text"], #form input[type="email"] {
       width: 100%;
       min-width: 0;
       display: block;
-      margin: 0 auto 12px auto;
+      margin: 0 auto 10px auto;
       padding: 10px 12px;
-      border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-      border-radius: 8px;
+      border: 1.5px solid var(--tg-theme-hint-color, #e0e0e0);
+      border-radius: 9px;
       font-size: 0.97rem;
       background: var(--tg-theme-secondary-bg-color, #f7f7fa);
       color: var(--tg-theme-text-color, #222);
@@ -229,22 +252,23 @@
       width: 100%;
       min-width: 0;
       display: block;
-      margin: 14px auto 0 auto;
-      padding: 11px 0;
-      font-size: 1.01rem;
-      font-weight: 700;
-      background: var(--tg-theme-button-color, #339ee6);
-      color: var(--tg-theme-button-text-color, #fff);
-      border-radius: 8px;
-      box-shadow: 0 1.5px 6px rgba(51,158,230,0.08);
+      margin: 12px auto 0 auto;
+      padding: 12px 0;
+      font-size: 1.08rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #339ee6 0%, #e15ee7 100%);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(51,158,230,0.10);
       cursor: pointer;
       letter-spacing: 0.01em;
       transition: background 0.18s, transform 0.18s;
       text-align: center;
     }
     #form .order:active {
-      background: var(--tg-theme-link-color, #1976d2);
-      transform: scale(0.97);
+      background: linear-gradient(90deg, #e15ee7 0%, #339ee6 100%);
+      transform: scale(0.98);
     }
     .form-img {
       display: block;
@@ -255,12 +279,12 @@
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.10);
     }
-    @media (max-width: 500px) {
-      #main { padding: 8px 0 90px 0; }
+    @media (max-width: 600px) {
+      #main { padding: 10px 0 90px 0; }
       .products { gap: 14px 6px; }
-      .product-card { width: 44vw; min-width: 100px; }
+      .product-card { width: 44vw; min-width: 110px; }
       .view-order-btn { font-size: 1.01rem; padding: 14px 0; }
-      #form { max-width: 98vw; padding: 12px 4vw 12px 4vw; }
+      #form { max-width: 98vw; padding: 10px 4vw 10px 4vw; }
     }
     @media (max-width: 420px) {
       #form {
@@ -324,6 +348,36 @@
     });
 
     order.addEventListener('click', () => {
+        let name = document.getElementById('user_name').value;
+        let phone = document.getElementById('user_phone').value;
+        let email = document.getElementById('user_email').value;
+        let address = document.getElementById('user_address').value;
+        if(name.length < 5){
+          document.getElementById('user_name').innerText = "Erorr in name!";
+          return;
+        }
+        if(phone.length < 10){
+          document.getElementById('user_phone').innerText = "Erorr in phone!";
+          return;
+        }
+        if(email.length < 5){
+          document.getElementById('user_email').innerText = "Erorr in email!";
+          return;
+        }
+        if(address.length < 5){
+          document.getElementById('user_address').innerText = "Erorr in address!";
+          return;
+        }
+
+        
+        let data = {
+          name: name,
+          email: email,
+          phone: phone,
+          address: address,
+        }
+
+        tg.sendData(JSON.stringify(data));
         tg.close();
     });
 
